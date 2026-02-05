@@ -71,7 +71,36 @@ const challenges = [
   { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
   { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
   { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
-  { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' }
+  { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
+  { initialMorphemes: ['-ak', 'ama'], correctSequence: ['ama', '-ak'], correctWord: 'amak', targetMeaning: 'the mothers' },
+  { initialMorphemes: ['seme', '-a'], correctSequence: ['seme', '-a'], correctWord: 'semea', targetMeaning: 'the son' },
+  { initialMorphemes: ['alaba', '-a'], correctSequence: ['alaba', '-a'], correctWord: 'alaba', targetMeaning: 'the daughter' },
+  { initialMorphemes: ['-tik', 'auto', '-a'], correctSequence: ['auto', '-a', '-tik'], correctWord: 'autotik', targetMeaning: 'from the car' },
+  { initialMorphemes: ['-ra', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-ra'], correctWord: 'eskolara', targetMeaning: 'to the school' },
+  { initialMorphemes: ['-n', 'urte', '-a'], correctSequence: ['urte', '-a', '-n'], correctWord: 'urtean', targetMeaning: 'in the year' },
+  { initialMorphemes: ['-n', 'egun', '-a'], correctSequence: ['egun', '-a', '-n'], correctWord: 'egunean', targetMeaning: 'in the day' },
+  { initialMorphemes: ['-n', 'bizitza', '-a'], correctSequence: ['bizitza', '-a', '-n'], correctWord: 'bizitzan', targetMeaning: 'in life' },
+  { initialMorphemes: ['-n', 'leku', '-a'], correctSequence: ['leku', '-a', '-n'], correctWord: 'lekuan', targetMeaning: 'in the place' },
+  { initialMorphemes: ['arazo', '-a'], correctSequence: ['arazo', '-a'], correctWord: 'arazoa', targetMeaning: 'the problem' },
+  { initialMorphemes: ['arazo', '-ak'], correctSequence: ['arazo', '-ak'], correctWord: 'arazoak', targetMeaning: 'the problems' },
+  { initialMorphemes: ['-n', 'aste', '-a'], correctSequence: ['aste', '-a', '-n'], correctWord: 'astean', targetMeaning: 'in the week' },
+  { initialMorphemes: ['puntu', '-a'], correctSequence: ['puntu', '-a'], correctWord: 'puntua', targetMeaning: 'the point' },
+  { initialMorphemes: ['-n', 'talde', '-a'], correctSequence: ['talde', '-a', '-n'], correctWord: 'taldean', targetMeaning: 'in the group' },
+  { initialMorphemes: ['-n', 'mundu', '-a'], correctSequence: ['mundu', '-a', '-n'], correctWord: 'munduan', targetMeaning: 'in the world' },
+  { initialMorphemes: ['galdera', '-a'], correctSequence: ['galdera', '-a'], correctWord: 'galdera', targetMeaning: 'the question' },
+  { initialMorphemes: ['galdera', '-ak'], correctSequence: ['galdera', '-ak'], correctWord: 'galderak', targetMeaning: 'the questions' },
+  { initialMorphemes: ['-ri', 'aita', '-a'], correctSequence: ['aita', '-a', '-ri'], correctWord: 'aitari', targetMeaning: 'to the father' },
+  { initialMorphemes: ['-ri', 'ama', '-a'], correctSequence: ['ama', '-a', '-ri'], correctWord: 'amari', targetMeaning: 'to the mother' },
+  { initialMorphemes: ['-ak', 'seme'], correctSequence: ['seme', '-ak'], correctWord: 'semeak', targetMeaning: 'the sons' },
+  { initialMorphemes: ['-ak', 'alaba'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters' },
+  { initialMorphemes: ['-tik', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-tik'], correctWord: 'hiritik', targetMeaning: 'from the city' },
+  { initialMorphemes: ['-ra', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-ra'], correctWord: 'hirira', targetMeaning: 'to the city' },
+  { initialMorphemes: ['-tik', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-tik'], correctWord: 'eskolatik', targetMeaning: 'from the school' },
+  { initialMorphemes: ['-ekin', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ekin'], correctWord: 'gizonarekin', targetMeaning: 'with the man' },
+  { initialMorphemes: ['-ekin', 'emakume', '-a'], correctSequence: ['emakume', '-a', '-ekin'], correctWord: 'emakumearekin', targetMeaning: 'with the woman' },
+  { initialMorphemes: ['-dun', 'diru'], correctSequence: ['diru', '-dun'], correctWord: 'dirudun', targetMeaning: 'wealthy (having money)' },
+  { initialMorphemes: ['-gabe', 'diru'], correctSequence: ['diru', '-gabe'], correctWord: 'dirugabe', targetMeaning: 'without money' },
+  { initialMorphemes: ['-z', 'auto'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car' },
 ];
 
 
@@ -92,9 +121,9 @@ export function MorphemeConstructor() {
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [shuffledMorphemes, setShuffledMorphemes] = useState<string[]>([]);
 
   const currentChallenge = shuffledChallenges[challengeIndex];
-  const { initialMorphemes, correctSequence, correctWord, targetMeaning } = currentChallenge;
 
   const resetBoard = useCallback(() => {
     setConstructed([]);
@@ -102,13 +131,16 @@ export function MorphemeConstructor() {
   }, []);
 
   useEffect(() => {
+    if (currentChallenge) {
+      setShuffledMorphemes([...currentChallenge.initialMorphemes].sort(() => Math.random() - 0.5));
+    }
     resetBoard();
-  }, [challengeIndex, resetBoard, shuffledChallenges]);
+  }, [currentChallenge, resetBoard]);
 
   const availableMorphemes = useMemo(() => {
     // This logic is a bit flawed if morphemes can be repeated, but for these challenges it's fine.
     const constructedCopy = [...constructed];
-    return initialMorphemes.filter(m => {
+    return shuffledMorphemes.filter(m => {
       const index = constructedCopy.indexOf(m);
       if (index > -1) {
         constructedCopy.splice(index, 1);
@@ -116,7 +148,7 @@ export function MorphemeConstructor() {
       }
       return true;
     });
-  }, [constructed, initialMorphemes]);
+  }, [constructed, shuffledMorphemes]);
 
   const handlePaletteClick = (morpheme: string) => {
     setConstructed([...constructed, morpheme]);
@@ -131,7 +163,7 @@ export function MorphemeConstructor() {
   };
   
   const handleCheck = () => {
-    if (JSON.stringify(constructed) === JSON.stringify(correctSequence)) {
+    if (JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence)) {
       setFeedback('correct');
     } else {
       setFeedback('incorrect');
@@ -142,14 +174,18 @@ export function MorphemeConstructor() {
     resetBoard();
   };
 
-  const handleShuffle = () => {
+  const handleShuffleList = () => {
     setShuffledChallenges([...challenges].sort(() => Math.random() - 0.5));
     setChallengeIndex(0);
+  };
+
+  const handleShuffleTiles = () => {
+    setShuffledMorphemes([...shuffledMorphemes].sort(() => Math.random() - 0.5));
   };
   
   const handleNext = () => {
     if (challengeIndex === shuffledChallenges.length - 1) {
-      handleShuffle();
+      handleShuffleList();
     } else {
       setChallengeIndex((prevIndex) => prevIndex + 1);
     }
@@ -161,6 +197,12 @@ export function MorphemeConstructor() {
     feedback === 'incorrect' && 'border-destructive bg-destructive/10',
     !feedback && 'border-primary/50 bg-primary/5'
   );
+
+  if (!currentChallenge) {
+    return <div>Loading challenges...</div>;
+  }
+
+  const { correctSequence, correctWord, targetMeaning } = currentChallenge;
 
   return (
     <div className="space-y-8">
@@ -190,14 +232,17 @@ export function MorphemeConstructor() {
       <Card className="p-6 bg-muted/50">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {availableMorphemes.map((m, i) => (
-            <MorphemeTile key={i} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
+            <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
           ))}
         </div>
       </Card>
 
-      <div className="flex items-center justify-center gap-4">
-        <Button variant="outline" onClick={handleShuffle}>
-            <Shuffle className="mr-2" /> Shuffle List
+      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
+        <Button variant="outline" onClick={handleShuffleList}>
+            <Shuffle className="mr-2" /> New Word Set
+        </Button>
+        <Button variant="outline" onClick={handleShuffleTiles}>
+            <Shuffle className="mr-2" /> Shuffle Tiles
         </Button>
         <Button variant="outline" onClick={handleReset} disabled={constructed.length === 0}>
             <RefreshCw className="mr-2" /> Reset
