@@ -40,6 +40,18 @@ const WordCard = ({ word }: { word: Word }) => (
   </Card>
 );
 
+const categoryOrder: Word['category'][] = [
+  'noun',
+  'pronoun',
+  'number',
+  'verb',
+  'adjective',
+  'adverb',
+  'conjunction',
+  'preposition',
+  'suffix',
+];
+
 export function VocabularyList() {
   const [words, setWords] = useState<Word[]>([...vocabulary]);
 
@@ -48,7 +60,18 @@ export function VocabularyList() {
   };
   
   const groupedWords = useMemo(() => groupWords(words), [words]);
-  const categories = useMemo(() => Object.keys(groupedWords).sort() as Word['category'][], [groupedWords]);
+  
+  const categories = useMemo(() => {
+    const availableCategories = Object.keys(groupedWords) as Word['category'][];
+    return availableCategories.sort((a, b) => {
+        const indexA = categoryOrder.indexOf(a);
+        const indexB = categoryOrder.indexOf(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
+  }, [groupedWords]);
+
   const verbsByTense = useMemo(() => groupVerbsByTense(groupedWords.verb || []), [groupedWords.verb]);
   const tenses = useMemo(() => Object.keys(verbsByTense).sort(), [verbsByTense]);
 
