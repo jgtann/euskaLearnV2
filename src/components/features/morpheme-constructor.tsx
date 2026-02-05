@@ -274,13 +274,15 @@ export function MorphemeConstructor() {
               <div className="p-4 rounded-lg text-center animate-in fade-in zoom-in-95">
                 {feedback === 'correct' && (
                   <div className="flex flex-col items-center gap-4 text-green-600">
-                      <ThumbsUp className="size-12"/>
-                      <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                      <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md space-y-1">
-                          <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
-                          <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
+                    <ThumbsUp className="size-12" />
+                    <p className="font-bold text-2xl">Zorionak! Correct!</p>
+                    <div className="w-full text-center text-foreground/90 bg-green-500/10 p-4 rounded-lg space-y-4">
+                      <div>
+                        <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
+                        <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
                       </div>
-                      <Button variant="default" className="mt-4" onClick={handleNext}>Next Word <Sparkles className="ml-2"/></Button>
+                      <Button variant="default" onClick={handleNext}>Next Word <Sparkles className="ml-2" /></Button>
+                    </div>
                   </div>
                 )}
                 {feedback === 'incorrect' && (
