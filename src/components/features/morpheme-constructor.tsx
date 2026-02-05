@@ -18,7 +18,7 @@ const MorphemeTile = ({ morpheme, onClick, disabled }) => (
     size="lg"
     onClick={() => onClick(morpheme)}
     disabled={disabled}
-    className="text-lg font-bold transition-all duration-200 ease-in-out hover:scale-105 hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+    className="text-lg font-bold transition-all duration-200 ease-in-out hover:scale-105 hover:bg-accent hover:text-accent-foreground disabled:opacity-50 font-code"
   >
     {morpheme}
   </Button>
@@ -77,7 +77,7 @@ export function MorphemeConstructor() {
                 variant="outline"
                 size="lg"
                 onClick={() => handleConstructionClick(m)}
-                className="text-lg font-bold bg-card shadow-sm cursor-pointer animate-in fade-in"
+                className="text-lg font-bold bg-card shadow-sm cursor-pointer animate-in fade-in font-code"
               >
                 {m}
               </Button>
@@ -110,8 +110,12 @@ export function MorphemeConstructor() {
             <div className="flex flex-col items-center gap-2 text-green-600">
                 <ThumbsUp className="size-12"/>
                 <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                <div className="flex items-center gap-2">
-                    <p>You correctly formed <span className="font-bold font-code">{correctWord}</span>.</p>
+                <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md">
+                    <p>You combined <span className="font-bold font-code">{correctSequence.join(' + ')}</span></p>
+                    <p>to form <span className="font-bold font-code">{correctWord}</span>.</p>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                    <p className="text-muted-foreground">Listen:</p>
                     <AudioPlayer text={correctWord} />
                 </div>
                 <Button variant="default" className="mt-4">Next Word <Sparkles className="ml-2"/></Button>

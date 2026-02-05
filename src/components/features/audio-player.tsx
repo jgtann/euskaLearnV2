@@ -38,7 +38,7 @@ export function AudioPlayer({ text }: { text: string }) {
     };
 
     return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
             <div className="flex items-center rounded-md border bg-background p-0.5">
                  <Button
                     variant={selectedGender === 'male' ? 'secondary' : 'ghost'}
@@ -61,7 +61,7 @@ export function AudioPlayer({ text }: { text: string }) {
                     <span className="sr-only">Female voice</span>
                 </Button>
             </div>
-            <Button onClick={handlePlay} disabled={isPending} variant="ghost" size="icon" className="h-9 w-9">
+            <Button onClick={handlePlay} disabled={isPending} variant="secondary" size="icon" className="h-9 w-9">
                 {isPending ? <Loader2 className="animate-spin" /> : <Volume2 />}
                 <span className="sr-only">Play audio</span>
             </Button>

@@ -18,6 +18,7 @@ export async function getSpeech(text: string, gender: 'male' | 'female' = 'male'
         return { data: result };
     } catch (error) {
         console.error(error);
-        return { error: 'Failed to synthesize speech. Please try again later.' };
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+        return { error: `Failed to synthesize speech. Details: ${errorMessage}` };
     }
 }
