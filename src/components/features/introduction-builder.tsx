@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useActionState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { getIntroduction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, User, BookText } from 'lucide-react';
+import { Loader2, Sparkles, User, BookText, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AudioPlayer } from './audio-player';
 
@@ -35,7 +35,8 @@ function SubmitButton() {
 }
 
 export function IntroductionBuilder() {
-  const [state, formAction] = useActionState(getIntroduction, initialState);
+  const [state, setState] = useState(initialState);
+  const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,9 +49,19 @@ export function IntroductionBuilder() {
     }
   }, [state.error, toast]);
 
+  const handleAction = async (formData: FormData) => {
+    const result = await getIntroduction(state, formData);
+    setState(result);
+  }
+
+  const handleReset = () => {
+    formRef.current?.reset();
+    setState(initialState);
+  }
+
   return (
     <div className="space-y-6">
-      <form action={formAction} className="space-y-4">
+      <form action={handleAction} ref={formRef} className="space-y-4">
         <div className="space-y-2">
             <Label htmlFor="name">Your Name</Label>
             <Input id="name" name="name" placeholder="e.g., Alex" />
@@ -76,7 +87,13 @@ export function IntroductionBuilder() {
             </div>
           </RadioGroup>
         </div>
-        <SubmitButton />
+        <div className="flex items-center gap-2">
+            <SubmitButton />
+            <Button type="button" variant="outline" size="icon" onClick={handleReset}>
+                <RefreshCw className="size-4" />
+                <span className="sr-only">Reset</span>
+            </Button>
+        </div>
       </form>
 
       {state.data && (

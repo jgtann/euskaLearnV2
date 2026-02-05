@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useActionState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { getTranslation } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, FileText, Languages } from 'lucide-react';
+import { Loader2, Sparkles, FileText, Languages, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AudioPlayer } from './audio-player';
 
@@ -33,7 +33,8 @@ function SubmitButton() {
 }
 
 export function TranslationTool() {
-  const [state, formAction] = useActionState(getTranslation, initialState);
+  const [state, setState] = useState(initialState);
+  const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -46,16 +47,32 @@ export function TranslationTool() {
     }
   }, [state.error, toast]);
 
+  const handleAction = async (formData: FormData) => {
+    const result = await getTranslation(state, formData);
+    setState(result);
+  }
+
+  const handleReset = () => {
+    formRef.current?.reset();
+    setState(initialState);
+  }
+
   return (
     <div className="space-y-6">
-      <form action={formAction} className="space-y-4">
+      <form ref={formRef} action={handleAction} className="space-y-4">
         <Textarea
           name="text"
           placeholder="e.g., The woman gives the book to the man."
           rows={3}
           className="text-base"
         />
-        <SubmitButton />
+        <div className="flex items-center gap-2">
+            <SubmitButton />
+            <Button type="button" variant="outline" size="icon" onClick={handleReset}>
+                <RefreshCw className="size-4" />
+                <span className="sr-only">Reset</span>
+            </Button>
+        </div>
       </form>
 
       {state.data && (
