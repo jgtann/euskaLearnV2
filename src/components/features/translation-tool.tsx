@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { getTranslation } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,7 +33,7 @@ function SubmitButton() {
 }
 
 export function TranslationTool() {
-  const [state, formAction] = useFormState(getTranslation, initialState);
+  const [state, formAction] = useActionState(getTranslation, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
