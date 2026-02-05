@@ -248,7 +248,7 @@ export function MorphemeConstructor() {
                   <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
                 ))}
               </div>
-            </Card>
+            </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
               <Button variant="outline" onClick={handleShuffleList}>
