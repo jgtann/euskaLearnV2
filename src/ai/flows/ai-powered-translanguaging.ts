@@ -16,12 +16,17 @@ const TranslateAndExplainInputSchema = z.object({
 });
 export type TranslateAndExplainInput = z.infer<typeof TranslateAndExplainInputSchema>;
 
+const ExplanationItemSchema = z.object({
+  concept: z.string().describe('The grammatical concept being explained.'),
+  explanation: z.string().describe('The detailed explanation of the concept.'),
+  example: z.string().describe('An example sentence or phrase pair (English/Basque) illustrating the concept.'),
+});
+
 const TranslateAndExplainOutputSchema = z.object({
   basqueTranslation: z.string().describe('The Basque translation of the input text.'),
-  explanation: z
-    .string()
+  explanation: z.array(ExplanationItemSchema)
     .describe(
-      'An explanation of the differences between the English and Basque versions, with contrastive hints to aid schema formation.'
+      'A structured explanation of the grammatical differences between the English and Basque versions, with contrastive hints.'
     ),
 });
 export type TranslateAndExplainOutput = z.infer<typeof TranslateAndExplainOutputSchema>;
@@ -36,11 +41,11 @@ const translateAndExplainPrompt = ai.definePrompt({
   output: {schema: TranslateAndExplainOutputSchema},
   prompt: `You are a helpful language tutor specializing in Basque and English.
 
-  Translate the following English text into Basque, and then provide a brief explanation of the key grammatical or syntactical differences between the two languages in this specific translation. Include contrastive hints to help the learner understand the schema formation.
+  Translate the following English text into Basque.
 
-  English Text: {{{englishText}}}
+  Then, provide a brief, structured explanation of the key grammatical or syntactical differences between the two languages in this specific translation. For each key difference, provide the concept, a detailed explanation, and an illustrative example. Include contrastive hints to help the learner understand schema formation.
 
-  Translation and Explanation:`,
+  English Text: {{{englishText}}}`,
 });
 
 const translateAndExplainFlow = ai.defineFlow(

@@ -18,12 +18,18 @@ const BuildIntroductionInputSchema = z.object({
 });
 export type BuildIntroductionInput = z.infer<typeof BuildIntroductionInputSchema>;
 
+const ExplanationItemSchema = z.object({
+  concept: z.string().describe('The Basque word or grammatical phrase.'),
+  meaning: z.string().describe('The English translation or explanation of the concept.'),
+  example: z.string().describe('A simple example sentence in Basque using the concept.'),
+});
+
 const BuildIntroductionOutputSchema = z.object({
   introduction: z.string().describe('The generated self-introduction in Basque.'),
   explanation: z
-    .string()
+    .array(ExplanationItemSchema)
     .describe(
-      'An explanation of the vocabulary and grammar used in the introduction.'
+      'A structured explanation of the vocabulary and grammar used in the introduction.'
     ),
 });
 export type BuildIntroductionOutput = z.infer<typeof BuildIntroductionOutputSchema>;
@@ -42,8 +48,9 @@ const prompt = ai.definePrompt({
   From: {{{from}}}
   Hobby: {{{hobby}}}
 
-  After the introduction, provide a simple explanation of the vocabulary and grammar used, especially for a beginner.
-  For example, explain "ni ... naiz" (I am ...), "nire izena ... da" (my name is ...), and how to mention where they are from and their hobbies.`,
+  After the introduction, provide a simple, structured explanation of the vocabulary and grammar used, especially for a beginner.
+  For each key concept, provide the Basque phrase, its English meaning, and a simple example.
+  Key concepts to explain include "ni ... naiz" (I am ...), how to state one's name, origin, and hobbies.`,
 });
 
 const buildIntroductionFlow = ai.defineFlow(

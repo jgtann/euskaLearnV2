@@ -102,8 +102,14 @@ export function IntroductionBuilder() {
                 Explanation
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-foreground/90">
-              <p>{state.data.explanation}</p>
+            <CardContent className="space-y-4">
+              {state.data.explanation.map((item, index) => (
+                <div key={index} className="p-4 border rounded-lg bg-background/50 text-foreground/90">
+                  <p className="font-bold text-primary font-code">{item.concept}</p>
+                  <p className="mt-1 text-muted-foreground">{item.meaning}</p>
+                  <p className="mt-2 text-sm italic">e.g., "{item.example}"</p>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
