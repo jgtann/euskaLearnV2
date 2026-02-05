@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle } from 'lucide-react';
+import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle } from 'lucide-react';
 
 const challenges = [
   {
@@ -54,7 +54,24 @@ const challenges = [
     correctSequence: ['hiri', '-a', '-n'],
     correctWord: 'hirian',
     targetMeaning: 'in the city',
-  }
+  },
+  { initialMorphemes: ['-a', 'mahai'], correctSequence: ['mahai', '-a'], correctWord: 'mahaia', targetMeaning: 'the table' },
+  { initialMorphemes: ['lan', '-a'], correctSequence: ['lan', '-a'], correctWord: 'lana', targetMeaning: 'the work' },
+  { initialMorphemes: ['auto', '-a'], correctSequence: ['auto', '-a'], correctWord: 'autoa', targetMeaning: 'the car' },
+  { initialMorphemes: ['janari', '-a'], correctSequence: ['janari', '-a'], correctWord: 'janaria', targetMeaning: 'the food' },
+  { initialMorphemes: ['diru', '-a'], correctSequence: ['diru', '-a'], correctWord: 'dirua', targetMeaning: 'the money' },
+  { initialMorphemes: ['-ak', 'etxe'], correctSequence: ['etxe', '-ak'], correctWord: 'etxeak', targetMeaning: 'the houses' },
+  { initialMorphemes: ['-ak', 'liburu'], correctSequence: ['liburu', '-ak'], correctWord: 'liburuak', targetMeaning: 'the books' },
+  { initialMorphemes: ['lagun', '-ak'], correctSequence: ['lagun', '-ak'], correctWord: 'lagunak', targetMeaning: 'the friends' },
+  { initialMorphemes: ['-n', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-n'], correctWord: 'eskolan', targetMeaning: 'in the school' },
+  { initialMorphemes: ['-ri', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man' },
+  { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
+  { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
+  { initialMorphemes: ['etxe', '-tik'], correctSequence: ['etxe', '-tik'], correctWord: 'etxetik', targetMeaning: 'from the house' },
+  { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
+  { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
+  { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
+  { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' }
 ];
 
 
@@ -71,11 +88,22 @@ const MorphemeTile = ({ morpheme, onClick, disabled }) => (
 );
 
 export function MorphemeConstructor() {
+  const [shuffledChallenges, setShuffledChallenges] = useState(() => [...challenges].sort(() => Math.random() - 0.5));
   const [challengeIndex, setChallengeIndex] = useState(0);
-  const { initialMorphemes, correctSequence, correctWord, targetMeaning } = challenges[challengeIndex];
-
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+
+  const currentChallenge = shuffledChallenges[challengeIndex];
+  const { initialMorphemes, correctSequence, correctWord, targetMeaning } = currentChallenge;
+
+  const resetBoard = useCallback(() => {
+    setConstructed([]);
+    setFeedback(null);
+  }, []);
+
+  useEffect(() => {
+    resetBoard();
+  }, [challengeIndex, resetBoard, shuffledChallenges]);
 
   const availableMorphemes = useMemo(() => {
     // This logic is a bit flawed if morphemes can be repeated, but for these challenges it's fine.
@@ -110,18 +138,21 @@ export function MorphemeConstructor() {
     }
   };
 
-  const resetBoard = () => {
-    setConstructed([]);
-    setFeedback(null);
-  }
-
   const handleReset = () => {
     resetBoard();
   };
 
+  const handleShuffle = () => {
+    setShuffledChallenges([...challenges].sort(() => Math.random() - 0.5));
+    setChallengeIndex(0);
+  };
+  
   const handleNext = () => {
-    setChallengeIndex((prevIndex) => (prevIndex + 1) % challenges.length);
-    resetBoard();
+    if (challengeIndex === shuffledChallenges.length - 1) {
+      handleShuffle();
+    } else {
+      setChallengeIndex((prevIndex) => prevIndex + 1);
+    }
   };
 
   const constructionAreaClasses = cn(
@@ -165,6 +196,9 @@ export function MorphemeConstructor() {
       </Card>
 
       <div className="flex items-center justify-center gap-4">
+        <Button variant="outline" onClick={handleShuffle}>
+            <Shuffle className="mr-2" /> Shuffle List
+        </Button>
         <Button variant="outline" onClick={handleReset} disabled={constructed.length === 0}>
             <RefreshCw className="mr-2" /> Reset
         </Button>
