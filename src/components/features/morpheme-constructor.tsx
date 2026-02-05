@@ -25,12 +25,36 @@ const challenges = [
     correctWord: 'gizonak',
     targetMeaning: 'the men',
   },
-   {
+  {
     initialMorphemes: ['-ri', 'emakume', '-a'],
     correctSequence: ['emakume', '-a', '-ri'],
     correctWord: 'emakumeari',
     targetMeaning: 'to the woman',
   },
+  {
+    initialMorphemes: ['liburu', '-a'],
+    correctSequence: ['liburu', '-a'],
+    correctWord: 'liburua',
+    targetMeaning: 'the book',
+  },
+  {
+    initialMorphemes: ['-ak', 'aita'],
+    correctSequence: ['aita', '-ak'],
+    correctWord: 'aitak',
+    targetMeaning: 'the fathers',
+  },
+  {
+    initialMorphemes: ['haur', '-ak'],
+    correctSequence: ['haur', '-ak'],
+    correctWord: 'haurrak',
+    targetMeaning: 'the children',
+  },
+  {
+    initialMorphemes: ['-n', 'hiri', '-a'],
+    correctSequence: ['hiri', '-a', '-n'],
+    correctWord: 'hirian',
+    targetMeaning: 'in the city',
+  }
 ];
 
 
@@ -54,7 +78,16 @@ export function MorphemeConstructor() {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
 
   const availableMorphemes = useMemo(() => {
-    return initialMorphemes.filter(m => !constructed.includes(m));
+    // This logic is a bit flawed if morphemes can be repeated, but for these challenges it's fine.
+    const constructedCopy = [...constructed];
+    return initialMorphemes.filter(m => {
+      const index = constructedCopy.indexOf(m);
+      if (index > -1) {
+        constructedCopy.splice(index, 1);
+        return false;
+      }
+      return true;
+    });
   }, [constructed, initialMorphemes]);
 
   const handlePaletteClick = (morpheme: string) => {
@@ -62,8 +95,10 @@ export function MorphemeConstructor() {
     setFeedback(null);
   };
 
-  const handleConstructionClick = (morpheme: string) => {
-    setConstructed(constructed.filter(m => m !== morpheme));
+  const handleConstructionClick = (morpheme: string, index: number) => {
+    const newConstructed = [...constructed];
+    newConstructed.splice(index, 1);
+    setConstructed(newConstructed);
     setFeedback(null);
   };
   
@@ -110,7 +145,7 @@ export function MorphemeConstructor() {
                 key={i}
                 variant="outline"
                 size="lg"
-                onClick={() => handleConstructionClick(m)}
+                onClick={() => handleConstructionClick(m, i)}
                 className="text-lg font-bold bg-card shadow-sm cursor-pointer animate-in fade-in font-code"
               >
                 {m}
@@ -141,12 +176,12 @@ export function MorphemeConstructor() {
       {feedback && (
         <div className="p-4 rounded-lg text-center animate-in fade-in zoom-in-95">
           {feedback === 'correct' && (
-            <div className="flex flex-col items-center gap-2 text-green-600">
+            <div className="flex flex-col items-center gap-4 text-green-600">
                 <ThumbsUp className="size-12"/>
                 <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md">
+                <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md space-y-1">
                     <p>You combined <span className="font-bold font-code">{correctSequence.join(' + ')}</span></p>
-                    <p>to form <span className="font-bold font-code">{correctWord}</span>.</p>
+                    <p>to form <span className="font-bold font-code text-lg">{correctWord}</span>.</p>
                 </div>
                 <Button variant="default" className="mt-4" onClick={handleNext}>Next Word <Sparkles className="ml-2"/></Button>
             </div>
