@@ -16,7 +16,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut } from 'lucide-react';
+import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut, User } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '../ui/button';
 
@@ -25,6 +25,7 @@ const navItems = [
   { href: '/learn', label: 'Learn', icon: BookOpen },
   { href: '/translate', label: 'Translate', icon: Languages },
   { href: '/progress', label: 'Progress', icon: BarChart },
+  { href: '/introduction', label: 'Self-Intro', icon: User },
 ];
 
 const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar-1');
@@ -45,7 +46,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="p-2 rounded-lg bg-primary flex items-center justify-center">
               <span className="font-bold text-lg text-primary-foreground">ES</span>
             </div>
-            <h1 className="font-headline text-xl font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
+            <h1 className="font-heading text-xl font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
               Euskal Sustatzailea
             </h1>
           </Link>
@@ -102,7 +103,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="flex items-center justify-between p-4 border-b bg-card sm:p-6">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="md:hidden" />
-            <h2 className="font-headline text-2xl font-bold">{getPageTitle()}</h2>
+            <h2 className="font-heading text-2xl font-bold">{getPageTitle()}</h2>
           </div>
           <Button>Start Learning</Button>
         </header>

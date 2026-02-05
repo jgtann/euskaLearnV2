@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle } from 'lucide-react';
+import { AudioPlayer } from './audio-player';
 
 const initialMorphemes = ['-a', 'txakur', '-k'];
 const correctSequence = ['txakur', '-a', '-k'];
+const correctWord = 'txakurrak';
 const targetMeaning = 'the dog (subject)';
 
 const MorphemeTile = ({ morpheme, onClick, disabled }) => (
@@ -64,7 +66,7 @@ export function MorphemeConstructor() {
     <div className="space-y-8">
       <div>
         <p className="text-center text-muted-foreground">Form the word for:</p>
-        <p className="text-center font-headline text-3xl font-bold text-primary">{targetMeaning}</p>
+        <p className="text-center font-heading text-3xl font-bold text-primary">{targetMeaning}</p>
       </div>
       
       <div className={constructionAreaClasses}>
@@ -108,7 +110,10 @@ export function MorphemeConstructor() {
             <div className="flex flex-col items-center gap-2 text-green-600">
                 <ThumbsUp className="size-12"/>
                 <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                <p>You correctly formed <span className="font-bold font-code">txakurrak</span>.</p>
+                <div className="flex items-center gap-2">
+                    <p>You correctly formed <span className="font-bold font-code">{correctWord}</span>.</p>
+                    <AudioPlayer text={correctWord} />
+                </div>
                 <Button variant="default" className="mt-4">Next Word <Sparkles className="ml-2"/></Button>
             </div>
           )}

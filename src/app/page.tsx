@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Languages, BarChart, ShieldAlert } from "lucide-react";
+import { ArrowRight, BookOpen, Languages, BarChart, ShieldAlert, User } from "lucide-react";
 
 // Mock user data to demonstrate the "Rescue Mission" feature
 const mockUser = {
@@ -35,13 +35,19 @@ const features = [
     href: "/progress",
     icon: <BarChart className="size-8 text-primary" />,
   },
+  {
+    title: "Self-Intro",
+    description: "Build your own Basque introduction with AI.",
+    href: "/introduction",
+    icon: <User className="size-8 text-primary" />,
+  }
 ];
 
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="font-headline text-4xl font-bold text-foreground">Welcome back, {mockUser.name}!</h1>
+        <h1 className="font-heading text-4xl font-bold text-foreground">Welcome back, {mockUser.name}!</h1>
         <p className="text-muted-foreground mt-2 text-lg">Let's continue your Basque learning journey.</p>
       </div>
 
@@ -52,7 +58,7 @@ export default function DashboardPage() {
               <ShieldAlert className="size-6 text-primary" />
             </div>
             <div>
-              <CardTitle className="font-headline">Rescue Mission Activated!</CardTitle>
+              <CardTitle className="font-heading">Rescue Mission Activated!</CardTitle>
               <CardDescription className="mt-1">
                 You're close to losing your streak! Complete this quick review session to protect it with a 'Streak Shield'.
               </CardDescription>
@@ -68,13 +74,13 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {features.map((feature) => (
           <Card key={feature.title} className="flex flex-col hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center gap-4">
               {feature.icon}
               <div className="flex-1">
-                <CardTitle className="font-headline text-2xl">{feature.title}</CardTitle>
+                <CardTitle className="font-heading text-2xl">{feature.title}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="flex-1">

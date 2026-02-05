@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Sparkles, FileText, Languages } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { AudioPlayer } from './audio-player';
 
 const initialState = {
   data: null,
@@ -62,9 +62,12 @@ export function TranslationTool() {
         <div className="space-y-6 animate-in fade-in">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-headline">
-                <Languages className="text-primary" />
-                Basque Translation
+              <CardTitle className="flex items-center justify-between gap-2 font-heading">
+                <div className="flex items-center gap-2">
+                    <Languages className="text-primary" />
+                    Basque Translation
+                </div>
+                <AudioPlayer text={state.data.basqueTranslation} />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -73,7 +76,7 @@ export function TranslationTool() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-headline">
+              <CardTitle className="flex items-center gap-2 font-heading">
                 <FileText className="text-accent" />
                 Grammatical Explanation
               </CardTitle>

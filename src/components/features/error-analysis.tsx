@@ -61,7 +61,7 @@ export function ErrorAnalysis() {
         <div className="space-y-6 text-left animate-in fade-in">
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Morpheme Friction Points</CardTitle>
+              <CardTitle className="font-heading">Morpheme Friction Points</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-foreground/90">{result.identifiedMorphemes}</p>
@@ -69,7 +69,7 @@ export function ErrorAnalysis() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Error Heatmap</CardTitle>
+              <CardTitle className="font-heading">Error Heatmap</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-foreground/90">{result.errorHeatmap}</p>

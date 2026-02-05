@@ -18,7 +18,7 @@ export default function ProgressPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="font-headline text-4xl font-bold">Your Progress</h1>
+        <h1 className="font-heading text-4xl font-bold">Your Progress</h1>
         <p className="text-muted-foreground mt-2 text-lg">
           Review your performance, analyze errors, and track your growth.
         </p>
@@ -27,7 +27,7 @@ export default function ProgressPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
+            <CardTitle className="flex items-center gap-2 font-heading">
               <Target className="text-primary"/>
               Personalized Error Analysis
             </CardTitle>
@@ -42,7 +42,7 @@ export default function ProgressPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
+            <CardTitle className="flex items-center gap-2 font-heading">
               <BarChart className="text-accent"/>
               Learning Velocity
             </CardTitle>
