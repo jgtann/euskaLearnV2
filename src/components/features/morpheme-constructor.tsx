@@ -6,10 +6,33 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle } from 'lucide-react';
 
-const initialMorphemes = ['-a', 'txakur', '-k'];
-const correctSequence = ['txakur', '-a', '-k'];
-const correctWord = 'txakurrak';
-const targetMeaning = 'the dog (subject)';
+const challenges = [
+  {
+    initialMorphemes: ['-a', 'txakur', '-k'],
+    correctSequence: ['txakur', '-a', '-k'],
+    correctWord: 'txakurrak',
+    targetMeaning: 'the dog (subject)',
+  },
+  {
+    initialMorphemes: ['etxe', '-a'],
+    correctSequence: ['etxe', '-a'],
+    correctWord: 'etxea',
+    targetMeaning: 'the house',
+  },
+  {
+    initialMorphemes: ['-ak', 'gizon'],
+    correctSequence: ['gizon', '-ak'],
+    correctWord: 'gizonak',
+    targetMeaning: 'the men',
+  },
+   {
+    initialMorphemes: ['-ri', 'emakume', '-a'],
+    correctSequence: ['emakume', '-a', '-ri'],
+    correctWord: 'emakumeari',
+    targetMeaning: 'to the woman',
+  },
+];
+
 
 const MorphemeTile = ({ morpheme, onClick, disabled }) => (
   <Button
@@ -24,12 +47,15 @@ const MorphemeTile = ({ morpheme, onClick, disabled }) => (
 );
 
 export function MorphemeConstructor() {
+  const [challengeIndex, setChallengeIndex] = useState(0);
+  const { initialMorphemes, correctSequence, correctWord, targetMeaning } = challenges[challengeIndex];
+
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
 
   const availableMorphemes = useMemo(() => {
     return initialMorphemes.filter(m => !constructed.includes(m));
-  }, [constructed]);
+  }, [constructed, initialMorphemes]);
 
   const handlePaletteClick = (morpheme: string) => {
     setConstructed([...constructed, morpheme]);
@@ -49,9 +75,18 @@ export function MorphemeConstructor() {
     }
   };
 
-  const handleReset = () => {
+  const resetBoard = () => {
     setConstructed([]);
     setFeedback(null);
+  }
+
+  const handleReset = () => {
+    resetBoard();
+  };
+
+  const handleNext = () => {
+    setChallengeIndex((prevIndex) => (prevIndex + 1) % challenges.length);
+    resetBoard();
   };
 
   const constructionAreaClasses = cn(
@@ -113,7 +148,7 @@ export function MorphemeConstructor() {
                     <p>You combined <span className="font-bold font-code">{correctSequence.join(' + ')}</span></p>
                     <p>to form <span className="font-bold font-code">{correctWord}</span>.</p>
                 </div>
-                <Button variant="default" className="mt-4">Next Word <Sparkles className="ml-2"/></Button>
+                <Button variant="default" className="mt-4" onClick={handleNext}>Next Word <Sparkles className="ml-2"/></Button>
             </div>
           )}
           {feedback === 'incorrect' && (
