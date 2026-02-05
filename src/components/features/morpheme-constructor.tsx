@@ -104,7 +104,7 @@ const challenges = [
 ];
 
 
-const MorphemeTile = ({ morpheme, onClick, disabled }) => (
+const MorphemeTile = ({ morpheme, onClick, disabled }: { morpheme: string; onClick: (morpheme: string) => void; disabled: boolean; }) => (
   <Button
     variant="secondary"
     size="lg"
@@ -223,12 +223,7 @@ export function MorphemeConstructor() {
         {!currentChallenge ? (
           <div>Loading challenges...</div>
         ) : (
-          <div className="space-y-8">
-            <div>
-              <p className="text-center text-muted-foreground">Form the word for:</p>
-              <p className="text-center font-heading text-3xl font-bold text-primary">{targetMeaning}</p>
-            </div>
-            
+          <div className="space-y-4">
             <div className={constructionAreaClasses}>
               {constructed.length > 0 ? (
                 constructed.map((m, i) => (
@@ -247,7 +242,7 @@ export function MorphemeConstructor() {
               )}
             </div>
 
-            <Card className="p-6 bg-muted/50">
+            <div className="p-4 rounded-lg bg-muted/50">
               <div className="flex flex-wrap items-center justify-center gap-4">
                 {availableMorphemes.map((m, i) => (
                   <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
@@ -270,30 +265,32 @@ export function MorphemeConstructor() {
               </Button>
             </div>
 
-            {feedback && (
-              <div className="p-4 rounded-lg text-center animate-in fade-in zoom-in-95">
-                {feedback === 'correct' && (
-                  <div className="flex flex-col items-center gap-4 text-green-600">
-                    <ThumbsUp className="size-12" />
-                    <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                    <div className="w-full text-center text-foreground/90 bg-green-500/10 p-4 rounded-lg space-y-4">
-                      <div>
-                        <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
-                        <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
+            <div className="flex items-center justify-center p-4 min-h-[220px]">
+              {feedback && (
+                <div className="w-full max-w-sm rounded-lg text-center animate-in fade-in zoom-in-95">
+                  {feedback === 'correct' && (
+                    <div className="flex flex-col items-center gap-4 text-green-600">
+                      <ThumbsUp className="size-12" />
+                      <p className="font-bold text-2xl">Zorionak! Correct!</p>
+                      <div className="w-full text-center text-foreground/90 bg-green-500/10 p-4 rounded-lg space-y-4">
+                        <div>
+                          <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
+                          <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
+                        </div>
+                        <Button variant="default" onClick={handleNext}>Next Word <Sparkles className="ml-2" /></Button>
                       </div>
-                      <Button variant="default" onClick={handleNext}>Next Word <Sparkles className="ml-2" /></Button>
                     </div>
-                  </div>
-                )}
-                {feedback === 'incorrect' && (
-                  <div className="flex flex-col items-center gap-2 text-destructive">
-                      <XCircle className="size-12"/>
-                      <p className="font-bold text-2xl">Not quite, try again!</p>
-                      <p>The order of morphemes is important.</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                  {feedback === 'incorrect' && (
+                    <div className="flex flex-col items-center gap-2 text-destructive">
+                        <XCircle className="size-12"/>
+                        <p className="font-bold text-2xl">Not quite, try again!</p>
+                        <p>The order of morphemes is important.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </CardContent>
