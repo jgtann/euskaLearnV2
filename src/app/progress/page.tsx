@@ -1,3 +1,5 @@
+'use client';
+
 import { ErrorAnalysis } from "@/components/features/error-analysis";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart, Target } from "lucide-react";
