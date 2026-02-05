@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { getSpeech } from '@/app/actions';
+import { getSpeech } from '@/app/speech-actions';
 import { Button } from '@/components/ui/button';
 import { Loader2, Volume2, User, UserRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
