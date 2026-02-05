@@ -1,94 +1,70 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useFormState, useFormStatus } from "react-dom";
+import { register } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
-import { useTransition } from "react";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-});
+const initialState = {
+  data: null,
+  error: null,
+};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending && <Loader2 className="mr-2 animate-spin" />}
+      Create Account
+    </Button>
+  );
+}
 
 export function RegisterForm() {
-    const [isPending, startTransition] = useTransition();
+  const [state, formAction] = useFormState(register, initialState);
+  const { toast } = useToast();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            name: "",
-            email: "",
-            password: "",
-        },
-    });
-
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        startTransition(() => {
-            // Placeholder for register action
-            console.log(values);
-            alert("Registration functionality not yet implemented.");
-        });
+  useEffect(() => {
+    if (state.error) {
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: state.error,
+      });
     }
+  }, [state.error, toast]);
 
+  if (state.data) {
     return (
-        <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                    <Input placeholder="Your Name" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending && <Loader2 className="mr-2 animate-spin" />}
-                Create Account
-            </Button>
-        </form>
-        </Form>
-    );
+      <Alert variant="default" className="text-center">
+          <AlertTitle className="font-bold">Success!</AlertTitle>
+          <AlertDescription>
+              {state.data}
+          </AlertDescription>
+      </Alert>
+   )
+}
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Name</Label>
+        <Input id="name" name="name" placeholder="Your Name" required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" placeholder="name@example.com" required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input id="password" name="password" type="password" placeholder="********" required minLength={6} />
+      </div>
+      <SubmitButton />
+    </form>
+  );
 }
