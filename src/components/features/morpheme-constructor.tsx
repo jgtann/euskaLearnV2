@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle } from 'lucide-react';
 
@@ -207,83 +207,95 @@ export function MorphemeConstructor() {
     feedback === 'incorrect' && 'border-destructive bg-destructive/10',
     !feedback && 'border-primary/50 bg-primary/5'
   );
-
-  if (!currentChallenge) {
-    return <div>Loading challenges...</div>;
-  }
-
-  const { correctSequence, correctWord, targetMeaning } = currentChallenge;
+  
+  const targetMeaning = currentChallenge?.targetMeaning;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <p className="text-center text-muted-foreground">Form the word for:</p>
-        <p className="text-center font-heading text-3xl font-bold text-primary">{targetMeaning}</p>
-      </div>
-      
-      <div className={constructionAreaClasses}>
-        {constructed.length > 0 ? (
-          constructed.map((m, i) => (
-             <Button
-                key={i}
-                variant="outline"
-                size="lg"
-                onClick={() => handleConstructionClick(m, i)}
-                className="text-lg font-bold bg-card shadow-sm cursor-pointer animate-in fade-in font-code"
-              >
-                {m}
-              </Button>
-          ))
+    <Card>
+      <CardHeader>
+        <CardTitle>Activity: Construct a Word</CardTitle>
+        <CardDescription>
+          {targetMeaning
+            ? `Use the morpheme tiles below to correctly form the word for "${targetMeaning}".`
+            : "Loading next word..."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!currentChallenge ? (
+          <div>Loading challenges...</div>
         ) : (
-          <p className="text-muted-foreground">Click tiles below to build the word</p>
+          <div className="space-y-8">
+            <div>
+              <p className="text-center text-muted-foreground">Form the word for:</p>
+              <p className="text-center font-heading text-3xl font-bold text-primary">{targetMeaning}</p>
+            </div>
+            
+            <div className={constructionAreaClasses}>
+              {constructed.length > 0 ? (
+                constructed.map((m, i) => (
+                   <Button
+                      key={i}
+                      variant="outline"
+                      size="lg"
+                      onClick={() => handleConstructionClick(m, i)}
+                      className="text-lg font-bold bg-card shadow-sm cursor-pointer animate-in fade-in font-code"
+                    >
+                      {m}
+                    </Button>
+                ))
+              ) : (
+                <p className="text-muted-foreground">Click tiles below to build the word</p>
+              )}
+            </div>
+
+            <Card className="p-6 bg-muted/50">
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                {availableMorphemes.map((m, i) => (
+                  <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
+                ))}
+              </div>
+            </Card>
+
+            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
+              <Button variant="outline" onClick={handleShuffleList}>
+                  <Shuffle className="mr-2" /> New Word Set
+              </Button>
+              <Button variant="outline" onClick={handleShuffleTiles}>
+                  <Shuffle className="mr-2" /> Shuffle Tiles
+              </Button>
+              <Button variant="outline" onClick={handleReset} disabled={constructed.length === 0}>
+                  <RefreshCw className="mr-2" /> Reset
+              </Button>
+              <Button onClick={handleCheck} disabled={constructed.length === 0 || feedback === 'correct'}>
+                  <CheckCircle className="mr-2" /> Check Answer
+              </Button>
+            </div>
+
+            {feedback && (
+              <div className="p-4 rounded-lg text-center animate-in fade-in zoom-in-95">
+                {feedback === 'correct' && (
+                  <div className="flex flex-col items-center gap-4 text-green-600">
+                      <ThumbsUp className="size-12"/>
+                      <p className="font-bold text-2xl">Zorionak! Correct!</p>
+                      <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md space-y-1">
+                          <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
+                          <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
+                      </div>
+                      <Button variant="default" className="mt-4" onClick={handleNext}>Next Word <Sparkles className="ml-2"/></Button>
+                  </div>
+                )}
+                {feedback === 'incorrect' && (
+                  <div className="flex flex-col items-center gap-2 text-destructive">
+                      <XCircle className="size-12"/>
+                      <p className="font-bold text-2xl">Not quite, try again!</p>
+                      <p>The order of morphemes is important.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )}
-      </div>
-
-      <Card className="p-6 bg-muted/50">
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          {availableMorphemes.map((m, i) => (
-            <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
-          ))}
-        </div>
-      </Card>
-
-      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-        <Button variant="outline" onClick={handleShuffleList}>
-            <Shuffle className="mr-2" /> New Word Set
-        </Button>
-        <Button variant="outline" onClick={handleShuffleTiles}>
-            <Shuffle className="mr-2" /> Shuffle Tiles
-        </Button>
-        <Button variant="outline" onClick={handleReset} disabled={constructed.length === 0}>
-            <RefreshCw className="mr-2" /> Reset
-        </Button>
-        <Button onClick={handleCheck} disabled={constructed.length === 0 || feedback === 'correct'}>
-            <CheckCircle className="mr-2" /> Check Answer
-        </Button>
-      </div>
-
-      {feedback && (
-        <div className="p-4 rounded-lg text-center animate-in fade-in zoom-in-95">
-          {feedback === 'correct' && (
-            <div className="flex flex-col items-center gap-4 text-green-600">
-                <ThumbsUp className="size-12"/>
-                <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md space-y-1">
-                    <p>You combined <span className="font-bold font-code">{correctSequence.join(' + ')}</span></p>
-                    <p>to form <span className="font-bold font-code text-lg">{correctWord}</span>.</p>
-                </div>
-                <Button variant="default" className="mt-4" onClick={handleNext}>Next Word <Sparkles className="ml-2"/></Button>
-            </div>
-          )}
-          {feedback === 'incorrect' && (
-            <div className="flex flex-col items-center gap-2 text-destructive">
-                <XCircle className="size-12"/>
-                <p className="font-bold text-2xl">Not quite, try again!</p>
-                <p>The order of morphemes is important.</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

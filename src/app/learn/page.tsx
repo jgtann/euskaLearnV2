@@ -1,4 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MorphemeConstructor } from "@/components/features/morpheme-constructor";
 
 export default function LearnPage() {
@@ -10,18 +9,7 @@ export default function LearnPage() {
           Combine tiles to construct Basque words and phrases.
         </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity: Construct a Word</CardTitle>
-          <CardDescription>
-            Use the morpheme tiles below to correctly form the word for "the dog (subject)".
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <MorphemeConstructor />
-        </CardContent>
-      </Card>
+      <MorphemeConstructor />
     </div>
   );
 }
