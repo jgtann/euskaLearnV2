@@ -1,11 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { vocabulary, type Word } from '@/lib/vocabulary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shuffle } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Shuffle, Volume2, Loader2 } from 'lucide-react';
+import { getSpeech } from '@/app/actions/speech';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const groupWords = (words: Word[]) => {
   return words.reduce((acc, word) => {
@@ -29,16 +34,24 @@ const groupVerbsByTense = (verbs: Word[]) => {
     }, {} as Record<string, Word[]>);
 }
 
-const WordCard = ({ word }: { word: Word }) => (
-  <Card className="flex flex-col">
-    <CardHeader className="flex-row items-center justify-between pb-2">
-      <CardTitle className="text-lg font-bold font-code">{word.basque}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-muted-foreground">{word.english}</p>
-    </CardContent>
-  </Card>
-);
+const WordCard = ({ word, onClick, isPlaying }: { word: Word, onClick: (text: string) => void, isPlaying: boolean }) => (
+    <Card 
+      onClick={() => word.category !== 'suffix' && onClick(word.basque)} 
+      className={cn("flex flex-col", word.category !== 'suffix' && "cursor-pointer hover:bg-accent/50")}
+    >
+      <CardHeader className="flex-row items-center justify-between pb-2">
+        <CardTitle className="text-lg font-bold font-code">{word.basque}</CardTitle>
+         {word.category !== 'suffix' && (
+           <div className="flex size-6 items-center justify-center">
+              {isPlaying ? <Loader2 className="animate-spin text-primary" /> : <Volume2 className="text-muted-foreground" />}
+           </div>
+         )}
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">{word.english}</p>
+      </CardContent>
+    </Card>
+  );
 
 const categoryOrder: Word['category'][] = [
   'noun',
@@ -48,17 +61,56 @@ const categoryOrder: Word['category'][] = [
   'adjective',
   'adverb',
   'conjunction',
-  'preposition',
   'suffix',
+  'preposition',
 ];
 
 export function VocabularyList() {
   const [words, setWords] = useState<Word[]>([...vocabulary]);
+  const [voice, setVoice] = useState<'female' | 'male'>('female');
+  const [playingWord, setPlayingWord] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const handleShuffle = () => {
     setWords(currentWords => [...currentWords].sort(() => Math.random() - 0.5));
   };
   
+  const handleWordClick = (basqueWord: string) => {
+    if (isPending) return;
+
+    setPlayingWord(basqueWord);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append('text', basqueWord);
+      formData.append('voice', voice);
+
+      const response = await getSpeech(null, formData);
+      if (response.error) {
+        toast({
+          variant: "destructive",
+          title: "Speech Synthesis Error",
+          description: response.error,
+        });
+        setPlayingWord(null);
+      } else if (response.data) {
+        const audio = new Audio(response.data.audioDataUri);
+        audio.play();
+        audio.onended = () => setPlayingWord(null);
+        audio.onerror = () => {
+            toast({
+                variant: "destructive",
+                title: "Audio Error",
+                description: "Could not play the audio file.",
+            });
+            setPlayingWord(null);
+        }
+      } else {
+        setPlayingWord(null);
+      }
+    });
+  }
+
   const groupedWords = useMemo(() => groupWords(words), [words]);
   
   const categories = useMemo(() => {
@@ -77,7 +129,18 @@ export function VocabularyList() {
 
   return (
     <>
-      <div className="flex justify-end mb-4">
+      <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
+        <RadioGroup value={voice} onValueChange={(v) => setVoice(v as any)} className="flex items-center gap-4">
+            <Label className="font-semibold">Voice:</Label>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="female" id="female" />
+              <Label htmlFor="female">Female</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="male" id="male" />
+              <Label htmlFor="male">Male</Label>
+            </div>
+        </RadioGroup>
         <Button onClick={handleShuffle} variant="outline">
             <Shuffle className="mr-2" />
             Reshuffle Words
@@ -103,7 +166,7 @@ export function VocabularyList() {
                       <TabsContent key={tense} value={tense} className="mt-6">
                           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                               {(verbsByTense[tense] || []).map((word) => (
-                                  <WordCard key={word.basque} word={word} />
+                                  <WordCard key={word.basque} word={word} onClick={handleWordClick} isPlaying={playingWord === word.basque} />
                               ))}
                           </div>
                       </TabsContent>
@@ -112,7 +175,7 @@ export function VocabularyList() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {(groupedWords[category] || []).map((word) => (
-                      <WordCard key={word.basque} word={word} />
+                      <WordCard key={word.basque} word={word} onClick={handleWordClick} isPlaying={playingWord === word.basque} />
                   ))}
               </div>
             )}
