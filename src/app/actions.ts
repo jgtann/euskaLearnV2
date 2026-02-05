@@ -30,25 +30,13 @@ export async function getTranslation(prevState: any, formData: FormData) {
   }
 }
 
-export async function getErrorAnalysis() {
-  // Mock user data as per the prompt's context
-  const mockUserData = `
-    Attempted: "Txakurrak korrika egiten du", Correct: "Txakurrak korrika egiten du"
-    Attempted: "Nire anaiaK etorri da", Correct: "Nire anaia etorri da" (Error: Unnecessary Ergative -k)
-    Attempted: "MutilaRI liburua eman nion", Correct: "Mutilari liburua eman nion"
-    Attempted: "KatuAK sagua jan du", Correct: "Katuak sagua jan du"
-    Attempted: "LagunaK opari bat ekarri dit", Correct: "Lagunak opari bat ekarri dit" (Error: Unnecessary Ergative -k on intransitive)
-    Attempted: "IkasleARI galdera bat egin diot", Correct: "Ikasleari galdera bat egin diot"
-    Attempted: "GizonAK autoa erosi du", Correct: "Gizonak autoa erosi du"
-    Attempted: "Zuk erantzun du", Correct: "Zuk erantzun duzu" (Verb conjugation error)
-    Attempted: "EmakumeAK sagarrak jaten ditu", Correct: "Emakumeak sagarrak jaten ditu"
-    Attempted: "Nire lagunARI deitu nion", Correct: "Nire lagunari deitu nion"
-    Attempted: "Medikuak gaixoa sendatu du", Correct: "Medikuak gaixoa sendatu du"
-    Attempted: "IrakasleaK liburuak irakurtzen ditu", Correct: "Irakasleak liburuak irakurtzen ditu"
-  `;
-
+export async function getErrorAnalysis(userData: string) {
+  if (!userData) {
+    return { error: 'No user data provided for analysis.' };
+  }
+  
   try {
-    const result = await analyzeErrors({ userData: mockUserData });
+    const result = await analyzeErrors({ userData: userData });
     return { data: result };
   } catch (error) {
     console.error(error);

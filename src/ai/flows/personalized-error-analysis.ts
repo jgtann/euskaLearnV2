@@ -14,17 +14,17 @@ import {z} from 'genkit';
 const AnalyzeErrorsInputSchema = z.object({
   userData: z
     .string()
-    .describe("User's learning data, including attempted words and correctness."),
+    .describe("User's learning data, including items and their correct/incorrect counts."),
 });
 export type AnalyzeErrorsInput = z.infer<typeof AnalyzeErrorsInputSchema>;
 
 const AnalyzeErrorsOutputSchema = z.object({
   identifiedMorphemes: z
     .string()
-    .describe('The morphemes that the user struggles with the most.'),
+    .describe('The morphemes that the user seems to struggle with the most, based on inference.'),
   errorHeatmap: z
     .string()
-    .describe('A description of the most common errors made by the user.'),
+    .describe('A summary of the most common inferred error patterns made by the user.'),
 });
 export type AnalyzeErrorsOutput = z.infer<typeof AnalyzeErrorsOutputSchema>;
 
@@ -37,12 +37,13 @@ const prompt = ai.definePrompt({
   input: {schema: AnalyzeErrorsInputSchema},
   output: {schema: AnalyzeErrorsOutputSchema},
   prompt: `You are an expert language learning assistant specializing in Basque.
+Analyze the following user learning data to identify which morphemes the user struggles with the most.
+The data provides a list of Basque words/phrases and the user's correct/incorrect counts for them.
+From this, infer common error patterns. Focus especially on identifying confusion between cases like Ergative *-k* and Dative *-ri*.
+Create an "error heatmap" summarizing these patterns.
 
-You will use this user data to identify the morphemes the user struggles with the most, creating an error heatmap of the most common errors. Focus on Ergative *-k* vs. Dative *-ri*.
-
-Use the following as the primary source of information about the user.
-
-User Data: {{{userData}}}`,
+User Data:
+{{{userData}}}`,
 });
 
 const analyzeErrorsFlow = ai.defineFlow(
