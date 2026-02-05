@@ -1,0 +1,57 @@
+{
+  "words": [
+    { "basque": "etxe", "english": "house", "category": "noun" },
+    { "basque": "gizon", "english": "man", "category": "noun" },
+    { "basque": "emakume", "english": "woman", "category": "noun" },
+    { "basque": "txakur", "english": "dog", "category": "noun" },
+    { "basque": "liburu", "english": "book", "category": "noun" },
+    { "basque": "mahai", "english": "table", "category": "noun" },
+    { "basque": "hiri", "english": "city", "category": "noun" },
+    { "basque": "ur", "english": "water", "category": "noun" },
+    { "basque": "argi", "english": "light", "category": "noun" },
+    { "basque": "lan", "english": "work", "category": "noun" },
+
+    { "basque": "izan", "english": "to be", "category": "verb", "tense": "infinitive" },
+    { "basque": "ukan", "english": "to have", "category": "verb", "tense": "infinitive" },
+    { "basque": "egin", "english": "to do/make", "category": "verb", "tense": "infinitive" },
+    { "basque": "joan", "english": "to go", "category": "verb", "tense": "infinitive" },
+    { "basque": "etorri", "english": "to come", "category": "verb", "tense": "infinitive" },
+    { "basque": "ikusi", "english": "to see", "category": "verb", "tense": "infinitive" },
+    { "basque": "naiz", "english": "I am", "category": "verb", "tense": "present" },
+    { "basque": "dut", "english": "I have it", "category": "verb", "tense": "present" },
+    { "basque": "da", "english": "he/she/it is", "category": "verb", "tense": "present" },
+    { "basque": "nintzen", "english": "I was", "category": "verb", "tense": "past" },
+    { "basque": "nuen", "english": "I had it", "category": "verb", "tense": "past" },
+    { "basque": "zen", "english": "he/she/it was", "category": "verb", "tense": "past" },
+    { "basque": "izango naiz", "english": "I will be", "category": "verb", "tense": "future" },
+    { "basque": "izango dut", "english": "I will have it", "category": "verb", "tense": "future" },
+    { "basque": "izango da", "english": "he/she/it will be", "category": "verb", "tense": "future" },
+
+    { "basque": "handi", "english": "big", "category": "adjective" },
+    { "basque": "txiki", "english": "small", "category": "adjective" },
+    { "basque": "on", "english": "good", "category": "adjective" },
+    { "basque": "txar", "english": "bad", "category": "adjective" },
+    { "basque": "eder", "english": "beautiful", "category": "adjective" },
+    { "basque": "berri", "english": "new", "category": "adjective" },
+    { "basque": "zahar", "english": "old", "category": "adjective" },
+
+    { "basque": "ondo", "english": "well", "category": "adverb" },
+    { "basque": "gaizki", "english": "badly", "category": "adverb" },
+    { "basque": "poliki", "english": "slowly", "category": "adverb" },
+    { "basque": "azkar", "english": "quickly", "category": "adverb" },
+    { "basque": "hemen", "english": "here", "category": "adverb" },
+    { "basque": "hor", "english": "there", "category": "adverb" },
+    { "basque": "gaur", "english": "today", "category": "adverb" },
+
+    { "basque": "eta", "english": "and", "category": "conjunction" },
+    { "basque": "baina", "english": "but", "category": "conjunction" },
+    { "basque": "edo", "english": "or", "category": "conjunction" },
+    
+    { "basque": "-a", "english": "the (singular)", "category": "suffix" },
+    { "basque": "-ak", "english": "the (plural)", "category": "suffix" },
+    { "basque": "-k", "english": "ergative (subject)", "category": "suffix" },
+    { "basque": "-n", "english": "in/on/at", "category": "suffix" },
+    { "basque": "-ra", "english": "to(wards)", "category": "suffix" },
+    { "basque": "-tik", "english": "from", "category": "suffix" }
+  ]
+}

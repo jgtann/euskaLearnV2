@@ -16,13 +16,14 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut, User } from 'lucide-react';
+import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut, User, NotebookText } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '../ui/button';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/learn', label: 'Learn', icon: BookOpen },
+  { href: '/vocabulary', label: 'Vocabulary', icon: NotebookText },
   { href: '/translate', label: 'Translate', icon: Languages },
   { href: '/progress', label: 'Progress', icon: BarChart },
   { href: '/introduction', label: 'Self-Intro', icon: User },
