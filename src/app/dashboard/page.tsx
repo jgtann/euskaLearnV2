@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Card,
@@ -7,14 +9,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Languages, BarChart, ShieldAlert, User } from "lucide-react";
+import { ArrowRight, BookOpen, Languages, BarChart, ShieldAlert, User, NotebookText } from "lucide-react";
+import { useUser } from '@/firebase';
 
-// Mock user data to demonstrate the "Rescue Mission" feature
-const mockUser = {
-  name: "Alex",
-  streak: 12,
+// Mock mission data to demonstrate the "Rescue Mission" feature
+const mockMission = {
   current_mission: "rescue", // or 'active'
 };
+
 
 const features = [
   {
@@ -22,6 +24,12 @@ const features = [
     description: "Construct words with interactive morpheme tiles.",
     href: "/learn",
     icon: <BookOpen className="size-8 text-primary" />,
+  },
+    {
+    title: "Vocabulary",
+    description: "Explore and listen to common Basque words.",
+    href: "/vocabulary",
+    icon: <NotebookText className="size-8 text-primary" />,
   },
   {
     title: "Translate",
@@ -44,14 +52,16 @@ const features = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useUser();
+
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="font-heading text-4xl font-bold text-foreground">Welcome back, {mockUser.name}!</h1>
+        <h1 className="font-heading text-4xl font-bold text-foreground">Welcome back, {user?.displayName || 'learner'}!</h1>
         <p className="text-muted-foreground mt-2 text-lg">Let's continue your Basque learning journey.</p>
       </div>
 
-      {mockUser.current_mission === "rescue" && (
+      {mockMission.current_mission === "rescue" && (
         <Card className="bg-primary/10 border-primary/50">
           <CardHeader className="flex flex-row items-start gap-4 space-y-0">
             <div className="p-3 bg-primary/20 rounded-full">

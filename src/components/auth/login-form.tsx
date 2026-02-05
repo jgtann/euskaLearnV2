@@ -1,55 +1,64 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
-import { login } from "@/app/auth/actions";
+import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
-const initialState = {
-  data: null,
-  error: null,
-};
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending && <Loader2 className="mr-2 animate-spin" />}
-      Login
-    </Button>
-  );
-}
+import { useAuth } from "@/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(login, initialState);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useAuth();
 
-  useEffect(() => {
-    if (state.error) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    if (!email || !password) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: state.error,
+        description: "Email and password are required.",
       });
+      setIsLoading(false);
+      return;
     }
-    if (state.data) {
-        toast({
-            title: "Login Success",
-            description: state.data,
-        });
-        // On successful login, redirect to the dashboard
-        router.push('/dashboard');
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({
+        title: "Login Success",
+        description: "Welcome back!",
+      });
+      // The redirect is handled by the AppLayout component
+    } catch (error: any) {
+      const errorCode = error.code;
+      let errorMessage = error.message;
+      if (errorCode === 'auth/invalid-credential') {
+          errorMessage = "Invalid email or password. Please try again.";
+      }
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [state, toast, router]);
+  };
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
        <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" placeholder="name@example.com" required />
@@ -58,7 +67,10 @@ export function LoginForm() {
         <Label htmlFor="password">Password</Label>
         <Input id="password" name="password" type="password" placeholder="********" required />
       </div>
-      <SubmitButton />
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading && <Loader2 className="mr-2 animate-spin" />}
+        Login
+      </Button>
     </form>
   );
 }

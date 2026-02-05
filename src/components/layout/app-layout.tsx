@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -16,9 +16,12 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut, User, NotebookText } from 'lucide-react';
+import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut, User, NotebookText, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '../ui/button';
+import { useAuth, useUser } from '@/firebase';
+import { useEffect } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -33,14 +36,34 @@ const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar-1');
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+
   const publicPages = ['/', '/login', '/register'];
   const isPublicPage = publicPages.includes(pathname);
+
+  useEffect(() => {
+    if (isUserLoading) return; // Wait until user state is loaded
+
+    if (!user && !isPublicPage) {
+      router.push('/login');
+    }
+    if (user && isPublicPage) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, isPublicPage, pathname, router]);
 
   const getPageTitle = () => {
     if (pathname === '/dashboard') return 'Dashboard';
     const currentNav = navItems.find(item => item.href === pathname);
     return currentNav ? currentNav.label : '';
   }
+  
+  const handleLogout = () => {
+    auth.signOut();
+    router.push('/login');
+  };
 
   if (isPublicPage) {
     return (
@@ -72,6 +95,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </footer>
       </div>
+    );
+  }
+  
+  if (isUserLoading || (!user && !isPublicPage)) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <Loader2 className="animate-spin text-primary size-12" />
+        </div>
     );
   }
 
@@ -120,19 +151,33 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
             </SidebarMenu>
            <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent">
-                {userAvatar && (
+                {user ? (
+                   <>
                     <Avatar className="size-10 border-2 border-primary">
-                        <Image src={userAvatar.imageUrl} alt={userAvatar.description} data-ai-hint={userAvatar.imageHint} width={40} height={40} />
-                        <AvatarFallback>A</AvatarFallback>
+                        {user.photoURL ? (
+                            <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
+                        ) : (
+                           userAvatar && <Image src={userAvatar.imageUrl} alt={userAvatar.description} data-ai-hint={userAvatar.imageHint} width={40} height={40} />
+                        )}
+                        <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
+                    <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
+                        <p className="font-semibold text-sm truncate">{user.displayName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="group-data-[collapsible=icon]:hidden" onClick={handleLogout}>
+                        <LogOut className="size-4" />
+                    </Button>
+                   </>
+                ) : (
+                    <>
+                        <Skeleton className="size-10 rounded-full" />
+                        <div className="flex-1 space-y-2 group-data-[collapsible=icon]:hidden">
+                             <Skeleton className="h-4 w-20" />
+                             <Skeleton className="h-3 w-28" />
+                        </div>
+                    </>
                 )}
-                <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
-                    <p className="font-semibold text-sm truncate">Alex</p>
-                    <p className="text-xs text-muted-foreground truncate">alex@example.com</p>
-                </div>
-                <Button variant="ghost" size="icon" className="group-data-[collapsible=icon]:hidden">
-                    <LogOut className="size-4" />
-                </Button>
            </div>
         </SidebarFooter>
       </Sidebar>
