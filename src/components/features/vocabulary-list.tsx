@@ -32,7 +32,7 @@ const WordCard = ({ word }: { word: Word }) => (
   <Card className="flex flex-col">
     <CardHeader className="flex-row items-center justify-between pb-2">
       <CardTitle className="text-lg font-bold font-code">{word.basque}</CardTitle>
-      <AudioPlayer text={word.basque} />
+      {word.category !== 'suffix' && <AudioPlayer text={word.basque} />}
     </CardHeader>
     <CardContent>
       <p className="text-muted-foreground">{word.english}</p>
