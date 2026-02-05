@@ -117,11 +117,19 @@ const MorphemeTile = ({ morpheme, onClick, disabled }) => (
 );
 
 export function MorphemeConstructor() {
-  const [shuffledChallenges, setShuffledChallenges] = useState(() => [...challenges].sort(() => Math.random() - 0.5));
+  // To fix the hydration error, we must ensure the initial state on the server
+  // and the client is identical. We do this by avoiding Math.random() during initialization.
+  const [shuffledChallenges, setShuffledChallenges] = useState(() => challenges);
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [shuffledMorphemes, setShuffledMorphemes] = useState<string[]>([]);
+
+  // All random shuffling is deferred to useEffect, which runs only on the client side.
+  useEffect(() => {
+    // This runs once on mount to shuffle the initial list of challenges.
+    setShuffledChallenges([...challenges].sort(() => Math.random() - 0.5));
+  }, []);
 
   const currentChallenge = shuffledChallenges[challengeIndex];
 
@@ -130,6 +138,8 @@ export function MorphemeConstructor() {
     setFeedback(null);
   }, []);
 
+  // This effect shuffles morphemes for the current challenge.
+  // It runs on the client after the initial shuffle and whenever the challenge changes.
   useEffect(() => {
     if (currentChallenge) {
       setShuffledMorphemes([...currentChallenge.initialMorphemes].sort(() => Math.random() - 0.5));
