@@ -89,15 +89,16 @@ export async function getIntroduction(prevState: any, formData: FormData) {
 
 const ttsSchema = z.object({
   text: z.string().min(1),
+  gender: z.enum(['male', 'female']),
 });
 
-export async function getSpeech(text: string) {
-    const validatedFields = ttsSchema.safeParse({ text });
+export async function getSpeech(text: string, gender: 'male' | 'female' = 'male') {
+    const validatedFields = ttsSchema.safeParse({ text, gender });
     if (!validatedFields.success) {
-        return { error: "No text provided to synthesize." };
+        return { error: "Invalid input for speech synthesis." };
     }
     try {
-        const result = await textToSpeech({ text: validatedFields.data.text });
+        const result = await textToSpeech({ text: validatedFields.data.text, gender: validatedFields.data.gender });
         return { data: result };
     } catch (error) {
         console.error(error);

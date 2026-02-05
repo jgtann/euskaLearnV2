@@ -14,6 +14,7 @@ import {googleAI} from '@genkit-ai/google-genai';
 
 const TextToSpeechInputSchema = z.object({
   text: z.string().describe('The text to convert to speech.'),
+  gender: z.enum(['male', 'female']).default('male').describe('The desired voice gender.'),
 });
 export type TextToSpeechInput = z.infer<typeof TextToSpeechInputSchema>;
 
@@ -59,14 +60,15 @@ const textToSpeechFlow = ai.defineFlow(
     inputSchema: TextToSpeechInputSchema,
     outputSchema: TextToSpeechOutputSchema,
   },
-  async ({ text }) => {
+  async ({ text, gender }) => {
+    const voiceName = gender === 'female' ? 'Achernar' : 'Algenib';
     const { media } = await ai.generate({
         model: googleAI.model('gemini-2.5-flash-preview-tts'),
         config: {
             responseModalities: ['AUDIO'],
             speechConfig: {
                 voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName: 'Algenib' },
+                    prebuiltVoiceConfig: { voiceName },
                 },
             },
         },
