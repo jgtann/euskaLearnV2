@@ -46,7 +46,7 @@ export function VocabularyList() {
 
   return (
     <Tabs defaultValue={categories[0]} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-4">
+      <TabsList className="mb-4 h-auto flex-wrap justify-start">
         {categories.map((category) => (
           <TabsTrigger key={category} value={category} className="capitalize">{category}</TabsTrigger>
         ))}
