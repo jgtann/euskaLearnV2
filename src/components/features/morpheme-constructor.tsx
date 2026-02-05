@@ -148,7 +148,6 @@ export function MorphemeConstructor() {
   }, [currentChallenge, resetBoard]);
 
   const availableMorphemes = useMemo(() => {
-    // This logic is a bit flawed if morphemes can be repeated, but for these challenges it's fine.
     const constructedCopy = [...constructed];
     return shuffledMorphemes.filter(m => {
       const index = constructedCopy.indexOf(m);
