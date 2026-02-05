@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle } from 'lucide-react';
-import { AudioPlayer } from './audio-player';
 
 const initialMorphemes = ['-a', 'txakur', '-k'];
 const correctSequence = ['txakur', '-a', '-k'];
@@ -113,10 +112,6 @@ export function MorphemeConstructor() {
                 <div className="text-center text-foreground/90 bg-green-500/10 p-3 rounded-md">
                     <p>You combined <span className="font-bold font-code">{correctSequence.join(' + ')}</span></p>
                     <p>to form <span className="font-bold font-code">{correctWord}</span>.</p>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                    <p className="text-muted-foreground">Listen:</p>
-                    <AudioPlayer text={correctWord} />
                 </div>
                 <Button variant="default" className="mt-4">Next Word <Sparkles className="ml-2"/></Button>
             </div>

@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { vocabulary, type Word } from '@/lib/vocabulary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AudioPlayer } from './audio-player';
 
 const groupWords = (words: Word[]) => {
   return words.reduce((acc, word) => {
@@ -32,7 +31,6 @@ const WordCard = ({ word }: { word: Word }) => (
   <Card className="flex flex-col">
     <CardHeader className="flex-row items-center justify-between pb-2">
       <CardTitle className="text-lg font-bold font-code">{word.basque}</CardTitle>
-      {word.category !== 'suffix' && <AudioPlayer text={word.basque} />}
     </CardHeader>
     <CardContent>
       <p className="text-muted-foreground">{word.english}</p>

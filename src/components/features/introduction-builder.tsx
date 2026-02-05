@@ -10,7 +10,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Sparkles, User, BookText, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { AudioPlayer } from './audio-player';
 
 const initialState = {
   data: null,
@@ -105,7 +104,6 @@ export function IntroductionBuilder() {
                     <User className="text-primary" />
                     Your Basque Introduction
                 </div>
-                <AudioPlayer text={state.data.introduction} />
               </CardTitle>
             </CardHeader>
             <CardContent>

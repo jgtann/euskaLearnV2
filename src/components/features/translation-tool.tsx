@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Sparkles, FileText, Languages, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { AudioPlayer } from './audio-player';
 
 const initialState = {
   data: null,
@@ -84,7 +83,6 @@ export function TranslationTool() {
                     <Languages className="text-primary" />
                     Basque Translation
                 </div>
-                <AudioPlayer text={state.data.basqueTranslation} />
               </CardTitle>
             </CardHeader>
             <CardContent>
