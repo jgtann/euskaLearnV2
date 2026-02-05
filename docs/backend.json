@@ -1,0 +1,202 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Euskal Sustatzailea app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "lastLogin": {
+          "type": "number",
+          "description": "Timestamp of the user's last login."
+        },
+        "status": {
+          "type": "string",
+          "description": "User's status (e.g., 'active', 'inactive')."
+        },
+        "currentMission": {
+          "type": "string",
+          "description": "The user's current mission (e.g., 'rescue', null)."
+        },
+        "missionDifficulty": {
+          "type": "string",
+          "description": "Difficulty level of the current mission (e.g., 'low', 'medium', 'high')."
+        },
+        "rescueReward": {
+          "type": "string",
+          "description": "Reward for completing the rescue mission (e.g., 'streak_shield')."
+        },
+        "name": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "city": {
+          "type": "string",
+          "description": "User's city."
+        },
+        "family": {
+          "type": "string",
+          "description": "User's family details."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "lastLogin",
+        "status"
+      ]
+    },
+    "LearningItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LearningItem",
+      "type": "object",
+      "description": "Represents a learning item or exercise within the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LearningItem entity."
+        },
+        "englishText": {
+          "type": "string",
+          "description": "The English text of the learning item."
+        },
+        "basqueText": {
+          "type": "string",
+          "description": "The Basque translation of the learning item."
+        },
+        "difficulty": {
+          "type": "string",
+          "description": "Difficulty level of the learning item (e.g., 'easy', 'medium', 'hard')."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of learning item (e.g., 'vocabulary', 'grammar')."
+        }
+      },
+      "required": [
+        "id",
+        "englishText",
+        "basqueText",
+        "difficulty",
+        "type"
+      ]
+    },
+    "UserLearningItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserLearningItem",
+      "type": "object",
+      "description": "Represents the relationship between a user and a learning item, tracking progress and SRS data.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserLearningItem entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N UserLearningItem)"
+        },
+        "learningItemId": {
+          "type": "string",
+          "description": "Reference to LearningItem. (Relationship: LearningItem 1:N UserLearningItem)"
+        },
+        "lastReviewed": {
+          "type": "number",
+          "description": "Timestamp of the last time the user reviewed this learning item."
+        },
+        "nextReview": {
+          "type": "number",
+          "description": "Timestamp for the next scheduled review of this learning item."
+        },
+        "correctCount": {
+          "type": "number",
+          "description": "Number of times the user answered correctly for this item."
+        },
+        "incorrectCount": {
+          "type": "number",
+          "description": "Number of times the user answered incorrectly for this item."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "learningItemId",
+        "lastReviewed",
+        "nextReview",
+        "correctCount",
+        "incorrectCount"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Only the authenticated user can read/write their data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/learning_items/{learningItemId}",
+        "definition": {
+          "entityName": "LearningItem",
+          "schema": {
+            "$ref": "#/backend/entities/LearningItem"
+          },
+          "description": "Stores all learning items available in the application.",
+          "params": [
+            {
+              "name": "learningItemId",
+              "description": "The unique identifier of the learning item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/user_learning_items/{userLearningItemId}",
+        "definition": {
+          "entityName": "UserLearningItem",
+          "schema": {
+            "$ref": "#/backend/entities/UserLearningItem"
+          },
+          "description": "Stores user-specific learning item data. Only the user can access their own data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "userLearningItemId",
+              "description": "The unique identifier of the user learning item."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the Euskal Sustatzailea application, focusing on user data, learning items, and the relationships between them. Key considerations include authorization independence, clarity, and scalability.\n\n1.  **Users Collection (`/users/{userId}`):** Stores user profiles. This collection utilizes path-based ownership. Only the authenticated user (`request.auth.uid`) can read/write their document.\n\n2.  **Learning Items Collection (`/learning_items/{learningItemId}`):** Stores learning items. All items share the same security posture, simplifying rules.\n\n3.  **User Learning Items Collection (`/users/{userId}/user_learning_items/{userLearningItemId}`):** This subcollection represents the relationship between users and learning items. It uses path-based ownership: only the user (`request.auth.uid`) matching `{userId}` can access data within their path.\n\nThis structure enables simple, robust security rules that are easy to debug. The design promotes authorization independence via path-based ownership. The segregation of public learning items from private user data simplifies security rules and supports secure `list` operations (QAPs)."
+  }
+}
