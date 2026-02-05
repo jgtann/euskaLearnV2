@@ -1,5 +1,5 @@
 import { TranslationTool } from "@/components/features/translation-tool";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Languages } from "lucide-react";
 
 export default function TranslatePage() {
