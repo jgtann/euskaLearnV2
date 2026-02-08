@@ -7,7 +7,8 @@
  * - SynthesizeSpeechOutput - The return type for the synthesizeSpeech function.
  */
 
-import {ai, googleAI} from '@/ai/genkit';
+import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const SynthesizeSpeechInputSchema = z.object({
