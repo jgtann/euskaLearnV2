@@ -228,7 +228,7 @@ export function MorphemeConstructor() {
             <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2">
                <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Result:</span>
                <span className="text-2xl font-code font-bold text-basque-green bg-white px-4 py-1 rounded-lg border shadow-sm">
-                  {constructed.join('').replace(/-/g, '')}
+                  {constructed.join('').replace(/-/g, '').replace(/aak$/, 'ak')}
                </span>
             </div>
           )}
