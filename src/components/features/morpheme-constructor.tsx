@@ -67,19 +67,29 @@ const challenges = [
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
 
+  // Rule: Vowel merge for dative case (a + a + ri -> ari)
+  // e.g., ama + -a + -ri -> amari
+  if (word.endsWith('aari')) {
+    word = word.slice(0, -3) + 'ri';
+  }
+
+  // Rule: Intervocalic 'r' insertion
   if (word.endsWith('aekin')) {
     word = word.slice(0, -4) + 'arekin';
   }
 
+  // Rule: Vowel merge for plural absolutive (a + ak -> ak)
   if (word.endsWith('aak')) {
     word = word.slice(0, -3) + 'ak';
   }
 
+  // Rule: R-Doubling for roots ending in 'r'
   const rDoublingRegex = /(ur|ar)a([knr])/;
   if (rDoublingRegex.test(word)) {
     word = word.replace(/(ur|ar)a([knr])/, '$1ra$2');
   }
   
+  // Rule: Plural Ergative (ak + k -> ek)
   if (word.endsWith('akk')) {
       word = word.slice(0, -3) + 'ek';
   }
