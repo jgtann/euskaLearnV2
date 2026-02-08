@@ -6,6 +6,7 @@ import { translateAndExplain } from '@/ai/flows/ai-powered-translanguaging';
 import { buildIntroduction } from '@/ai/flows/self-introduction-flow';
 import { getEncouragement as getEncouragementFlow } from '@/ai/flows/encouragement-flow';
 import { getSentenceExamples } from '@/ai/flows/sentence-examples-flow';
+import { explainSentenceGrammar } from '@/ai/flows/explain-sentence-grammar-flow';
 import { z } from 'zod';
 
 const translateSchema = z.object({
@@ -113,5 +114,31 @@ export async function getSentenceExamplesAction(prevState: any, formData: FormDa
     } catch (error: any) {
         console.error('Sentence Example Error:', error);
         return { error: `Failed to generate sentence examples. Details: ${error.message}` };
+    }
+}
+
+const explainGrammarSchema = z.object({
+  basqueSentence: z.string(),
+  englishSentence: z.string(),
+});
+
+export async function getGrammarExplanationAction(prevState: any, formData: FormData) {
+    const validatedFields = explainGrammarSchema.safeParse({
+        basqueSentence: formData.get('basqueSentence'),
+        englishSentence: formData.get('englishSentence'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            error: "Invalid input provided for grammar explanation."
+        };
+    }
+
+    try {
+        const result = await explainSentenceGrammar(validatedFields.data);
+        return { data: result };
+    } catch (error: any) {
+        console.error('Grammar Explanation Error:', error);
+        return { error: `Failed to generate grammar explanation. Details: ${error.message}` };
     }
 }
