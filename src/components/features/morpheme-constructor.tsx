@@ -111,18 +111,21 @@ const getDisplayWord = (morphemes: string[]): string => {
   } else if (word.endsWith('aari')) {
     // Rule: Dative Vowel Merger (a + a + ri -> ari)
     word = word.replace(/aari$/, 'ari');
-  } else if (word.endsWith('aara')) {
-    // Rule: Allative merger for roots ending in 'a' (e.g. neska + a + ra -> neskara)
-    word = word.replace(/aara$/, 'ara');
   } else if (word.match(/[eiou]ara$/)) {
     // Rule: Allative merger for other vowels (e.g. hiri + a + ra -> hirira)
     word = word.slice(0, -3) + word.slice(-2);
+  } else if (word.endsWith('aara')) {
+    // Rule: Allative merger for roots ending in 'a' (e.g. neska + a + ra -> neskara)
+    word = word.replace(/aara$/, 'ara');
   } else if (word.endsWith('aak')) {
     // Rule: Vowel merge for plural absolutive (a + ak -> ak)
     word = word.replace(/aak$/, 'ak');
   } else if (word.endsWith('aan')) {
     // Rule: Vowel merge for inessive (a + a + n -> an) e.g., eskolaan -> eskolan
     word = word.replace(/aan$/, 'an');
+  } else if (word.endsWith('aatik')) {
+    // Rule: Vowel merge for ablative (a + a + tik -> atik) e.g., eskolaatik -> eskolatik
+    word = word.replace(/aatik$/, 'atik');
   } else if (word.endsWith('aa')) {
     // Rule: General merger for root ending in 'a' + article '-a'
     // e.g., galdera + a -> galdera
