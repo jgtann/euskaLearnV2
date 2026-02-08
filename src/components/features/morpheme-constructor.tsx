@@ -64,39 +64,6 @@ const challenges = [
   { initialMorphemes: ['-z', 'auto'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car' },
 ];
 
-const getDisplayWord = (morphemes: string[]): string => {
-  let word = morphemes.join('').replace(/-/g, '');
-
-  // Rule: Dative Vowel Merger (a + a + ri -> ari)
-  if (word.endsWith('aari')) {
-    word = word.slice(0, -3) + 'ri';
-  }
-  
-  // Rule: Plural Ergative (ak + k -> ek)
-  if (word.endsWith('akk')) {
-      word = word.slice(0, -3) + 'ek';
-  }
-
-  // Rule: Intervocalic 'r' insertion
-  if (word.endsWith('aekin')) {
-    word = word.slice(0, -4) + 'arekin';
-  }
-
-  // Rule: Vowel merge for plural absolutive (a + ak -> ak)
-  if (word.endsWith('aak')) {
-    word = word.slice(0, -3) + 'ak';
-  }
-
-  // Rule: R-Doubling for roots ending in 'r'
-  const rDoublingRegex = /(ur|ar)a([knr])/;
-  if (rDoublingRegex.test(word)) {
-    word = word.replace(/(ur|ar)a([knr])/, '$1ra$2');
-  }
-
-  return word;
-};
-
-
 const MorphemeTile = ({
   morpheme,
   onClick,
@@ -125,6 +92,34 @@ const MorphemeTile = ({
   </Button>
 );
 
+const getDisplayWord = (morphemes: string[]): string => {
+  let word = morphemes.join('').replace(/-/g, '');
+
+  // This function now uses an if/else if structure to prevent cascading rule application.
+  // The order is from most specific to least specific to ensure correctness.
+  
+  const rDoublingRegex = /(ur|ar)a([knr])/;
+  if (rDoublingRegex.test(word)) {
+    // Rule: R-Doubling for roots ending in 'r' (e.g. txakur + a + k -> txakurrak)
+    word = word.replace(rDoublingRegex, '$1ra$2');
+  } else if (word.endsWith('akk')) {
+    // Rule: Plural Ergative (ak + k -> ek)
+    word = word.slice(0, -3) + 'ek';
+  } else if (word.endsWith('aekin')) {
+    // Rule: Intervocalic 'r' insertion (a + ekin -> arekin)
+    word = word.slice(0, -4) + 'arekin';
+  } else if (word.endsWith('aari')) {
+    // Rule: Dative Vowel Merger (a + a + ri -> ari)
+    word = word.slice(0, -3) + 'ri';
+  } else if (word.endsWith('aak')) {
+    // Rule: Vowel merge for plural absolutive (a + ak -> ak)
+    word = word.slice(0, -3) + 'ak';
+  }
+
+  return word;
+};
+
+
 export function MorphemeConstructor() {
   const [shuffledChallenges, setShuffledChallenges] = useState(challenges);
   const [challengeIndex, setChallengeIndex] = useState(0);
@@ -136,6 +131,7 @@ export function MorphemeConstructor() {
   const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
 
   useEffect(() => {
+    // Shuffle challenges only once on the client to avoid hydration errors
     setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
   }, []);
 
@@ -144,31 +140,38 @@ export function MorphemeConstructor() {
     setFeedback(null);
   }, []);
 
+  // Reset the board whenever the challenge changes
   useEffect(() => {
     resetBoard();
   }, [currentChallenge, resetBoard]);
-  
+ 
+  // Available tiles are derived from what's already been used for robust state
   const availableMorphemes = useMemo(() => {
     if (!currentChallenge) return [];
     
-    const constructedCounts: Record<string, number> = constructed.reduce((acc, morpheme) => {
-        acc[morpheme] = (acc[morpheme] || 0) + 1;
-        return acc;
-    }, {});
+    const initialCounts = currentChallenge.initialMorphemes.reduce((acc, m) => {
+      acc[m] = (acc[m] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    const initialCounts: Record<string, number> = currentChallenge.initialMorphemes.reduce((acc, morpheme) => {
-        acc[morpheme] = (acc[morpheme] || 0) + 1;
-        return acc;
-    }, {});
+    const constructedCounts = constructed.reduce((acc, m) => {
+      acc[m] = (acc[m] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    return Object.keys(initialCounts).flatMap(morpheme => {
-        const usedCount = constructedCounts[morpheme] || 0;
-        const availableCount = initialCounts[morpheme] - usedCount;
-        return Array(availableCount > 0 ? availableCount : 0).fill(morpheme);
+    return currentChallenge.initialMorphemes.filter(morpheme => {
+      const total = initialCounts[morpheme] || 0;
+      const used = constructedCounts[morpheme] || 0;
+      if (used < total) {
+        // Decrement the count for the next check if there are duplicates
+        constructedCounts[morpheme] = used + 1;
+        return true;
+      }
+      return false;
     }).sort(() => Math.random() - 0.5);
+
   }, [currentChallenge, constructed]);
 
-  
   const handleTileInteraction = (morpheme: string, fromPalette: boolean, index?: number) => {
     if (feedback === 'correct') return;
     setFeedback(null);
@@ -190,6 +193,7 @@ export function MorphemeConstructor() {
   const handleNext = () => {
     const nextIndex = challengeIndex + 1;
     if (nextIndex >= shuffledChallenges.length) {
+      // Reshuffle and start from the beginning if at the end
       setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
       setChallengeIndex(0);
     } else {
