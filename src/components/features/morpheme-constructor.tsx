@@ -128,7 +128,6 @@ export function MorphemeConstructor() {
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [shuffledMorphemes, setShuffledMorphemes] = useState<string[]>([]);
-  const [voice, setVoice] = useState<'female' | 'male'>('female');
   const [isAudioPending, startAudioTransition] = useTransition();
   const { toast } = useToast();
 
@@ -213,7 +212,6 @@ export function MorphemeConstructor() {
     startAudioTransition(async () => {
         const formData = new FormData();
         formData.append('text', currentChallenge.correctWord);
-        formData.append('voice', voice);
 
         const response = await getSpeech(null, formData);
 
@@ -319,17 +317,6 @@ export function MorphemeConstructor() {
                                 </Button>
                             </div>
                         </div>
-                        <RadioGroup value={voice} onValueChange={(v) => setVoice(v as any)} className="flex items-center justify-center gap-4 pt-2">
-                            <Label className="font-semibold text-sm">Voice:</Label>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="female" id="female-voice" />
-                                <Label htmlFor="female-voice" className="text-sm font-normal">Female</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="male" id="male-voice" />
-                                <Label htmlFor="male-voice" className="text-sm font-normal">Male</Label>
-                            </div>
-                        </RadioGroup>
                         <Button variant="default" onClick={handleNext}>Next Word <Sparkles className="ml-2" /></Button>
                       </div>
                     </div>

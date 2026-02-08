@@ -36,7 +36,6 @@ function SubmitButton() {
 
 export function IntroductionBuilder() {
   const [state, setState] = useState(initialState);
-  const [voice, setVoice] = useState<'female' | 'male'>('female');
   const [isAudioPending, startAudioTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
@@ -67,7 +66,6 @@ export function IntroductionBuilder() {
     startAudioTransition(async () => {
         const formData = new FormData();
         formData.append('text', state.data.introduction);
-        formData.append('voice', voice);
 
         const response = await getSpeech(null, formData);
 
@@ -146,17 +144,6 @@ export function IntroductionBuilder() {
                         <span className="sr-only">Play audio</span>
                     </Button>
                 </div>
-                 <RadioGroup value={voice} onValueChange={(v) => setVoice(v as any)} className="flex items-center gap-4 pt-2">
-                    <Label className="font-semibold text-sm">Voice:</Label>
-                    <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="female-voice" />
-                    <Label htmlFor="female-voice" className="text-sm font-normal">Female</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="male-voice" />
-                    <Label htmlFor="male-voice" className="text-sm font-normal">Male</Label>
-                    </div>
-                </RadioGroup>
             </CardContent>
           </Card>
           <Card>

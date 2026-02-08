@@ -13,7 +13,6 @@ import {z} from 'genkit';
 
 const SynthesizeSpeechInputSchema = z.object({
   text: z.string().describe('The text to synthesize.'),
-  voice: z.enum(['male', 'female']).default('female').describe('The voice to use for synthesis.'),
 });
 export type SynthesizeSpeechInput = z.infer<typeof SynthesizeSpeechInputSchema>;
 
@@ -33,20 +32,14 @@ const synthesizeSpeechFlow = ai.defineFlow(
     outputSchema: SynthesizeSpeechOutputSchema,
   },
   async input => {
-    const { text, voice } = input;
+    const { text } = input;
     
-    // Algenib is male, Achernar is female-like
-    const voiceName = voice === 'male' ? 'Algenib' : 'Achernar';
-
     const { media } = await ai.generate({
         model: googleAI.model('gemini-2.5-flash-preview-tts'),
         config: {
             responseModalities: ['AUDIO'],
             speechConfig: {
                 languageCode: 'eu-ES',
-                voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName },
-                },
             },
         },
         prompt: text,

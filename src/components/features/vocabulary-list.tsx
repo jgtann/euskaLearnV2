@@ -67,7 +67,6 @@ const categoryOrder: Word['category'][] = [
 
 export function VocabularyList() {
   const [words, setWords] = useState<Word[]>([...vocabulary]);
-  const [voice, setVoice] = useState<'female' | 'male'>('female');
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -83,7 +82,6 @@ export function VocabularyList() {
     startTransition(async () => {
       const formData = new FormData();
       formData.append('text', basqueWord);
-      formData.append('voice', voice);
 
       const response = await getSpeech(null, formData);
       if (response.error) {
@@ -129,18 +127,7 @@ export function VocabularyList() {
 
   return (
     <>
-      <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
-        <RadioGroup value={voice} onValueChange={(v) => setVoice(v as any)} className="flex items-center gap-4">
-            <Label className="font-semibold">Voice:</Label>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="female" id="female" />
-              <Label htmlFor="female">Female</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="male" id="male" />
-              <Label htmlFor="male">Male</Label>
-            </div>
-        </RadioGroup>
+      <div className="flex flex-wrap gap-4 justify-end items-center mb-4">
         <Button onClick={handleShuffle} variant="outline">
             <Shuffle className="mr-2" />
             Reshuffle Words

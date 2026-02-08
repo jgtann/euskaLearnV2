@@ -6,7 +6,6 @@ import wav from 'wav';
 
 const speechSchema = z.object({
   text: z.string().min(1),
-  voice: z.enum(['male', 'female']).default('female'),
 });
 
 async function toWav(
@@ -40,7 +39,6 @@ async function toWav(
 export async function getSpeech(prevState: any, formData: FormData) {
   const validatedFields = speechSchema.safeParse({
     text: formData.get('text'),
-    voice: formData.get('voice'),
   });
 
   if (!validatedFields.success) {
