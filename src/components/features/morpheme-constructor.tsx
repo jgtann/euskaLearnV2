@@ -31,7 +31,7 @@ const challenges = [
   { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
   { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
   { initialMorphemes: ['etxe', '-tik'], correctSequence: ['etxe', '-tik'], correctWord: 'etxetik', targetMeaning: 'from the house' },
-  { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
+  { initialMorphemes: ['-ra', 'etxe', '-a'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
   { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
   { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
   { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
@@ -95,40 +95,26 @@ const MorphemeTile = ({
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
 
-  // This function now uses an if/else if structure to prevent cascading rule application.
-  // The order is from most specific to least specific to ensure correctness.
-  
   const rDoublingRegex = /(ur|ar)a([knr])/;
   if (rDoublingRegex.test(word)) {
-    // Rule: R-Doubling for roots ending in 'r' (e.g. txakur + a + k -> txakurrak)
     word = word.replace(rDoublingRegex, '$1ra$2');
   } else if (word.endsWith('akk')) {
-    // Rule: Plural Ergative (ak + k -> ek)
     word = word.replace(/akk$/, 'ek');
   } else if (word.endsWith('aekin')) {
-    // Rule: Intervocalic 'r' insertion (a + ekin -> arekin)
     word = word.replace(/aekin$/, 'arekin');
   } else if (word.endsWith('aari')) {
-    // Rule: Dative Vowel Merger (a + a + ri -> ari)
     word = word.replace(/aari$/, 'ari');
   } else if (word.match(/[eiou]ara$/)) {
-    // Rule: Allative merger for other vowels (e.g. hiri + a + ra -> hirira)
     word = word.slice(0, -3) + word.slice(-2);
   } else if (word.endsWith('aara')) {
-    // Rule: Allative merger for roots ending in 'a' (e.g. neska + a + ra -> neskara)
     word = word.replace(/aara$/, 'ara');
   } else if (word.endsWith('aak')) {
-    // Rule: Vowel merge for plural absolutive (a + ak -> ak)
     word = word.replace(/aak$/, 'ak');
   } else if (word.endsWith('aan')) {
-    // Rule: Vowel merge for inessive (a + a + n -> an) e.g., eskolaan -> eskolan
     word = word.replace(/aan$/, 'an');
   } else if (word.endsWith('aatik')) {
-    // Rule: Vowel merge for ablative (a + a + tik -> atik) e.g., eskolaatik -> eskolatik
     word = word.replace(/aatik$/, 'atik');
   } else if (word.endsWith('aa')) {
-    // Rule: General merger for root ending in 'a' + article '-a'
-    // e.g., galdera + a -> galdera
     word = word.slice(0, -1);
   }
   
@@ -147,7 +133,6 @@ export function MorphemeConstructor() {
   const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
 
   useEffect(() => {
-    // Shuffle challenges only once on the client to avoid hydration errors
     setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
   }, []);
 
@@ -156,12 +141,10 @@ export function MorphemeConstructor() {
     setFeedback(null);
   }, []);
 
-  // Reset the board whenever the challenge changes
   useEffect(() => {
     resetBoard();
   }, [currentChallenge, resetBoard]);
  
-  // Available tiles are derived from what's already been used for robust state
   const availableMorphemes = useMemo(() => {
     if (!currentChallenge) return [];
     
@@ -179,7 +162,7 @@ export function MorphemeConstructor() {
       const usedCount = constructedCounts[morpheme] || 0;
       const availableCount = initialCounts[morpheme] - usedCount;
       return Array(availableCount > 0 ? availableCount : 0).fill(morpheme);
-    }).sort(() => Math.random() - 0.5); // Shuffle remaining tiles for variety
+    }).sort(() => Math.random() - 0.5);
   }, [currentChallenge, constructed]);
 
   const handleTileInteraction = (morpheme: string, fromPalette: boolean, index?: number) => {
@@ -203,7 +186,6 @@ export function MorphemeConstructor() {
   const handleNext = () => {
     const nextIndex = challengeIndex + 1;
     if (nextIndex >= shuffledChallenges.length) {
-      // Reshuffle and start from the beginning if at the end
       setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
       setChallengeIndex(0);
     } else {
