@@ -83,11 +83,11 @@ const MorphemeTile = ({
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "text-xl font-bold transition-all h-14 px-6 border-b-4 active:border-b-0 active:translate-y-[2px]",
+      "text-xl font-bold transition-all h-14 px-6 border-b-4 active:border-b-0 active:translate-y-px shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:scale-95",
       variant === "root"
-        ? "bg-white border-basque-green/20 text-basque-green hover:bg-basque-stone"
-        : "bg-basque-red/10 border-basque-red/20 text-basque-red hover:bg-basque-red/20",
-      "font-code rounded-xl shadow-sm"
+        ? "bg-white border-basque-green/30 text-basque-green hover:bg-basque-stone"
+        : "bg-basque-red/10 border-basque-red/30 text-basque-red hover:bg-basque-red/20",
+      "font-code rounded-xl"
     )}
   >
     {morpheme}
@@ -133,7 +133,15 @@ export function MorphemeConstructor() {
 
     if (fromPalette) {
       setConstructed(prev => [...prev, morpheme]);
-      setAvailableMorphemes(prev => prev.filter(m => m !== morpheme));
+      setAvailableMorphemes(prev => {
+        const indexToRemove = prev.indexOf(morpheme);
+        if (indexToRemove > -1) {
+          const newAvailable = [...prev];
+          newAvailable.splice(indexToRemove, 1);
+          return newAvailable;
+        }
+        return prev;
+      });
     } else if (index !== undefined) {
       const removedMorpheme = constructed[index];
       setConstructed(prev => prev.filter((_, i) => i !== index));
@@ -197,7 +205,9 @@ export function MorphemeConstructor() {
           <div
             className={cn(
               "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[100px] rounded-2xl border-4 border-dashed transition-all duration-500",
-              feedback === 'correct' ? "bg-green-100 border-green-500" : "bg-white/50 border-gray-200"
+              feedback === 'correct' && 'bg-green-100 border-green-500 animate-in fade-in',
+              feedback === 'incorrect' && 'bg-red-100 border-red-500 animate-in shake',
+              !feedback && 'bg-white/50 border-gray-200'
             )}
           >
             {constructed.map((m, i) => (
@@ -243,7 +253,7 @@ export function MorphemeConstructor() {
             {feedback !== 'correct' ? (
               <Button
                 size="lg"
-                className="bg-basque-earth hover:bg-black text-white px-8"
+                className="bg-basque-earth hover:bg-black text-white px-8 shadow-lg"
                 disabled={constructed.length === 0}
                 onClick={handleCheck}
               >
@@ -252,7 +262,7 @@ export function MorphemeConstructor() {
             ) : (
               <Button
                 size="lg"
-                className="bg-basque-green hover:bg-green-800 text-white px-10 animate-bounce"
+                className="bg-basque-green hover:bg-green-700 text-white px-10 animate-bounce shadow-lg"
                 onClick={handleNext}
               >
                 Next Word <ArrowRight className="ml-2 h-5 w-5" />
