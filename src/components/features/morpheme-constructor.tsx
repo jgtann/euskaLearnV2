@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle, Volume2, Loader2, ArrowRight } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
@@ -102,29 +101,43 @@ export function MorphemeConstructor() {
   const { toast } = useToast();
 
   const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
-  const [availableMorphemes, setAvailableMorphemes] = useState<string[]>([]);
 
+  // Shuffle challenges only once on the client to avoid hydration errors
   useEffect(() => {
-    // This runs once on mount to shuffle the initial list of challenges.
-    handleShuffleList();
+    setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
   }, []);
 
   const resetBoard = useCallback(() => {
-    if (currentChallenge) {
-      setConstructed([]);
-      setFeedback(null);
-      setAvailableMorphemes([...currentChallenge.initialMorphemes].sort(() => Math.random() - 0.5));
-    }
-  }, [currentChallenge]);
+    setConstructed([]);
+    setFeedback(null);
+  }, []);
 
+  // Reset the board whenever the challenge changes
   useEffect(() => {
     resetBoard();
   }, [currentChallenge, resetBoard]);
   
-  const handleShuffleList = () => {
-    setShuffledChallenges([...challenges].sort(() => Math.random() - 0.5));
-    setChallengeIndex(0);
-  };
+  // Available tiles are derived from what's already been used
+  const availableMorphemes = useMemo(() => {
+    if (!currentChallenge) return [];
+    
+    const constructedCounts: Record<string, number> = constructed.reduce((acc, morpheme) => {
+        acc[morpheme] = (acc[morpheme] || 0) + 1;
+        return acc;
+    }, {});
+
+    const initialCounts: Record<string, number> = currentChallenge.initialMorphemes.reduce((acc, morpheme) => {
+        acc[morpheme] = (acc[morpheme] || 0) + 1;
+        return acc;
+    }, {});
+
+    return Object.keys(initialCounts).flatMap(morpheme => {
+        const usedCount = constructedCounts[morpheme] || 0;
+        const availableCount = initialCounts[morpheme] - usedCount;
+        return Array(availableCount > 0 ? availableCount : 0).fill(morpheme);
+    }).sort(() => Math.random() - 0.5); // Shuffle remaining tiles
+  }, [currentChallenge, constructed]);
+
   
   const handleTileInteraction = (morpheme: string, fromPalette: boolean, index?: number) => {
     if (feedback === 'correct') return;
@@ -132,19 +145,8 @@ export function MorphemeConstructor() {
 
     if (fromPalette) {
       setConstructed(prev => [...prev, morpheme]);
-      setAvailableMorphemes(prev => {
-        const indexToRemove = prev.indexOf(morpheme);
-        if (indexToRemove > -1) {
-          const newAvailable = [...prev];
-          newAvailable.splice(indexToRemove, 1);
-          return newAvailable;
-        }
-        return prev;
-      });
     } else if (index !== undefined) {
-      const removedMorpheme = constructed[index];
       setConstructed(prev => prev.filter((_, i) => i !== index));
-      setAvailableMorphemes(prev => [...prev, removedMorpheme]);
     }
   };
 
@@ -157,7 +159,8 @@ export function MorphemeConstructor() {
       word = word.slice(0, -3) + 'ak';
     }
 
-    // Rule: Intervocalic 'r' insertion. e.g., gizona + ekin -> gizonarekin
+    // Rule: Intervocalic 'r' insertion for words like 'laguna' + 'ekin'.
+    // e.g., gizona + ekin -> gizonarekin
     if (word.endsWith('aekin')) {
       word = word.slice(0, -4) + 'arekin';
     }
@@ -173,11 +176,15 @@ export function MorphemeConstructor() {
   };
   
   const handleNext = () => {
-    if (challengeIndex === shuffledChallenges.length - 1) {
-      handleShuffleList();
+    const nextIndex = challengeIndex + 1;
+    if (nextIndex >= shuffledChallenges.length) {
+      // Reshuffle and start from the beginning if at the end
+      setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
+      setChallengeIndex(0);
     } else {
-      setChallengeIndex(prevIndex => prevIndex + 1);
+      setChallengeIndex(nextIndex);
     }
+    resetBoard();
   };
 
   const handlePlayAudio = (word: string) => {
@@ -187,7 +194,13 @@ export function MorphemeConstructor() {
       formData.append('text', word);
       const response = await getSpeech(null, formData);
       if (response.data?.audioDataUri) {
-        new Audio(response.data.audioDataUri).play();
+        new Audio(response.data.audioDataUri).play().catch(() => {
+          toast({
+            variant: "destructive",
+            title: "Audio Playback Error",
+            description: "Could not play the audio.",
+          });
+        });
       } else {
          toast({
             variant: "destructive",
@@ -225,7 +238,7 @@ export function MorphemeConstructor() {
           >
             {constructed.map((m, i) => (
               <button
-                key={i}
+                key={`${m}-${i}`}
                 onClick={() => handleTileInteraction(m, false, i)}
                 className="animate-in zoom-in-75 duration-200"
               >
@@ -246,10 +259,10 @@ export function MorphemeConstructor() {
             </div>
           )}
 
-          <div className="flex flex-wrap justify-center gap-4 py-6 border-y border-gray-100">
+          <div className="flex flex-wrap justify-center gap-4 py-6 border-y border-gray-100 min-h-[88px]">
             {availableMorphemes.map((m, i) => (
               <MorphemeTile
-                key={i}
+                key={`${m}-${i}`}
                 morpheme={m}
                 variant={m.startsWith('-') ? "suffix" : "root"}
                 onClick={() => handleTileInteraction(m, true)}
