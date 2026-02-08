@@ -3,337 +3,270 @@
 import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle, Volume2, Loader2 } from 'lucide-react';
+import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle, Volume2, Loader2, ArrowRight } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 
 const challenges = [
-  {
-    initialMorphemes: ['-a', 'txakur', '-k'],
-    correctSequence: ['txakur', '-a', '-k'],
-    correctWord: 'txakurrak',
-    targetMeaning: 'the dog (subject)',
-  },
-  {
-    initialMorphemes: ['etxe', '-a'],
-    correctSequence: ['etxe', '-a'],
-    correctWord: 'etxea',
-    targetMeaning: 'the house',
-  },
-  {
-    initialMorphemes: ['-ak', 'gizon'],
-    correctSequence: ['gizon', '-ak'],
-    correctWord: 'gizonak',
-    targetMeaning: 'the men',
-  },
-  {
-    initialMorphemes: ['-ri', 'emakume', '-a'],
-    correctSequence: ['emakume', '-a', '-ri'],
-    correctWord: 'emakumeari',
-    targetMeaning: 'to the woman',
-  },
-  {
-    initialMorphemes: ['liburu', '-a'],
-    correctSequence: ['liburu', '-a'],
-    correctWord: 'liburua',
-    targetMeaning: 'the book',
-  },
-  {
-    initialMorphemes: ['-ak', 'aita'],
-    correctSequence: ['aita', '-ak'],
-    correctWord: 'aitak',
-    targetMeaning: 'the fathers',
-  },
-  {
-    initialMorphemes: ['haur', '-ak'],
-    correctSequence: ['haur', '-ak'],
-    correctWord: 'haurrak',
-    targetMeaning: 'the children',
-  },
-  {
-    initialMorphemes: ['-n', 'hiri', '-a'],
-    correctSequence: ['hiri', '-a', '-n'],
-    correctWord: 'hirian',
-    targetMeaning: 'in the city',
-  },
-  { initialMorphemes: ['-a', 'mahai'], correctSequence: ['mahai', '-a'], correctWord: 'mahaia', targetMeaning: 'the table' },
-  { initialMorphemes: ['lan', '-a'], correctSequence: ['lan', '-a'], correctWord: 'lana', targetMeaning: 'the work' },
-  { initialMorphemes: ['auto', '-a'], correctSequence: ['auto', '-a'], correctWord: 'autoa', targetMeaning: 'the car' },
-  { initialMorphemes: ['janari', '-a'], correctSequence: ['janari', '-a'], correctWord: 'janaria', targetMeaning: 'the food' },
-  { initialMorphemes: ['diru', '-a'], correctSequence: ['diru', '-a'], correctWord: 'dirua', targetMeaning: 'the money' },
-  { initialMorphemes: ['-ak', 'etxe'], correctSequence: ['etxe', '-ak'], correctWord: 'etxeak', targetMeaning: 'the houses' },
-  { initialMorphemes: ['-ak', 'liburu'], correctSequence: ['liburu', '-ak'], correctWord: 'liburuak', targetMeaning: 'the books' },
-  { initialMorphemes: ['lagun', '-ak'], correctSequence: ['lagun', '-ak'], correctWord: 'lagunak', targetMeaning: 'the friends' },
-  { initialMorphemes: ['-n', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-n'], correctWord: 'eskolan', targetMeaning: 'in the school' },
-  { initialMorphemes: ['-ri', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man' },
-  { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
-  { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
-  { initialMorphemes: ['etxe', '-tik'], correctSequence: ['etxe', '-tik'], correctWord: 'etxetik', targetMeaning: 'from the house' },
-  { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
-  { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
-  { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
-  { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
-  { initialMorphemes: ['-ak', 'ama'], correctSequence: ['ama', '-ak'], correctWord: 'amak', targetMeaning: 'the mothers' },
-  { initialMorphemes: ['seme', '-a'], correctSequence: ['seme', '-a'], correctWord: 'semea', targetMeaning: 'the son' },
-  { initialMorphemes: ['alaba', '-a'], correctSequence: ['alaba', '-a'], correctWord: 'alaba', targetMeaning: 'the daughter' },
-  { initialMorphemes: ['-tik', 'auto', '-a'], correctSequence: ['auto', '-a', '-tik'], correctWord: 'autotik', targetMeaning: 'from the car' },
-  { initialMorphemes: ['-ra', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-ra'], correctWord: 'eskolara', targetMeaning: 'to the school' },
-  { initialMorphemes: ['-n', 'urte', '-a'], correctSequence: ['urte', '-a', '-n'], correctWord: 'urtean', targetMeaning: 'in the year' },
-  { initialMorphemes: ['-n', 'egun', '-a'], correctSequence: ['egun', '-a', '-n'], correctWord: 'egunean', targetMeaning: 'in the day' },
-  { initialMorphemes: ['-n', 'bizitza', '-a'], correctSequence: ['bizitza', '-a', '-n'], correctWord: 'bizitzan', targetMeaning: 'in life' },
-  { initialMorphemes: ['-n', 'leku', '-a'], correctSequence: ['leku', '-a', '-n'], correctWord: 'lekuan', targetMeaning: 'in the place' },
-  { initialMorphemes: ['arazo', '-a'], correctSequence: ['arazo', '-a'], correctWord: 'arazoa', targetMeaning: 'the problem' },
-  { initialMorphemes: ['arazo', '-ak'], correctSequence: ['arazo', '-ak'], correctWord: 'arazoak', targetMeaning: 'the problems' },
-  { initialMorphemes: ['-n', 'aste', '-a'], correctSequence: ['aste', '-a', '-n'], correctWord: 'astean', targetMeaning: 'in the week' },
-  { initialMorphemes: ['puntu', '-a'], correctSequence: ['puntu', '-a'], correctWord: 'puntua', targetMeaning: 'the point' },
-  { initialMorphemes: ['-n', 'talde', '-a'], correctSequence: ['talde', '-a', '-n'], correctWord: 'taldean', targetMeaning: 'in the group' },
-  { initialMorphemes: ['-n', 'mundu', '-a'], correctSequence: ['mundu', '-a', '-n'], correctWord: 'munduan', targetMeaning: 'in the world' },
-  { initialMorphemes: ['galdera', '-a'], correctSequence: ['galdera', '-a'], correctWord: 'galdera', targetMeaning: 'the question' },
-  { initialMorphemes: ['galdera', '-ak'], correctSequence: ['galdera', '-ak'], correctWord: 'galderak', targetMeaning: 'the questions' },
-  { initialMorphemes: ['-ri', 'aita', '-a'], correctSequence: ['aita', '-a', '-ri'], correctWord: 'aitari', targetMeaning: 'to the father' },
-  { initialMorphemes: ['-ri', 'ama', '-a'], correctSequence: ['ama', '-a', '-ri'], correctWord: 'amari', targetMeaning: 'to the mother' },
-  { initialMorphemes: ['-ak', 'seme'], correctSequence: ['seme', '-ak'], correctWord: 'semeak', targetMeaning: 'the sons' },
-  { initialMorphemes: ['-ak', 'alaba'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters' },
-  { initialMorphemes: ['-tik', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-tik'], correctWord: 'hiritik', targetMeaning: 'from the city' },
-  { initialMorphemes: ['-ra', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-ra'], correctWord: 'hirira', targetMeaning: 'to the city' },
-  { initialMorphemes: ['-tik', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-tik'], correctWord: 'eskolatik', targetMeaning: 'from the school' },
-  { initialMorphemes: ['-ekin', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ekin'], correctWord: 'gizonarekin', targetMeaning: 'with the man' },
-  { initialMorphemes: ['-ekin', 'emakume', '-a'], correctSequence: ['emakume', '-a', '-ekin'], correctWord: 'emakumearekin', targetMeaning: 'with the woman' },
-  { initialMorphemes: ['-dun', 'diru'], correctSequence: ['diru', '-dun'], correctWord: 'dirudun', targetMeaning: 'wealthy (having money)' },
-  { initialMorphemes: ['-gabe', 'diru'], correctSequence: ['diru', '-gabe'], correctWord: 'dirugabe', targetMeaning: 'without money' },
-  { initialMorphemes: ['-z', 'auto'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car' },
+  { initialMorphemes: ['-a', 'txakur', '-k'], correctSequence: ['txakur', '-a', '-k'], correctWord: 'txakurrak', targetMeaning: 'the dog (subject)', type: 'Ergative' },
+  { initialMorphemes: ['etxe', '-a'], correctSequence: ['etxe', '-a'], correctWord: 'etxea', targetMeaning: 'the house', type: 'Absolutive' },
+  { initialMorphemes: ['-ak', 'gizon'], correctSequence: ['gizon', '-ak'], correctWord: 'gizonak', targetMeaning: 'the men', type: 'Absolutive' },
+  { initialMorphemes: ['-ri', 'emakume', '-a'], correctSequence: ['emakume', '-a', '-ri'], correctWord: 'emakumeari', targetMeaning: 'to the woman', type: 'Dative' },
+  { initialMorphemes: ['liburu', '-a'], correctSequence: ['liburu', '-a'], correctWord: 'liburua', targetMeaning: 'the book', type: 'Absolutive' },
+  { initialMorphemes: ['-ak', 'aita'], correctSequence: ['aita', '-ak'], correctWord: 'aitak', targetMeaning: 'the fathers', type: 'Absolutive' },
+  { initialMorphemes: ['haur', '-ak'], correctSequence: ['haur', '-ak'], correctWord: 'haurrak', targetMeaning: 'the children', type: 'Absolutive' },
+  { initialMorphemes: ['-n', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-n'], correctWord: 'hirian', targetMeaning: 'in the city', type: 'Inessive' },
+  { initialMorphemes: ['-a', 'mahai'], correctSequence: ['mahai', '-a'], correctWord: 'mahaia', targetMeaning: 'the table', type: 'Absolutive' },
+  { initialMorphemes: ['lan', '-a'], correctSequence: ['lan', '-a'], correctWord: 'lana', targetMeaning: 'the work', type: 'Absolutive' },
+  { initialMorphemes: ['auto', '-a'], correctSequence: ['auto', '-a'], correctWord: 'autoa', targetMeaning: 'the car', type: 'Absolutive' },
+  { initialMorphemes: ['janari', '-a'], correctSequence: ['janari', '-a'], correctWord: 'janaria', targetMeaning: 'the food', type: 'Absolutive' },
+  { initialMorphemes: ['diru', '-a'], correctSequence: ['diru', '-a'], correctWord: 'dirua', targetMeaning: 'the money', type: 'Absolutive' },
+  { initialMorphemes: ['-ak', 'etxe'], correctSequence: ['etxe', '-ak'], correctWord: 'etxeak', targetMeaning: 'the houses', type: 'Absolutive' },
+  { initialMorphemes: ['-ak', 'liburu'], correctSequence: ['liburu', '-ak'], correctWord: 'liburuak', targetMeaning: 'the books', type: 'Absolutive' },
+  { initialMorphemes: ['lagun', '-ak'], correctSequence: ['lagun', '-ak'], correctWord: 'lagunak', targetMeaning: 'the friends', type: 'Absolutive' },
+  { initialMorphemes: ['-n', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-n'], correctWord: 'eskolan', targetMeaning: 'in the school', type: 'Inessive' },
+  { initialMorphemes: ['-ri', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man', type: 'Dative' },
+  { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend', type: 'Dative' },
+  { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend', type: 'Comitative' },
+  { initialMorphemes: ['etxe', '-tik'], correctSequence: ['etxe', '-tik'], correctWord: 'etxetik', targetMeaning: 'from the house', type: 'Ablative' },
+  { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house', type: 'Adlative' },
+  { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city', type: 'Genitive' },
+  { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye', type: 'Absolutive' },
+  { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands', type: 'Absolutive' },
+  { initialMorphemes: ['-ak', 'ama'], correctSequence: ['ama', '-ak'], correctWord: 'amak', targetMeaning: 'the mothers', type: 'Absolutive' },
+  { initialMorphemes: ['seme', '-a'], correctSequence: ['seme', '-a'], correctWord: 'semea', targetMeaning: 'the son', type: 'Absolutive' },
+  { initialMorphemes: ['alaba', '-a'], correctSequence: ['alaba', '-a'], correctWord: 'alaba', targetMeaning: 'the daughter', type: 'Absolutive' },
+  { initialMorphemes: ['-tik', 'auto', '-a'], correctSequence: ['auto', '-a', '-tik'], correctWord: 'autotik', targetMeaning: 'from the car', type: 'Ablative' },
+  { initialMorphemes: ['-ra', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-ra'], correctWord: 'eskolara', targetMeaning: 'to the school', type: 'Adlative' },
+  { initialMorphemes: ['-n', 'urte', '-a'], correctSequence: ['urte', '-a', '-n'], correctWord: 'urtean', targetMeaning: 'in the year', type: 'Inessive' },
+  { initialMorphemes: ['-n', 'egun', '-a'], correctSequence: ['egun', '-a', '-n'], correctWord: 'egunean', targetMeaning: 'in the day', type: 'Inessive' },
+  { initialMorphemes: ['-n', 'bizitza', '-a'], correctSequence: ['bizitza', '-a', '-n'], correctWord: 'bizitzan', targetMeaning: 'in life', type: 'Inessive' },
+  { initialMorphemes: ['-n', 'leku', '-a'], correctSequence: ['leku', '-a', '-n'], correctWord: 'lekuan', targetMeaning: 'in the place', type: 'Inessive' },
+  { initialMorphemes: ['arazo', '-a'], correctSequence: ['arazo', '-a'], correctWord: 'arazoa', targetMeaning: 'the problem', type: 'Absolutive' },
+  { initialMorphemes: ['arazo', '-ak'], correctSequence: ['arazo', '-ak'], correctWord: 'arazoak', targetMeaning: 'the problems', type: 'Absolutive' },
+  { initialMorphemes: ['-n', 'aste', '-a'], correctSequence: ['aste', '-a', '-n'], correctWord: 'astean', targetMeaning: 'in the week', type: 'Inessive' },
+  { initialMorphemes: ['puntu', '-a'], correctSequence: ['puntu', '-a'], correctWord: 'puntua', targetMeaning: 'the point', type: 'Absolutive' },
+  { initialMorphemes: ['-n', 'talde', '-a'], correctSequence: ['talde', '-a', '-n'], correctWord: 'taldean', targetMeaning: 'in the group', type: 'Inessive' },
+  { initialMorphemes: ['-n', 'mundu', '-a'], correctSequence: ['mundu', '-a', '-n'], correctWord: 'munduan', targetMeaning: 'in the world', type: 'Inessive' },
+  { initialMorphemes: ['galdera', '-a'], correctSequence: ['galdera', '-a'], correctWord: 'galdera', targetMeaning: 'the question', type: 'Absolutive' },
+  { initialMorphemes: ['galdera', '-ak'], correctSequence: ['galdera', '-ak'], correctWord: 'galderak', targetMeaning: 'the questions', type: 'Absolutive' },
+  { initialMorphemes: ['-ri', 'aita', '-a'], correctSequence: ['aita', '-a', '-ri'], correctWord: 'aitari', targetMeaning: 'to the father', type: 'Dative' },
+  { initialMorphemes: ['-ri', 'ama', '-a'], correctSequence: ['ama', '-a', '-ri'], correctWord: 'amari', targetMeaning: 'to the mother', type: 'Dative' },
+  { initialMorphemes: ['-ak', 'seme'], correctSequence: ['seme', '-ak'], correctWord: 'semeak', targetMeaning: 'the sons', type: 'Absolutive' },
+  { initialMorphemes: ['-ak', 'alaba'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters', type: 'Absolutive' },
+  { initialMorphemes: ['-tik', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-tik'], correctWord: 'hiritik', targetMeaning: 'from the city', type: 'Ablative' },
+  { initialMorphemes: ['-ra', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-ra'], correctWord: 'hirira', targetMeaning: 'to the city', type: 'Adlative' },
+  { initialMorphemes: ['-tik', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-tik'], correctWord: 'eskolatik', targetMeaning: 'from the school', type: 'Ablative' },
+  { initialMorphemes: ['-ekin', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ekin'], correctWord: 'gizonarekin', targetMeaning: 'with the man', type: 'Comitative' },
+  { initialMorphemes: ['-ekin', 'emakume', '-a'], correctSequence: ['emakume', '-a', '-ekin'], correctWord: 'emakumearekin', targetMeaning: 'with the woman', type: 'Comitative' },
+  { initialMorphemes: ['-dun', 'diru'], correctSequence: ['diru', '-dun'], correctWord: 'dirudun', targetMeaning: 'wealthy (having money)', type: 'Attribute' },
+  { initialMorphemes: ['-gabe', 'diru'], correctSequence: ['diru', '-gabe'], correctWord: 'dirugabe', targetMeaning: 'without money', type: 'Attribute' },
+  { initialMorphemes: ['-z', 'auto'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car', type: 'Instrumental' },
 ];
 
-
-const MorphemeTile = ({ morpheme, onClick, disabled }: { morpheme: string; onClick: (morpheme: string) => void; disabled: boolean; }) => (
+const MorphemeTile = ({
+  morpheme,
+  onClick,
+  disabled,
+  variant = "root"
+}: {
+  morpheme: string;
+  onClick: () => void;
+  disabled: boolean;
+  variant?: "root" | "suffix"
+}) => (
   <Button
     variant="secondary"
     size="lg"
-    onClick={() => onClick(morpheme)}
+    onClick={onClick}
     disabled={disabled}
-    className="text-lg font-bold transition-all duration-200 ease-in-out hover:scale-105 hover:bg-accent hover:text-accent-foreground disabled:opacity-50 font-code"
+    className={cn(
+      "text-xl font-bold transition-all h-14 px-6 border-b-4 active:border-b-0 active:translate-y-[2px]",
+      variant === "root"
+        ? "bg-white border-basque-green/20 text-basque-green hover:bg-basque-stone"
+        : "bg-basque-red/10 border-basque-red/20 text-basque-red hover:bg-basque-red/20",
+      "font-code rounded-xl shadow-sm"
+    )}
   >
     {morpheme}
   </Button>
 );
 
 export function MorphemeConstructor() {
-  // To fix the hydration error, we must ensure the initial state on the server
-  // and the client is identical. We do this by avoiding Math.random() during initialization.
-  const [shuffledChallenges, setShuffledChallenges] = useState(() => challenges);
+  const [shuffledChallenges, setShuffledChallenges] = useState(challenges);
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [shuffledMorphemes, setShuffledMorphemes] = useState<string[]>([]);
   const [isAudioPending, startAudioTransition] = useTransition();
   const { toast } = useToast();
 
-  // All random shuffling is deferred to useEffect, which runs only on the client side.
+  const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
+  const [availableMorphemes, setAvailableMorphemes] = useState<string[]>([]);
+
   useEffect(() => {
     // This runs once on mount to shuffle the initial list of challenges.
-    setShuffledChallenges([...challenges].sort(() => Math.random() - 0.5));
+    handleShuffleList();
   }, []);
-
-  const currentChallenge = shuffledChallenges[challengeIndex];
 
   const resetBoard = useCallback(() => {
-    setConstructed([]);
-    setFeedback(null);
-  }, []);
-
-  // This effect shuffles morphemes for the current challenge.
-  // It runs on the client after the initial shuffle and whenever the challenge changes.
-  useEffect(() => {
     if (currentChallenge) {
-      setShuffledMorphemes([...currentChallenge.initialMorphemes].sort(() => Math.random() - 0.5));
+      setConstructed([]);
+      setFeedback(null);
+      setAvailableMorphemes([...currentChallenge.initialMorphemes].sort(() => Math.random() - 0.5));
     }
+  }, [currentChallenge]);
+
+  useEffect(() => {
     resetBoard();
   }, [currentChallenge, resetBoard]);
-
-  const availableMorphemes = useMemo(() => {
-    const constructedCopy = [...constructed];
-    return shuffledMorphemes.filter(m => {
-      const index = constructedCopy.indexOf(m);
-      if (index > -1) {
-        constructedCopy.splice(index, 1);
-        return false;
-      }
-      return true;
-    });
-  }, [constructed, shuffledMorphemes]);
-
-  const handlePaletteClick = (morpheme: string) => {
-    setConstructed([...constructed, morpheme]);
-    setFeedback(null);
-  };
-
-  const handleConstructionClick = (morpheme: string, index: number) => {
-    const newConstructed = [...constructed];
-    newConstructed.splice(index, 1);
-    setConstructed(newConstructed);
-    setFeedback(null);
-  };
   
-  const handleCheck = () => {
-    if (JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence)) {
-      setFeedback('correct');
-    } else {
-      setFeedback('incorrect');
-    }
-  };
-
-  const handleReset = () => {
-    resetBoard();
-  };
-
   const handleShuffleList = () => {
     setShuffledChallenges([...challenges].sort(() => Math.random() - 0.5));
     setChallengeIndex(0);
   };
+  
+  const handleTileInteraction = (morpheme: string, fromPalette: boolean, index?: number) => {
+    if (feedback === 'correct') return;
+    setFeedback(null);
 
-  const handleShuffleTiles = () => {
-    setShuffledMorphemes([...shuffledMorphemes].sort(() => Math.random() - 0.5));
+    if (fromPalette) {
+      setConstructed(prev => [...prev, morpheme]);
+      setAvailableMorphemes(prev => prev.filter(m => m !== morpheme));
+    } else if (index !== undefined) {
+      const removedMorpheme = constructed[index];
+      setConstructed(prev => prev.filter((_, i) => i !== index));
+      setAvailableMorphemes(prev => [...prev, removedMorpheme]);
+    }
+  };
+
+  const handleCheck = () => {
+    if(!currentChallenge) return;
+    const isCorrect = JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence);
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) handlePlayAudio(currentChallenge.correctWord);
   };
   
   const handleNext = () => {
     if (challengeIndex === shuffledChallenges.length - 1) {
       handleShuffleList();
     } else {
-      setChallengeIndex((prevIndex) => prevIndex + 1);
+      setChallengeIndex(prevIndex => prevIndex + 1);
     }
   };
 
-  const handlePlayAudio = () => {
-    if (!currentChallenge?.correctWord || isAudioPending) return;
-
+  const handlePlayAudio = (word: string) => {
+    if (isAudioPending) return;
     startAudioTransition(async () => {
-        const formData = new FormData();
-        formData.append('text', currentChallenge.correctWord);
-
-        const response = await getSpeech(null, formData);
-
-        if (response.error) {
-            toast({
-                variant: "destructive",
-                title: "Speech Synthesis Error",
-                description: response.error,
-            });
-        } else if (response.data?.audioDataUri) {
-            const audio = new Audio(response.data.audioDataUri);
-            audio.play().catch(err => {
-                 toast({
-                    variant: "destructive",
-                    title: "Audio Playback Error",
-                    description: "Could not play the audio file.",
-                });
-            });
-        }
+      const formData = new FormData();
+      formData.append('text', word);
+      const response = await getSpeech(null, formData);
+      if (response.data?.audioDataUri) {
+        new Audio(response.data.audioDataUri).play();
+      } else {
+         toast({
+            variant: "destructive",
+            title: "Audio Error",
+            description: response.error || "Could not generate audio.",
+        });
+      }
     });
+  };
+
+  if (!currentChallenge) {
+    return <div>Loading challenges...</div>;
   }
 
-  const constructionAreaClasses = cn(
-    "flex items-center justify-center gap-2 p-4 min-h-[80px] rounded-lg border-2 border-dashed transition-colors",
-    feedback === 'correct' && 'border-green-500 bg-green-500/10',
-    feedback === 'incorrect' && 'border-destructive bg-destructive/10',
-    !feedback && 'border-primary/50 bg-primary/5'
-  );
-  
-  const targetMeaning = currentChallenge?.targetMeaning;
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Activity: Construct a Word</CardTitle>
-        <CardDescription>
-          {targetMeaning
-            ? `Use the morpheme tiles below to correctly form the word for "${targetMeaning}".`
-            : "Loading next word..."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {!currentChallenge ? (
-          <div>Loading challenges...</div>
-        ) : (
-          <div className="space-y-4">
-            <div className={constructionAreaClasses}>
-              {constructed.length > 0 ? (
-                constructed.map((m, i) => (
-                   <Button
-                      key={i}
-                      variant="outline"
-                      size="lg"
-                      onClick={() => handleConstructionClick(m, i)}
-                      className="text-lg font-bold bg-card shadow-sm cursor-pointer animate-in fade-in font-code"
-                    >
-                      {m}
-                    </Button>
-                ))
-              ) : (
-                <p className="text-muted-foreground">Click tiles below to build the word</p>
-              )}
-            </div>
-
-            <div className="p-4 rounded-lg bg-muted/50">
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                {availableMorphemes.map((m, i) => (
-                  <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={handlePaletteClick} disabled={feedback === 'correct'} />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-              <Button variant="outline" onClick={handleShuffleList}>
-                  <Shuffle className="mr-2" /> New Word Set
-              </Button>
-              <Button variant="outline" onClick={handleShuffleTiles}>
-                  <Shuffle className="mr-2" /> Shuffle Tiles
-              </Button>
-              <Button variant="outline" onClick={handleReset} disabled={constructed.length === 0}>
-                  <RefreshCw className="mr-2" /> Reset
-              </Button>
-              <Button onClick={handleCheck} disabled={constructed.length === 0 || feedback === 'correct'}>
-                  <CheckCircle className="mr-2" /> Check Answer
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center p-4 min-h-[220px]">
-              {feedback && (
-                <div className="w-full max-w-sm rounded-lg text-center animate-in fade-in zoom-in-95">
-                  {feedback === 'correct' && (
-                    <div className="flex flex-col items-center gap-4 text-green-600">
-                      <ThumbsUp className="size-12" />
-                      <p className="font-bold text-2xl">Zorionak! Correct!</p>
-                      <div className="w-full text-center text-foreground/90 bg-green-500/10 p-4 rounded-lg space-y-4">
-                        <div>
-                          <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
-                           <div className="flex items-center justify-center gap-2 mt-2">
-                                <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
-                                <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending}>
-                                    {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
-                                    <span className="sr-only">Play audio</span>
-                                </Button>
-                            </div>
-                        </div>
-                        <Button variant="default" onClick={handleNext}>Next Word <Sparkles className="ml-2" /></Button>
-                      </div>
-                    </div>
-                  )}
-                  {feedback === 'incorrect' && (
-                    <div className="flex flex-col items-center gap-2 text-destructive">
-                        <XCircle className="size-12"/>
-                        <p className="font-bold text-2xl">Not quite, try again!</p>
-                        <p>The order of morphemes is important.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <Card className="border-t-8 border-t-basque-green shadow-2xl overflow-hidden bg-basque-stone/30">
+        <CardHeader className="text-center pb-2">
+          <div className="flex justify-center mb-2">
+             <Badge className="bg-basque-red text-white border-none">{currentChallenge.type}</Badge>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <CardTitle className="text-3xl font-black text-basque-earth">
+            "{currentChallenge.targetMeaning}"
+          </CardTitle>
+          <CardDescription className="text-base">
+            Assemble the building blocks of the word
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-8 p-8">
+          <div
+            className={cn(
+              "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[100px] rounded-2xl border-4 border-dashed transition-all duration-500",
+              feedback === 'correct' ? "bg-green-100 border-green-500" : "bg-white/50 border-gray-200"
+            )}
+          >
+            {constructed.map((m, i) => (
+              <button
+                key={i}
+                onClick={() => handleTileInteraction(m, false, i)}
+                className="animate-in zoom-in-75 duration-200"
+              >
+                <MorphemeTile morpheme={m} onClick={() => {}} disabled={feedback === 'correct'} variant={m.startsWith('-') ? "suffix" : "root"} />
+              </button>
+            ))}
+            {constructed.length === 0 && (
+              <p className="text-gray-400 italic">Select tiles below...</p>
+            )}
+          </div>
+
+          {constructed.length > 0 && (
+            <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2">
+               <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Result:</span>
+               <span className="text-2xl font-code font-bold text-basque-green bg-white px-4 py-1 rounded-lg border shadow-sm">
+                  {constructed.join('').replace(/-/g, '')}
+               </span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-center gap-4 py-6 border-y border-gray-100">
+            {availableMorphemes.map((m, i) => (
+              <MorphemeTile
+                key={i}
+                morpheme={m}
+                variant={m.startsWith('-') ? "suffix" : "root"}
+                onClick={() => handleTileInteraction(m, true)}
+                disabled={feedback === 'correct'}
+              />
+            ))}
+          </div>
+
+          <div className="flex justify-center gap-3">
+            <Button variant="ghost" size="lg" onClick={resetBoard}>
+              <RefreshCw className="mr-2 h-4 w-4" /> Reset
+            </Button>
+            
+            {feedback !== 'correct' ? (
+              <Button
+                size="lg"
+                className="bg-basque-earth hover:bg-black text-white px-8"
+                disabled={constructed.length === 0}
+                onClick={handleCheck}
+              >
+                Check Construction
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="bg-basque-green hover:bg-green-800 text-white px-10 animate-bounce"
+                onClick={handleNext}
+              >
+                Next Word <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {feedback === 'incorrect' && (
+        <p className="text-center text-basque-red font-bold animate-bounce">
+          Try a different order! Remember: Root + Article + Case.
+        </p>
+      )}
+    </div>
   );
 }
