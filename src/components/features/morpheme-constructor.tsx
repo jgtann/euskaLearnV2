@@ -154,7 +154,12 @@ export function MorphemeConstructor() {
     // Rule: When a word ending in '-a' gets the plural '-ak', they merge.
     // e.g., alaba + ak -> alabak, NOT alabaak.
     if (word.endsWith('aak')) {
-      return word.slice(0, -3) + 'ak';
+      word = word.slice(0, -3) + 'ak';
+    }
+
+    // Rule: Intervocalic 'r' insertion. e.g., gizona + ekin -> gizonarekin
+    if (word.endsWith('aekin')) {
+      word = word.slice(0, -4) + 'arekin';
     }
     
     return word;
