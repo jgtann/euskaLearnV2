@@ -149,6 +149,18 @@ export function MorphemeConstructor() {
     }
   };
 
+  const getDisplayWord = (morphemes: string[]): string => {
+    let word = morphemes.join('').replace(/-/g, '');
+    
+    // Rule: When a word ending in '-a' gets the plural '-ak', they merge.
+    // e.g., alaba + ak -> alabak, NOT alabaak.
+    if (word.endsWith('aak')) {
+      return word.slice(0, -3) + 'ak';
+    }
+    
+    return word;
+  };
+
   const handleCheck = () => {
     if(!currentChallenge) return;
     const isCorrect = JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence);
@@ -228,7 +240,7 @@ export function MorphemeConstructor() {
             <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2">
                <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Result:</span>
                <span className="text-2xl font-code font-bold text-basque-green bg-white px-4 py-1 rounded-lg border shadow-sm">
-                  {constructed.join('').replace(/-/g, '').replace(/aak$/, 'ak')}
+                  {getDisplayWord(constructed)}
                </span>
             </div>
           )}
