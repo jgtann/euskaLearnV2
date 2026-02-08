@@ -95,15 +95,15 @@ export function IntroductionBuilder() {
       <form action={handleAction} ref={formRef} className="space-y-4">
         <div className="space-y-2">
             <Label htmlFor="name">Your Name</Label>
-            <Input id="name" name="name" placeholder="e.g., Alex" />
+            <Input id="name" name="name" placeholder="e.g., Alex" required />
         </div>
         <div className="space-y-2">
             <Label htmlFor="from">Where you are from</Label>
-            <Input id="from" name="from" placeholder="e.g., California" />
+            <Input id="from" name="from" placeholder="e.g., California" required />
         </div>
         <div className="space-y-2">
             <Label htmlFor="hobby">A hobby you enjoy</Label>
-            <Input id="hobby" name="hobby" placeholder="e.g., hiking" />
+            <Input id="hobby" name="hobby" placeholder="e.g., hiking" required />
         </div>
         <div className="space-y-2">
           <Label>Formality</Label>

@@ -42,7 +42,7 @@ const prompt = ai.definePrompt({
   name: 'buildIntroductionPrompt',
   input: {schema: BuildIntroductionInputSchema},
   output: {schema: BuildIntroductionOutputSchema},
-  prompt: `You are a Basque language tutor. Create a self-introduction in Basque for a learner based on the following details. The formality should be {{{formality}}}.
+  prompt: `You are a helpful AI assistant. Create a self-introduction in Basque for a learner based on the following details. The formality should be {{{formality}}. Do a basque grammar and spelling check before output.}.
 
   Name: {{{name}}}
   From: {{{from}}}
