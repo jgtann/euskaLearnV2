@@ -4,6 +4,7 @@
 import { analyzeErrors } from '@/ai/flows/personalized-error-analysis';
 import { translateAndExplain } from '@/ai/flows/ai-powered-translanguaging';
 import { buildIntroduction } from '@/ai/flows/self-introduction-flow';
+import { getEncouragement as getEncouragementFlow } from '@/ai/flows/encouragement-flow';
 import { z } from 'zod';
 
 const translateSchema = z.object({
@@ -72,4 +73,18 @@ export async function getIntroduction(prevState: any, formData: FormData) {
         console.error(error);
         return { error: 'Failed to build introduction. Please try again later.' };
     }
+}
+
+export async function getEncouragementAction(score: number) {
+  if (typeof score !== 'number') {
+    return { error: 'Invalid score provided.' };
+  }
+
+  try {
+    const result = await getEncouragementFlow({ score });
+    return { data: result };
+  } catch (error) {
+    console.error(error);
+    return { error: 'Failed to get encouragement. Please try again later.' };
+  }
 }

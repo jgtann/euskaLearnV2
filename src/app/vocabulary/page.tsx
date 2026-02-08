@@ -6,7 +6,7 @@ export default function VocabularyPage() {
       <div>
         <h1 className="font-heading text-4xl font-bold">Vocabulary Explorer</h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Browse and shuffle the most common Basque words grouped by category.
+          Browse the library or start a smart review session to practice.
         </p>
       </div>
       <VocabularyList />

@@ -65,6 +65,12 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        basque: {
+          red: '#A6262C',    // Traditional Ikurriña Red
+          green: '#006341',  // Deep Forest Green
+          stone: '#F4F1EA',  // Warm Paper/Stone
+          earth: '#4A3728',  // Wood/Oak accents
+        }
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -88,10 +94,20 @@ export default {
             height: '0',
           },
         },
+        'card-flip': {
+          '0%': { transform: 'rotateY(0deg)' },
+          '100%': { transform: 'rotateY(180deg)' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'card-flip': 'card-flip 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        'float': 'float 3s ease-in-out infinite',
       },
     },
   },
