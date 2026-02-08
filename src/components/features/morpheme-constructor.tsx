@@ -67,6 +67,11 @@ const challenges = [
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
 
+  // Rule: Plural Ergative (ak + k -> ek)
+  if (word.endsWith('akk')) {
+      word = word.slice(0, -3) + 'ek';
+  }
+
   // Rule: Vowel merge for dative case (a + a + ri -> ari)
   // e.g., ama + -a + -ri -> amari
   if (word.endsWith('aari')) {
@@ -87,11 +92,6 @@ const getDisplayWord = (morphemes: string[]): string => {
   const rDoublingRegex = /(ur|ar)a([knr])/;
   if (rDoublingRegex.test(word)) {
     word = word.replace(/(ur|ar)a([knr])/, '$1ra$2');
-  }
-  
-  // Rule: Plural Ergative (ak + k -> ek)
-  if (word.endsWith('akk')) {
-      word = word.slice(0, -3) + 'ek';
   }
 
   return word;
