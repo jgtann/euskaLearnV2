@@ -69,7 +69,9 @@ const synthesizeSpeechFlow = ai.defineFlow(
         config: {
             responseModalities: ['AUDIO'],
             speechConfig: {
-                languageCode: 'eu-ES',
+                voiceConfig: {
+                    languageCode: 'eu-ES'
+                }
             },
         },
         prompt: text,
