@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback, useTransition } from 'react'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle, Volume2, Loader2, ArrowRight } from 'lucide-react';
+import { RefreshCw, ArrowRight } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 
@@ -64,6 +64,30 @@ const challenges = [
   { initialMorphemes: ['-z', 'auto'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car' },
 ];
 
+const getDisplayWord = (morphemes: string[]): string => {
+  let word = morphemes.join('').replace(/-/g, '');
+
+  if (word.endsWith('aekin')) {
+    word = word.slice(0, -4) + 'arekin';
+  }
+
+  if (word.endsWith('aak')) {
+    word = word.slice(0, -3) + 'ak';
+  }
+
+  const rDoublingRegex = /(ur|ar)a([knr])/;
+  if (rDoublingRegex.test(word)) {
+    word = word.replace(/(ur|ar)a([knr])/, '$1ra$2');
+  }
+  
+  if (word.endsWith('akk')) {
+      word = word.slice(0, -3) + 'ek';
+  }
+
+  return word;
+};
+
+
 const MorphemeTile = ({
   morpheme,
   onClick,
@@ -102,7 +126,6 @@ export function MorphemeConstructor() {
 
   const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
 
-  // Shuffle challenges only once on the client to avoid hydration errors
   useEffect(() => {
     setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
   }, []);
@@ -112,12 +135,10 @@ export function MorphemeConstructor() {
     setFeedback(null);
   }, []);
 
-  // Reset the board whenever the challenge changes
   useEffect(() => {
     resetBoard();
   }, [currentChallenge, resetBoard]);
   
-  // Available tiles are derived from what's already been used
   const availableMorphemes = useMemo(() => {
     if (!currentChallenge) return [];
     
@@ -135,7 +156,7 @@ export function MorphemeConstructor() {
         const usedCount = constructedCounts[morpheme] || 0;
         const availableCount = initialCounts[morpheme] - usedCount;
         return Array(availableCount > 0 ? availableCount : 0).fill(morpheme);
-    }).sort(() => Math.random() - 0.5); // Shuffle remaining tiles
+    }).sort(() => Math.random() - 0.5);
   }, [currentChallenge, constructed]);
 
   
@@ -150,24 +171,6 @@ export function MorphemeConstructor() {
     }
   };
 
-  const getDisplayWord = (morphemes: string[]): string => {
-    let word = morphemes.join('').replace(/-/g, '');
-    
-    // Rule: When a word ending in '-a' gets the plural '-ak', they merge.
-    // e.g., alaba + ak -> alabak, NOT alabaak.
-    if (word.endsWith('aak')) {
-      word = word.slice(0, -3) + 'ak';
-    }
-
-    // Rule: Intervocalic 'r' insertion for words like 'laguna' + 'ekin'.
-    // e.g., gizona + ekin -> gizonarekin
-    if (word.endsWith('aekin')) {
-      word = word.slice(0, -4) + 'arekin';
-    }
-    
-    return word;
-  };
-
   const handleCheck = () => {
     if(!currentChallenge) return;
     const isCorrect = JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence);
@@ -178,7 +181,6 @@ export function MorphemeConstructor() {
   const handleNext = () => {
     const nextIndex = challengeIndex + 1;
     if (nextIndex >= shuffledChallenges.length) {
-      // Reshuffle and start from the beginning if at the end
       setShuffledChallenges(prev => [...prev].sort(() => Math.random() - 0.5));
       setChallengeIndex(0);
     } else {
@@ -230,44 +232,49 @@ export function MorphemeConstructor() {
         <CardContent className="space-y-8 p-8">
           <div
             className={cn(
-              "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[100px] rounded-2xl border-4 border-dashed transition-all duration-500",
-              feedback === 'correct' && 'bg-green-100 border-green-500 animate-in fade-in',
-              feedback === 'incorrect' && 'bg-red-100 border-red-500 animate-in shake',
-              !feedback && 'bg-white/50 border-gray-200'
+              "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[120px] rounded-2xl border-4 border-dashed transition-all duration-300",
+              feedback === 'correct' ? 'bg-green-100/50 border-green-500 shadow-inner' : 'bg-white/50 border-gray-200',
+              feedback === 'incorrect' && 'bg-red-100/50 border-red-500 animate-in shake'
             )}
           >
             {constructed.map((m, i) => (
-              <button
-                key={`${m}-${i}`}
-                onClick={() => handleTileInteraction(m, false, i)}
-                className="animate-in zoom-in-75 duration-200"
-              >
-                <MorphemeTile morpheme={m} onClick={() => {}} disabled={feedback === 'correct'} variant={m.startsWith('-') ? "suffix" : "root"} />
-              </button>
+              <div key={`${m}-${i}`} className="animate-in zoom-in-50 duration-200">
+                <MorphemeTile 
+                  morpheme={m} 
+                  onClick={() => handleTileInteraction(m, false, i)} 
+                  disabled={feedback === 'correct'} 
+                  variant={m.startsWith('-') ? "suffix" : "root"} 
+                />
+              </div>
             ))}
             {constructed.length === 0 && (
-              <p className="text-gray-400 italic">Select tiles below...</p>
+              <p className="text-gray-400 italic font-medium animate-pulse">
+                Build the word here...
+              </p>
             )}
           </div>
 
-          {constructed.length > 0 && (
-            <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2">
-               <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Result:</span>
-               <span className="text-2xl font-code font-bold text-basque-green bg-white px-4 py-1 rounded-lg border shadow-sm">
+          <div className="h-12 flex items-center justify-center">
+            {constructed.length > 0 && (
+              <div className="flex items-center gap-3 px-6 py-2 bg-basque-green/5 rounded-full border border-basque-green/10 animate-in fade-in slide-in-from-bottom-2">
+                <span className="text-xs font-bold text-basque-green/60 uppercase tracking-tighter">Result</span>
+                <span className="text-2xl font-bold text-basque-green tracking-tight font-code">
                   {getDisplayWord(constructed)}
-               </span>
-            </div>
-          )}
-
-          <div className="flex flex-wrap justify-center gap-4 py-6 border-y border-gray-100 min-h-[88px]">
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex flex-wrap justify-center content-start gap-4 py-6 border-y border-gray-100 min-h-[160px]">
             {availableMorphemes.map((m, i) => (
-              <MorphemeTile
-                key={`${m}-${i}`}
-                morpheme={m}
-                variant={m.startsWith('-') ? "suffix" : "root"}
-                onClick={() => handleTileInteraction(m, true)}
-                disabled={feedback === 'correct'}
-              />
+              <div key={`${m}-${i}`} className="animate-in fade-in zoom-in-90">
+                <MorphemeTile
+                  morpheme={m}
+                  variant={m.startsWith('-') ? "suffix" : "root"}
+                  onClick={() => handleTileInteraction(m, true)}
+                  disabled={feedback === 'correct'}
+                />
+              </div>
             ))}
           </div>
 
@@ -299,8 +306,8 @@ export function MorphemeConstructor() {
       </Card>
       
       {feedback === 'incorrect' && (
-        <p className="text-center text-basque-red font-bold animate-bounce">
-          Try a different order! Remember: Root + Article + Case.
+        <p className="text-center text-basque-red font-bold animate-in fade-in">
+          Not quite! Check the order. Remember: Root + Suffixes.
         </p>
       )}
     </div>
