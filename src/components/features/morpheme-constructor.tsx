@@ -117,6 +117,10 @@ const getDisplayWord = (morphemes: string[]): string => {
   } else if (word.endsWith('aan')) {
     // Rule: Vowel merge for inessive (a + a + n -> an) e.g., eskolaan -> eskolan
     word = word.replace(/aan$/, 'an');
+  } else if (word.endsWith('aa')) {
+    // Rule: General merger for root ending in 'a' + article '-a'
+    // e.g., galdera + a -> galdera
+    word = word.slice(0, -1);
   }
   
   return word;
