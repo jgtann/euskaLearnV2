@@ -67,15 +67,14 @@ const challenges = [
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
 
+  // Rule: Dative Vowel Merger (a + a + ri -> ari)
+  if (word.endsWith('aari')) {
+    word = word.slice(0, -3) + 'ri';
+  }
+  
   // Rule: Plural Ergative (ak + k -> ek)
   if (word.endsWith('akk')) {
       word = word.slice(0, -3) + 'ek';
-  }
-
-  // Rule: Vowel merge for dative case (a + a + ri -> ari)
-  // e.g., ama + -a + -ri -> amari
-  if (word.endsWith('aari')) {
-    word = word.slice(0, -3) + 'ri';
   }
 
   // Rule: Intervocalic 'r' insertion
