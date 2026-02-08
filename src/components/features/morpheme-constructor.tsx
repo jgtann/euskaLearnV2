@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle } from 'lucide-react';
+import { CheckCircle, RefreshCw, Sparkles, ThumbsUp, XCircle, Shuffle, Volume2, Loader2 } from 'lucide-react';
+import { getSpeech } from '@/app/actions/speech';
+import { useToast } from '@/hooks/use-toast';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const challenges = [
   {
@@ -124,6 +128,9 @@ export function MorphemeConstructor() {
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [shuffledMorphemes, setShuffledMorphemes] = useState<string[]>([]);
+  const [voice, setVoice] = useState<'female' | 'male'>('female');
+  const [isAudioPending, startAudioTransition] = useTransition();
+  const { toast } = useToast();
 
   // All random shuffling is deferred to useEffect, which runs only on the client side.
   useEffect(() => {
@@ -200,6 +207,35 @@ export function MorphemeConstructor() {
     }
   };
 
+  const handlePlayAudio = () => {
+    if (!currentChallenge?.correctWord || isAudioPending) return;
+
+    startAudioTransition(async () => {
+        const formData = new FormData();
+        formData.append('text', currentChallenge.correctWord);
+        formData.append('voice', voice);
+
+        const response = await getSpeech(null, formData);
+
+        if (response.error) {
+            toast({
+                variant: "destructive",
+                title: "Speech Synthesis Error",
+                description: response.error,
+            });
+        } else if (response.data?.audioDataUri) {
+            const audio = new Audio(response.data.audioDataUri);
+            audio.play().catch(err => {
+                 toast({
+                    variant: "destructive",
+                    title: "Audio Playback Error",
+                    description: "Could not play the audio file.",
+                });
+            });
+        }
+    });
+  }
+
   const constructionAreaClasses = cn(
     "flex items-center justify-center gap-2 p-4 min-h-[80px] rounded-lg border-2 border-dashed transition-colors",
     feedback === 'correct' && 'border-green-500 bg-green-500/10',
@@ -275,8 +311,25 @@ export function MorphemeConstructor() {
                       <div className="w-full text-center text-foreground/90 bg-green-500/10 p-4 rounded-lg space-y-4">
                         <div>
                           <p>You combined <span className="font-bold font-code">{currentChallenge.correctSequence.join(' + ')}</span></p>
-                          <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
+                           <div className="flex items-center justify-center gap-2 mt-2">
+                                <p>to form <span className="font-bold font-code text-lg">{currentChallenge.correctWord}</span>.</p>
+                                <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending}>
+                                    {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
+                                    <span className="sr-only">Play audio</span>
+                                </Button>
+                            </div>
                         </div>
+                        <RadioGroup value={voice} onValueChange={(v) => setVoice(v as any)} className="flex items-center justify-center gap-4 pt-2">
+                            <Label className="font-semibold text-sm">Voice:</Label>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="female" id="female-voice" />
+                                <Label htmlFor="female-voice" className="text-sm font-normal">Female</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="male" id="male-voice" />
+                                <Label htmlFor="male-voice" className="text-sm font-normal">Male</Label>
+                            </div>
+                        </RadioGroup>
                         <Button variant="default" onClick={handleNext}>Next Word <Sparkles className="ml-2" /></Button>
                       </div>
                     </div>
