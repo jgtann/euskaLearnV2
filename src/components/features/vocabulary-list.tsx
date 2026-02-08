@@ -111,10 +111,8 @@ const WordCard = ({
 
   // If not in SRS mode, wrap with a Link
   return (
-    <Link href={`/vocabulary/${encodeURIComponent(word.basque)}`} className="no-underline" legacyBehavior>
-      <a className="block h-full transition-transform hover:-translate-y-1">
-        <CardContentWrapper>{cardInnerContent}</CardContentWrapper>
-      </a>
+    <Link href={`/vocabulary/${encodeURIComponent(word.basque)}`} className="no-underline block h-full transition-transform hover:-translate-y-1">
+      <CardContentWrapper>{cardInnerContent}</CardContentWrapper>
     </Link>
   );
 };
