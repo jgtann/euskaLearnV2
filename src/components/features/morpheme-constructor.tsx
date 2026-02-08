@@ -31,7 +31,7 @@ const challenges = [
   { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
   { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
   { initialMorphemes: ['etxe', '-tik'], correctSequence: ['etxe', '-tik'], correctWord: 'etxetik', targetMeaning: 'from the house' },
-  { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
+  { initialMorphemes: ['-ra', 'etxe'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
   { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
   { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
   { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
@@ -111,6 +111,12 @@ const getDisplayWord = (morphemes: string[]): string => {
   } else if (word.endsWith('aari')) {
     // Rule: Dative Vowel Merger (a + a + ri -> ari)
     word = word.replace(/aari$/, 'ari');
+  } else if (word.endsWith('aara')) {
+    // Rule: Allative merger for roots ending in 'a' (e.g. neska + a + ra -> neskara)
+    word = word.replace(/aara$/, 'ara');
+  } else if (word.match(/[eiou]ara$/)) {
+    // Rule: Allative merger for other vowels (e.g. hiri + a + ra -> hirira)
+    word = word.slice(0, -3) + word.slice(-2);
   } else if (word.endsWith('aak')) {
     // Rule: Vowel merge for plural absolutive (a + ak -> ak)
     word = word.replace(/aak$/, 'ak');
