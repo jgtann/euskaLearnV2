@@ -6,10 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RotateCcw, BrainCircuit, CheckCircle2, XCircle } from 'lucide-react';
+import { RotateCcw, BrainCircuit, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import { getEncouragementAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 // --- Types & SRS Logic ---
 type SRSData = Record<string, { level: number; nextReview: number }>;
@@ -32,15 +33,21 @@ const WordCard = ({
 
   const hasSrs = onSrsUpdate !== undefined;
 
-  return (
+  const CardContentWrapper = ({ children }: { children: React.ReactNode }) => (
     <Card 
       className={cn(
         "group relative flex min-h-[140px] flex-col transition-all duration-300",
-        hasSrs && !isFlipped && "cursor-pointer hover:shadow-md",
+        hasSrs && !isFlipped ? "cursor-pointer hover:shadow-md" : "",
         isFlipped ? "border-primary bg-primary/5" : "bg-card"
       )}
       onClick={hasSrs && !isFlipped ? () => setIsFlipped(true) : undefined}
     >
+      {children}
+    </Card>
+  );
+
+  const cardInnerContent = (
+    <>
       <CardHeader className="flex-row items-start justify-between pb-2">
         <div className="space-y-1">
           <Badge variant="outline" className="text-[10px] uppercase tracking-tighter">
@@ -50,6 +57,11 @@ const WordCard = ({
             {word.basque}
           </CardTitle>
         </div>
+        {!hasSrs && (
+            <div className="flex size-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                <ChevronRight className="size-5" />
+            </div>
+        )}
       </CardHeader>
       
       <CardContent className="flex flex-col justify-end flex-grow">
@@ -90,7 +102,20 @@ const WordCard = ({
            ))}
         </div>
       )}
-    </Card>
+    </>
+  );
+
+  if (hasSrs) {
+    return <CardContentWrapper>{cardInnerContent}</CardContentWrapper>;
+  }
+
+  // If not in SRS mode, wrap with a Link
+  return (
+    <Link href={`/vocabulary/${encodeURIComponent(word.basque)}`} className="no-underline" legacyBehavior>
+      <a className="block h-full transition-transform hover:-translate-y-1">
+        <CardContentWrapper>{cardInnerContent}</CardContentWrapper>
+      </a>
+    </Link>
   );
 };
 

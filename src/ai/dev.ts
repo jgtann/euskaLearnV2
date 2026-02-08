@@ -6,3 +6,4 @@ import '@/ai/flows/ai-powered-translanguaging.ts';
 import '@/ai/flows/self-introduction-flow.ts';
 import '@/ai/flows/text-to-speech-flow.ts';
 import '@/ai/flows/encouragement-flow.ts';
+import '@/ai/flows/sentence-examples-flow.ts';

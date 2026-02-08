@@ -56,7 +56,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const getPageTitle = () => {
     if (pathname === '/dashboard') return 'Dashboard';
-    const currentNav = navItems.find(item => item.href === pathname);
+    // Find the longest matching href to handle nested routes like /vocabulary/word
+    const currentNav = navItems
+      .filter(item => pathname.startsWith(item.href))
+      .sort((a, b) => b.href.length - a.href.length)[0];
     return currentNav ? currentNav.label : '';
   }
   
@@ -125,7 +128,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href)}
                   tooltip={{ children: item.label }}
                 >
                   <Link href={item.href}>

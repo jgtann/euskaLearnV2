@@ -5,6 +5,7 @@ import { analyzeErrors } from '@/ai/flows/personalized-error-analysis';
 import { translateAndExplain } from '@/ai/flows/ai-powered-translanguaging';
 import { buildIntroduction } from '@/ai/flows/self-introduction-flow';
 import { getEncouragement as getEncouragementFlow } from '@/ai/flows/encouragement-flow';
+import { getSentenceExamples } from '@/ai/flows/sentence-examples-flow';
 import { z } from 'zod';
 
 const translateSchema = z.object({
@@ -87,4 +88,30 @@ export async function getEncouragementAction(score: number) {
     console.error(error);
     return { error: 'Failed to get encouragement. Please try again later.' };
   }
+}
+
+const sentenceExamplesSchema = z.object({
+  basqueWord: z.string(),
+  englishWord: z.string(),
+});
+
+export async function getSentenceExamplesAction(prevState: any, formData: FormData) {
+    const validatedFields = sentenceExamplesSchema.safeParse({
+        basqueWord: formData.get('basqueWord'),
+        englishWord: formData.get('englishWord'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            error: "Invalid input provided for sentence examples."
+        };
+    }
+
+    try {
+        const result = await getSentenceExamples(validatedFields.data);
+        return { data: result };
+    } catch (error: any) {
+        console.error('Sentence Example Error:', error);
+        return { error: `Failed to generate sentence examples. Details: ${error.message}` };
+    }
 }
