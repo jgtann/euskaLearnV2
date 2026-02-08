@@ -104,18 +104,21 @@ const getDisplayWord = (morphemes: string[]): string => {
     word = word.replace(rDoublingRegex, '$1ra$2');
   } else if (word.endsWith('akk')) {
     // Rule: Plural Ergative (ak + k -> ek)
-    word = word.slice(0, -3) + 'ek';
+    word = word.replace(/akk$/, 'ek');
   } else if (word.endsWith('aekin')) {
     // Rule: Intervocalic 'r' insertion (a + ekin -> arekin)
-    word = word.slice(0, -4) + 'arekin';
+    word = word.replace(/aekin$/, 'arekin');
   } else if (word.endsWith('aari')) {
     // Rule: Dative Vowel Merger (a + a + ri -> ari)
-    word = word.slice(0, -3) + 'ri';
+    word = word.replace(/aari$/, 'ari');
   } else if (word.endsWith('aak')) {
     // Rule: Vowel merge for plural absolutive (a + ak -> ak)
-    word = word.slice(0, -3) + 'ak';
+    word = word.replace(/aak$/, 'ak');
+  } else if (word.endsWith('aan')) {
+    // Rule: Vowel merge for inessive (a + a + n -> an) e.g., eskolaan -> eskolan
+    word = word.replace(/aan$/, 'an');
   }
-
+  
   return word;
 };
 
@@ -149,27 +152,21 @@ export function MorphemeConstructor() {
   const availableMorphemes = useMemo(() => {
     if (!currentChallenge) return [];
     
-    const initialCounts = currentChallenge.initialMorphemes.reduce((acc, m) => {
-      acc[m] = (acc[m] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
     const constructedCounts = constructed.reduce((acc, m) => {
       acc[m] = (acc[m] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return currentChallenge.initialMorphemes.filter(morpheme => {
-      const total = initialCounts[morpheme] || 0;
-      const used = constructedCounts[morpheme] || 0;
-      if (used < total) {
-        // Decrement the count for the next check if there are duplicates
-        constructedCounts[morpheme] = used + 1;
-        return true;
-      }
-      return false;
-    }).sort(() => Math.random() - 0.5);
+    const initialCounts = currentChallenge.initialMorphemes.reduce((acc, m) => {
+      acc[m] = (acc[m] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
+    return Object.keys(initialCounts).flatMap(morpheme => {
+      const usedCount = constructedCounts[morpheme] || 0;
+      const availableCount = initialCounts[morpheme] - usedCount;
+      return Array(availableCount > 0 ? availableCount : 0).fill(morpheme);
+    }).sort(() => Math.random() - 0.5); // Shuffle remaining tiles for variety
   }, [currentChallenge, constructed]);
 
   const handleTileInteraction = (morpheme: string, fromPalette: boolean, index?: number) => {
