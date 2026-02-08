@@ -63,18 +63,14 @@ const synthesizeSpeechFlow = ai.defineFlow(
   },
   async input => {
     const { text } = input;
+    const ssmlPrompt = `<speak xml:lang="eu-ES">${text}</speak>`;
     
     const { media } = await ai.generate({
         model: googleAI.model('gemini-2.5-flash-preview-tts'),
         config: {
             responseModalities: ['AUDIO'],
-            speechConfig: {
-                voiceConfig: {
-                    languageCode: 'eu-ES'
-                }
-            },
         },
-        prompt: text,
+        prompt: ssmlPrompt,
     });
 
     if (!media) {
