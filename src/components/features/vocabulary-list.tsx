@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo, useState, useEffect, useTransition } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { vocabulary, type Word } from '@/lib/vocabulary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Volume2, Loader2, RotateCcw, BrainCircuit, CheckCircle2, XCircle } from 'lucide-react';
-import { getSpeech } from '@/app/actions/speech';
+import { RotateCcw, BrainCircuit, CheckCircle2, XCircle } from 'lucide-react';
 import { getEncouragementAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -17,14 +16,10 @@ type SRSData = Record<string, { level: number; nextReview: number }>;
 
 const WordCard = ({ 
   word, 
-  onClick, 
-  isPlaying, 
   srsLevel, 
   onSrsUpdate 
 }: { 
   word: Word, 
-  onClick: (text: string) => void, 
-  isPlaying: boolean,
   srsLevel?: number,
   onSrsUpdate?: (basque: string, success: boolean) => void
 }) => {
@@ -55,15 +50,6 @@ const WordCard = ({
             {word.basque}
           </CardTitle>
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => { e.stopPropagation(); onClick(word.basque); }}
-          disabled={isPlaying}
-        >
-          {isPlaying ? <Loader2 className="animate-spin" /> : <Volume2 className="h-4 w-4" />}
-        </Button>
       </CardHeader>
       
       <CardContent className="flex flex-col justify-end flex-grow">
@@ -110,8 +96,6 @@ const WordCard = ({
 
 export function VocabularyList() {
   const [srsData, setSrsData] = useState<SRSData>({});
-  const [playingWord, setPlayingWord] = useState<string | null>(null);
-  const [isAudioPending, startAudioTransition] = useTransition();
   const [isReviewMode, setIsReviewMode] = useState(false);
   const [celebration, setCelebration] = useState<{basque: string, english: string} | null>(null);
   const { toast } = useToast();
@@ -138,28 +122,6 @@ export function VocabularyList() {
     } catch (error) {
        console.error("Could not save SRS data to localStorage", error);
     }
-  };
-
-  const handleWordClick = (basqueWord: string) => {
-    if (isAudioPending) return;
-    setPlayingWord(basqueWord);
-    startAudioTransition(async () => {
-      const formData = new FormData();
-      formData.append('text', basqueWord);
-      const response = await getSpeech(null, formData);
-      if (response.data?.audioDataUri) {
-        const audio = new Audio(response.data.audioDataUri);
-        audio.play().catch(err => toast({ title: "Audio Playback Error", description: "The browser blocked autoplay.", variant: "destructive"}));
-        audio.onended = () => setPlayingWord(null);
-        audio.onerror = () => {
-          setPlayingWord(null);
-          toast({ title: "Audio Error", description: "Could not play the audio file.", variant: "destructive" });
-        }
-      } else {
-        setPlayingWord(null);
-        toast({ title: "Speech Synthesis Error", description: response.error, variant: "destructive" });
-      }
-    });
   };
 
   const handleSessionComplete = async (score: number) => {
@@ -196,19 +158,6 @@ export function VocabularyList() {
       handleSessionComplete(masteryCount);
     }
   }, [dueWords.length, isReviewMode, srsData, masteryCount]);
-
-  useEffect(() => {
-    if (isReviewMode && dueWords.length > 0) {
-      // Pre-cache the first word's audio to improve perceived performance
-      const firstWord = dueWords[0].basque;
-      const formData = new FormData();
-      formData.append('text', firstWord);
-      getSpeech(null, formData).then(res => {
-        if (res.data?.audioDataUri) new Audio(res.data.audioDataUri).load();
-      });
-    }
-  }, [isReviewMode, dueWords]);
-
 
   const categories = useMemo(() => Array.from(new Set(vocabulary.map(v => v.category))), []);
 
@@ -253,8 +202,6 @@ export function VocabularyList() {
                 <WordCard 
                   key={word.basque} 
                   word={word} 
-                  onClick={handleWordClick}
-                  isPlaying={playingWord === word.basque}
                   srsLevel={srsData[word.basque]?.level}
                   onSrsUpdate={handleSrsUpdate}
                 />
@@ -289,7 +236,7 @@ export function VocabularyList() {
             <TabsContent key={category} value={category} className="mt-6">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {vocabulary.filter(word => word.category === category).map((word) => (
-                      <WordCard key={word.basque} word={word} onClick={handleWordClick} isPlaying={playingWord === word.basque} srsLevel={srsData[word.basque]?.level} />
+                      <WordCard key={word.basque} word={word} srsLevel={srsData[word.basque]?.level} />
                   ))}
               </div>
             </TabsContent>
