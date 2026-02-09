@@ -30,8 +30,7 @@ const challenges = [
   { initialMorphemes: ['-ri', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man' },
   { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
   { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
-  { initialMorphemes: ['etxe', '-tik'], correctSequence: ['etxe', '-tik'], correctWord: 'etxetik', targetMeaning: 'from the house' },
-  { initialMorphemes: ['-ra', 'etxe', '-a'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
+  { initialMorphemes: ['etxe', '-a', '-ra'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
   { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
   { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
   { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
@@ -95,27 +94,29 @@ const MorphemeTile = ({
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
 
-  const rDoublingRegex = /(ur|ar)a([knr])/;
-  if (rDoublingRegex.test(word)) {
-    word = word.replace(rDoublingRegex, '$1ra$2');
-  } else if (word.endsWith('akk')) {
-    word = word.replace(/akk$/, 'ek');
-  } else if (word.endsWith('aekin')) {
+  if (word.endsWith('aekin')) {
     word = word.replace(/aekin$/, 'arekin');
   } else if (word.endsWith('aari')) {
     word = word.replace(/aari$/, 'ari');
-  } else if (word.match(/[eiou]ara$/)) {
-    word = word.slice(0, -3) + word.slice(-2);
-  } else if (word.endsWith('aara')) {
-    word = word.replace(/aara$/, 'ara');
   } else if (word.endsWith('aak')) {
     word = word.replace(/aak$/, 'ak');
   } else if (word.endsWith('aan')) {
     word = word.replace(/aan$/, 'an');
   } else if (word.endsWith('aatik')) {
     word = word.replace(/aatik$/, 'atik');
+  } else if (word.match(/[eiou]ara$/)) {
+    word = word.slice(0, -3) + word.slice(-2);
+  } else if (word.endsWith('aara')) {
+    word = word.replace(/aara$/, 'ara');
+  } else if (word.endsWith('akk')) {
+    word = word.replace(/akk$/, 'ek');
   } else if (word.endsWith('aa')) {
     word = word.slice(0, -1);
+  } else {
+      const rDoublingRegex = /(ur|ar)a([knr])/;
+      if (rDoublingRegex.test(word)) {
+        word = word.replace(rDoublingRegex, '$1ra$2');
+      }
   }
   
   return word;
