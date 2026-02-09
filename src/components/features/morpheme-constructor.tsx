@@ -9,58 +9,58 @@ import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 
 const challenges = [
-  { initialMorphemes: ['-a', 'txakur', '-k'], correctSequence: ['txakur', '-a', '-k'], correctWord: 'txakurrak', targetMeaning: 'the dog (subject)' },
+  { initialMorphemes: ['txakur', '-a', '-k'], correctSequence: ['txakur', '-a', '-k'], correctWord: 'txakurrak', targetMeaning: 'the dog (subject)' },
   { initialMorphemes: ['etxe', '-a'], correctSequence: ['etxe', '-a'], correctWord: 'etxea', targetMeaning: 'the house' },
-  { initialMorphemes: ['-ak', 'gizon'], correctSequence: ['gizon', '-ak'], correctWord: 'gizonak', targetMeaning: 'the men' },
-  { initialMorphemes: ['-ri', 'emakume', '-a'], correctSequence: ['emakume', '-a', '-ri'], correctWord: 'emakumeari', targetMeaning: 'to the woman' },
+  { initialMorphemes: ['gizon', '-ak'], correctSequence: ['gizon', '-ak'], correctWord: 'gizonak', targetMeaning: 'the men' },
+  { initialMorphemes: ['emakume', '-a', '-ri'], correctSequence: ['emakume', '-a', '-ri'], correctWord: 'emakumeari', targetMeaning: 'to the woman' },
   { initialMorphemes: ['liburu', '-a'], correctSequence: ['liburu', '-a'], correctWord: 'liburua', targetMeaning: 'the book' },
-  { initialMorphemes: ['-ak', 'aita'], correctSequence: ['aita', '-ak'], correctWord: 'aitak', targetMeaning: 'the fathers' },
-  { initialMorphemes: ['-ak', 'alaba'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters' },
+  { initialMorphemes: ['aita', '-ak'], correctSequence: ['aita', '-ak'], correctWord: 'aitak', targetMeaning: 'the fathers' },
+  { initialMorphemes: ['alaba', '-ak'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters' },
   { initialMorphemes: ['haur', '-ak'], correctSequence: ['haur', '-ak'], correctWord: 'haurrak', targetMeaning: 'the children' },
-  { initialMorphemes: ['-n', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-n'], correctWord: 'hirian', targetMeaning: 'in the city' },
-  { initialMorphemes: ['-a', 'mahai'], correctSequence: ['mahai', '-a'], correctWord: 'mahaia', targetMeaning: 'the table' },
+  { initialMorphemes: ['hiri', '-a', '-n'], correctSequence: ['hiri', '-a', '-n'], correctWord: 'hirian', targetMeaning: 'in the city' },
+  { initialMorphemes: ['mahai', '-a'], correctSequence: ['mahai', '-a'], correctWord: 'mahaia', targetMeaning: 'the table' },
   { initialMorphemes: ['lan', '-a'], correctSequence: ['lan', '-a'], correctWord: 'lana', targetMeaning: 'the work' },
   { initialMorphemes: ['auto', '-a'], correctSequence: ['auto', '-a'], correctWord: 'autoa', targetMeaning: 'the car' },
   { initialMorphemes: ['janari', '-a'], correctSequence: ['janari', '-a'], correctWord: 'janaria', targetMeaning: 'the food' },
   { initialMorphemes: ['diru', '-a'], correctSequence: ['diru', '-a'], correctWord: 'dirua', targetMeaning: 'the money' },
-  { initialMorphemes: ['-ak', 'etxe'], correctSequence: ['etxe', '-ak'], correctWord: 'etxeak', targetMeaning: 'the houses' },
-  { initialMorphemes: ['-ak', 'liburu'], correctSequence: ['liburu', '-ak'], correctWord: 'liburuak', targetMeaning: 'the books' },
+  { initialMorphemes: ['etxe', '-ak'], correctSequence: ['etxe', '-ak'], correctWord: 'etxeak', targetMeaning: 'the houses' },
+  { initialMorphemes: ['liburu', '-ak'], correctSequence: ['liburu', '-ak'], correctWord: 'liburuak', targetMeaning: 'the books' },
   { initialMorphemes: ['lagun', '-ak'], correctSequence: ['lagun', '-ak'], correctWord: 'lagunak', targetMeaning: 'the friends' },
-  { initialMorphemes: ['-n', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-n'], correctWord: 'eskolan', targetMeaning: 'in the school' },
-  { initialMorphemes: ['-ri', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man' },
+  { initialMorphemes: ['eskola', '-a', '-n'], correctSequence: ['eskola', '-a', '-n'], correctWord: 'eskolan', targetMeaning: 'in the school' },
+  { initialMorphemes: ['gizon', '-a', '-ri'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man' },
   { initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
-  { initialMorphemes: ['-ekin', 'lagun', '-a'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
+  { initialMorphemes: ['lagun', '-a', '-ekin'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
   { initialMorphemes: ['etxe', '-a', '-ra'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
-  { initialMorphemes: ['-ko', 'hiri'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
-  { initialMorphemes: ['-a', 'begi'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
+  { initialMorphemes: ['hiri', '-ko'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
+  { initialMorphemes: ['begi', '-a'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
   { initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
-  { initialMorphemes: ['-ak', 'ama'], correctSequence: ['ama', '-ak'], correctWord: 'amak', targetMeaning: 'the mothers' },
+  { initialMorphemes: ['ama', '-ak'], correctSequence: ['ama', '-ak'], correctWord: 'amak', targetMeaning: 'the mothers' },
   { initialMorphemes: ['seme', '-a'], correctSequence: ['seme', '-a'], correctWord: 'semea', targetMeaning: 'the son' },
-  { initialMorphemes: ['-tik', 'auto', '-a'], correctSequence: ['auto', '-a', '-tik'], correctWord: 'autotik', targetMeaning: 'from the car' },
-  { initialMorphemes: ['-ra', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-ra'], correctWord: 'eskolara', targetMeaning: 'to the school' },
-  { initialMorphemes: ['-n', 'urte', '-a'], correctSequence: ['urte', '-a', '-n'], correctWord: 'urtean', targetMeaning: 'in the year' },
-  { initialMorphemes: ['-n', 'egun', '-a'], correctSequence: ['egun', '-a', '-n'], correctWord: 'egunean', targetMeaning: 'in the day' },
-  { initialMorphemes: ['-n', 'bizitza', '-a'], correctSequence: ['bizitza', '-a', '-n'], correctWord: 'bizitzan', targetMeaning: 'in life' },
-  { initialMorphemes: ['-n', 'leku', '-a'], correctSequence: ['leku', '-a', '-n'], correctWord: 'lekuan', targetMeaning: 'in the place' },
+  { initialMorphemes: ['auto', '-a', '-tik'], correctSequence: ['auto', '-a', '-tik'], correctWord: 'autotik', targetMeaning: 'from the car' },
+  { initialMorphemes: ['eskola', '-a', '-ra'], correctSequence: ['eskola', '-a', '-ra'], correctWord: 'eskolara', targetMeaning: 'to the school' },
+  { initialMorphemes: ['urte', '-a', '-n'], correctSequence: ['urte', '-a', '-n'], correctWord: 'urtean', targetMeaning: 'in the year' },
+  { initialMorphemes: ['egun', '-a', '-n'], correctSequence: ['egun', '-a', '-n'], correctWord: 'egunean', targetMeaning: 'in the day' },
+  { initialMorphemes: ['bizitza', '-a', '-n'], correctSequence: ['bizitza', '-a', '-n'], correctWord: 'bizitzan', targetMeaning: 'in life' },
+  { initialMorphemes: ['leku', '-a', '-n'], correctSequence: ['leku', '-a', '-n'], correctWord: 'lekuan', targetMeaning: 'in the place' },
   { initialMorphemes: ['arazo', '-a'], correctSequence: ['arazo', '-a'], correctWord: 'arazoa', targetMeaning: 'the problem' },
   { initialMorphemes: ['arazo', '-ak'], correctSequence: ['arazo', '-ak'], correctWord: 'arazoak', targetMeaning: 'the problems' },
-  { initialMorphemes: ['-n', 'aste', '-a'], correctSequence: ['aste', '-a', '-n'], correctWord: 'astean', targetMeaning: 'in the week' },
+  { initialMorphemes: ['aste', '-a', '-n'], correctSequence: ['aste', '-a', '-n'], correctWord: 'astean', targetMeaning: 'in the week' },
   { initialMorphemes: ['puntu', '-a'], correctSequence: ['puntu', '-a'], correctWord: 'puntua', targetMeaning: 'the point' },
-  { initialMorphemes: ['-n', 'talde', '-a'], correctSequence: ['talde', '-a', '-n'], correctWord: 'taldean', targetMeaning: 'in the group' },
-  { initialMorphemes: ['-n', 'mundu', '-a'], correctSequence: ['mundu', '-a', '-n'], correctWord: 'munduan', targetMeaning: 'in the world' },
+  { initialMorphemes: ['talde', '-a', '-n'], correctSequence: ['talde', '-a', '-n'], correctWord: 'taldean', targetMeaning: 'in the group' },
+  { initialMorphemes: ['mundu', '-a', '-n'], correctSequence: ['mundu', '-a', '-n'], correctWord: 'munduan', targetMeaning: 'in the world' },
   { initialMorphemes: ['galdera', '-a'], correctSequence: ['galdera', '-a'], correctWord: 'galdera', targetMeaning: 'the question' },
   { initialMorphemes: ['galdera', '-ak'], correctSequence: ['galdera', '-ak'], correctWord: 'galderak', targetMeaning: 'the questions' },
-  { initialMorphemes: ['-ri', 'aita', '-a'], correctSequence: ['aita', '-a', '-ri'], correctWord: 'aitari', targetMeaning: 'to the father' },
-  { initialMorphemes: ['-ri', 'ama', '-a'], correctSequence: ['ama', '-a', '-ri'], correctWord: 'amari', targetMeaning: 'to the mother' },
-  { initialMorphemes: ['-ak', 'seme'], correctSequence: ['seme', '-ak'], correctWord: 'semeak', targetMeaning: 'the sons' },
-  { initialMorphemes: ['-tik', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-tik'], correctWord: 'hiritik', targetMeaning: 'from the city' },
-  { initialMorphemes: ['-ra', 'hiri', '-a'], correctSequence: ['hiri', '-a', '-ra'], correctWord: 'hirira', targetMeaning: 'to the city' },
-  { initialMorphemes: ['-tik', 'eskola', '-a'], correctSequence: ['eskola', '-a', '-tik'], correctWord: 'eskolatik', targetMeaning: 'from the school' },
-  { initialMorphemes: ['-ekin', 'gizon', '-a'], correctSequence: ['gizon', '-a', '-ekin'], correctWord: 'gizonarekin', targetMeaning: 'with the man' },
-  { initialMorphemes: ['-ekin', 'emakume', '-a'], correctSequence: ['emakume', '-a', '-ekin'], correctWord: 'emakumearekin', targetMeaning: 'with the woman' },
-  { initialMorphemes: ['-dun', 'diru'], correctSequence: ['diru', '-dun'], correctWord: 'dirudun', targetMeaning: 'wealthy (having money)' },
-  { initialMorphemes: ['-gabe', 'diru'], correctSequence: ['diru', '-gabe'], correctWord: 'dirugabe', targetMeaning: 'without money' },
-  { initialMorphemes: ['-z', 'auto'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car' },
+  { initialMorphemes: ['aita', '-a', '-ri'], correctSequence: ['aita', '-a', '-ri'], correctWord: 'aitari', targetMeaning: 'to the father' },
+  { initialMorphemes: ['ama', '-a', '-ri'], correctSequence: ['ama', '-a', '-ri'], correctWord: 'amari', targetMeaning: 'to the mother' },
+  { initialMorphemes: ['seme', '-ak'], correctSequence: ['seme', '-ak'], correctWord: 'semeak', targetMeaning: 'the sons' },
+  { initialMorphemes: ['hiri', '-a', '-tik'], correctSequence: ['hiri', '-a', '-tik'], correctWord: 'hiritik', targetMeaning: 'from the city' },
+  { initialMorphemes: ['hiri', '-a', '-ra'], correctSequence: ['hiri', '-a', '-ra'], correctWord: 'hirira', targetMeaning: 'to the city' },
+  { initialMorphemes: ['eskola', '-a', '-tik'], correctSequence: ['eskola', '-a', '-tik'], correctWord: 'eskolatik', targetMeaning: 'from the school' },
+  { initialMorphemes: ['gizon', '-a', '-ekin'], correctSequence: ['gizon', '-a', '-ekin'], correctWord: 'gizonarekin', targetMeaning: 'with the man' },
+  { initialMorphemes: ['emakume', '-a', '-ekin'], correctSequence: ['emakume', '-a', '-ekin'], correctWord: 'emakumearekin', targetMeaning: 'with the woman' },
+  { initialMorphemes: ['diru', '-dun'], correctSequence: ['diru', '-dun'], correctWord: 'dirudun', targetMeaning: 'wealthy (having money)' },
+  { initialMorphemes: ['diru', '-gabe'], correctSequence: ['diru', '-gabe'], correctWord: 'dirugabe', targetMeaning: 'without money' },
+  { initialMorphemes: ['auto', '-z'], correctSequence: ['auto', '-z'], correctWord: 'autoz', targetMeaning: 'by car' },
 ];
 
 const MorphemeTile = ({
@@ -94,16 +94,16 @@ const MorphemeTile = ({
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
 
-  if (word.endsWith('aekin')) {
-    word = word.replace(/aekin$/, 'arekin');
-  } else if (word.endsWith('aari')) {
+  if (word.endsWith('aari')) {
     word = word.replace(/aari$/, 'ari');
   } else if (word.endsWith('aak')) {
     word = word.replace(/aak$/, 'ak');
+  } else if (word.endsWith('aekin')) {
+    word = word.replace(/aekin$/, 'arekin');
   } else if (word.endsWith('aan')) {
     word = word.replace(/aan$/, 'an');
   } else if (word.endsWith('aatik')) {
-    word = word.replace(/aatik$/, 'atik');
+      word = word.replace(/aatik$/, 'atik');
   } else if (word.match(/[eiou]ara$/)) {
     word = word.slice(0, -3) + word.slice(-2);
   } else if (word.endsWith('aara')) {
@@ -129,6 +129,7 @@ export function MorphemeConstructor() {
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [isAudioPending, startAudioTransition] = useTransition();
+  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
@@ -197,12 +198,26 @@ export function MorphemeConstructor() {
 
   const handlePlayAudio = (word: string) => {
     if (isAudioPending) return;
+
+    if (audioCache[word]) {
+      new Audio(audioCache[word]).play().catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Audio Playback Error",
+          description: "Could not play the audio.",
+        });
+      });
+      return;
+    }
+
     startAudioTransition(async () => {
       const formData = new FormData();
       formData.append('text', word);
       const response = await getSpeech(null, formData);
       if (response.data?.audioDataUri) {
-        new Audio(response.data.audioDataUri).play().catch(() => {
+        const audioDataUri = response.data.audioDataUri;
+        setAudioCache(prev => ({ ...prev, [word]: audioDataUri }));
+        new Audio(audioDataUri).play().catch(() => {
           toast({
             variant: "destructive",
             title: "Audio Playback Error",
@@ -210,11 +225,7 @@ export function MorphemeConstructor() {
           });
         });
       } else {
-         toast({
-            variant: "destructive",
-            title: "Audio Error",
-            description: response.error || "Could not generate audio.",
-        });
+        console.error("Speech synthesis error:", response.error);
       }
     });
   };

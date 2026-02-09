@@ -35,8 +35,9 @@ function SubmitButton() {
 }
 
 export function TranslationTool() {
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState<any>(initialState);
   const [isAudioPending, startAudioTransition] = useTransition();
+  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
@@ -61,22 +62,29 @@ export function TranslationTool() {
   }
 
   const handlePlayAudio = () => {
-    if (!state.data?.basqueTranslation || isAudioPending) return;
+    const translationText = state.data?.basqueTranslation;
+    if (!translationText || isAudioPending) return;
+
+    if (audioCache[translationText]) {
+      new Audio(audioCache[translationText]).play().catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Audio Playback Error",
+          description: "Could not play the audio file.",
+        });
+      });
+      return;
+    }
 
     startAudioTransition(async () => {
         const formData = new FormData();
-        formData.append('text', state.data.basqueTranslation);
-
+        formData.append('text', translationText);
         const response = await getSpeech(null, formData);
 
-        if (response.error) {
-            toast({
-                variant: "destructive",
-                title: "Speech Synthesis Error",
-                description: response.error,
-            });
-        } else if (response.data?.audioDataUri) {
-            const audio = new Audio(response.data.audioDataUri);
+        if (response.data?.audioDataUri) {
+            const audioDataUri = response.data.audioDataUri;
+            setAudioCache(prev => ({ ...prev, [translationText]: audioDataUri }));
+            const audio = new Audio(audioDataUri);
             audio.play().catch(err => {
                  toast({
                     variant: "destructive",
@@ -84,6 +92,8 @@ export function TranslationTool() {
                     description: "Could not play the audio file.",
                 });
             });
+        } else {
+            console.error("Speech synthesis error:", response.error);
         }
     });
   }
@@ -135,7 +145,7 @@ export function TranslationTool() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {state.data.explanation.map((item, index) => (
+              {state.data.explanation.map((item: any, index: number) => (
                 <div key={index} className="p-4 border rounded-lg bg-background/50 text-foreground/90">
                   <p className="font-bold text-primary">{item.concept}</p>
                   <p className="mt-1">{item.explanation}</p>

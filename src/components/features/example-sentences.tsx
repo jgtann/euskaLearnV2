@@ -98,6 +98,7 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
   const [isFetchingSentences, startFetchingSentences] = useTransition();
   const [playingSentence, setPlayingSentence] = useState<string | null>(null);
   const [isAudioPending, startAudioTransition] = useTransition();
+  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const { toast } = useToast();
   
   useEffect(() => {
@@ -123,22 +124,30 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
     if (isAudioPending) return;
 
     setPlayingSentence(sentence);
+
+    if (audioCache[sentence]) {
+      const audio = new Audio(audioCache[sentence]);
+      audio.play().catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Audio Playback Error",
+          description: "Could not play the audio file.",
+        });
+      });
+      audio.onended = () => setPlayingSentence(null);
+      return;
+    }
+
     startAudioTransition(async () => {
         const formData = new FormData();
         formData.append('text', sentence);
 
         const response = await getSpeech(null, formData);
-        let audio: HTMLAudioElement | null = null;
 
-        if (response.error) {
-            toast({
-                variant: "destructive",
-                title: "Speech Synthesis Error",
-                description: response.error,
-            });
-            setPlayingSentence(null);
-        } else if (response.data?.audioDataUri) {
-            audio = new Audio(response.data.audioDataUri);
+        if (response.data?.audioDataUri) {
+            const audioDataUri = response.data.audioDataUri;
+            setAudioCache(prev => ({ ...prev, [sentence]: audioDataUri }));
+            const audio = new Audio(audioDataUri);
             audio.play().catch(err => {
                  toast({
                     variant: "destructive",
@@ -147,10 +156,9 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
                 });
             });
             audio.onended = () => setPlayingSentence(null);
-        }
-        
-        if(!response.data?.audioDataUri) {
-             setPlayingSentence(null);
+        } else {
+            console.error("Speech synthesis error:", response.error);
+            setPlayingSentence(null);
         }
     });
   }
