@@ -67,12 +67,12 @@ export default function ProgressPage() {
         <div>
           <h1 className="font-heading text-4xl font-bold">Euskal Maila</h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Your linguistic proficiency and cognitive activation map.
+            Your linguistic proficiency and CEFR A1-A2 activation map.
           </p>
         </div>
         <div className="flex gap-2">
             <Badge variant="secondary" className="bg-basque-green/10 text-basque-green border-basque-green/20 px-4 py-1">
-                A1 Level Receptive
+                A1-A2 Framework Validated
             </Badge>
         </div>
       </div>

@@ -18,17 +18,17 @@ import {
   Languages, 
   BarChart, 
   ShieldAlert, 
-  User, 
-  NotebookText, 
   Trophy, 
   Users,
-  Sparkles
+  Sparkles,
+  CheckCircle2,
+  Clock
 } from "lucide-react";
 import { useUser } from '@/firebase';
 
 const features = [
   { title: "Morpheme Construct", description: "Manage agglutination with snap-tiles.", href: "/learn", icon: <BookOpen className="size-6 text-primary" /> },
-  { title: "Smart Vocabulary", description: "SRS-driven flashcard review.", href: "/vocabulary", icon: <NotebookText className="size-6 text-primary" /> },
+  { title: "Smart Vocabulary", description: "SRS-driven flashcard review.", href: "/vocabulary", icon: <CheckCircle2 className="size-6 text-primary" /> },
   { title: "Translanguaging", description: "AI-powered cognitive scaffolding.", href: "/translate", icon: <Languages className="size-6 text-primary" /> },
   { title: "Proficiency Radar", description: "Map your grammatical competence.", href: "/progress", icon: <BarChart className="size-6 text-primary" /> },
 ];
@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Thesis 2.1 & 3.3: High-Agency Activation Header */}
+      {/* Thesis 4.7: Gamified Design - High-Agency Activation Header */}
       <div className="relative overflow-hidden rounded-3xl bg-basque-green p-8 text-white shadow-xl">
         <div className="absolute right-[-30px] top-[-30px] opacity-10">
           <Trophy size={200} />
@@ -47,13 +47,13 @@ export default function DashboardPage() {
           <div className="space-y-2">
             <h1 className="font-heading text-4xl font-black tracking-tight">Kaixo, {user?.displayName?.split(' ')[0] || 'Ikasle'}!</h1>
             <div className="flex gap-2 items-center">
-              <Badge className="bg-basque-red hover:bg-basque-red border-none">A1 Scholar</Badge>
+              <Badge className="bg-basque-red hover:bg-basque-red border-none">CEFR A1 Scholar</Badge>
               <span className="text-basque-stone/80 text-sm font-medium">5 Day Streak 🔥</span>
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-4 min-w-[120px] border border-white/20">
-              <p className="text-[10px] uppercase opacity-70 font-bold">Daily Goal</p>
+            <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-4 min-w-[140px] border border-white/20">
+              <p className="text-[10px] uppercase opacity-70 font-bold tracking-widest">Daily Progress</p>
               <p className="text-2xl font-black">80%</p>
               <Progress value={80} className="h-1 mt-2 bg-white/20" />
             </div>
@@ -79,6 +79,32 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           ))}
+          
+          {/* Thesis 4.5: Retrieval Practice - Daily Quests */}
+          <Card className="md:col-span-2 bg-muted/30 border-dashed">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-bold">
+                <Clock className="size-4 text-orange-500" />
+                Daily Retrieval Quests
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+               <div className="flex items-center gap-3 p-3 rounded-xl bg-background border">
+                  <CheckCircle2 className="size-5 text-green-500" />
+                  <div className="flex-1">
+                    <p className="text-xs font-bold">Case Study: Nork</p>
+                    <p className="text-[10px] text-muted-foreground">Complete 5 Ergative puzzles.</p>
+                  </div>
+               </div>
+               <div className="flex items-center gap-3 p-3 rounded-xl bg-background border opacity-60">
+                  <div className="size-5 rounded-full border-2 border-muted" />
+                  <div className="flex-1">
+                    <p className="text-xs font-bold">Syntax Master</p>
+                    <p className="text-[10px] text-muted-foreground">Reconstruct 3 complex sentences.</p>
+                  </div>
+               </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Thesis 3.3 & 5.5: Social Scaffolding (Community Tavern) */}
