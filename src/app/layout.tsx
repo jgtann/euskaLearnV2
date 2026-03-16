@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/app-layout';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter, Lexend } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 const fontSans = Inter({
   subsets: ['latin'],
