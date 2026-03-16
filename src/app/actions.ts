@@ -28,7 +28,6 @@ export async function getTranslation(prevState: any, formData: FormData) {
     const result = await translateAndExplain({ englishText: validatedFields.data.text });
     return { data: result };
   } catch (error) {
-    console.error(error);
     return { error: 'Failed to get translation. Please try again later.' };
   }
 }
@@ -42,7 +41,6 @@ export async function getErrorAnalysis(userData: string) {
     const result = await analyzeErrors({ userData: userData });
     return { data: result };
   } catch (error) {
-    console.error(error);
     return { error: 'Failed to analyze errors. Please try again later.' };
   }
 }
@@ -72,7 +70,6 @@ export async function getIntroduction(prevState: any, formData: FormData) {
         const result = await buildIntroduction(validatedFields.data);
         return { data: result };
     } catch (error) {
-        console.error(error);
         return { error: 'Failed to build introduction. Please try again later.' };
     }
 }
@@ -86,7 +83,6 @@ export async function getEncouragementAction(score: number) {
     const result = await getEncouragementFlow({ score });
     return { data: result };
   } catch (error) {
-    console.error(error);
     return { error: 'Failed to get encouragement. Please try again later.' };
   }
 }
@@ -112,7 +108,6 @@ export async function getSentenceExamplesAction(prevState: any, formData: FormDa
         const result = await getSentenceExamples(validatedFields.data);
         return { data: result };
     } catch (error: any) {
-        console.error('Sentence Example Error:', error);
         return { error: `Failed to generate sentence examples. Details: ${error.message}` };
     }
 }
@@ -138,7 +133,6 @@ export async function getGrammarExplanationAction(prevState: any, formData: Form
         const result = await explainSentenceGrammar(validatedFields.data);
         return { data: result };
     } catch (error: any) {
-        console.error('Grammar Explanation Error:', error);
         return { error: `Failed to generate grammar explanation. Details: ${error.message}` };
     }
 }

@@ -27,7 +27,6 @@ export async function getSpeech(prevState: any, formData: FormData) {
     return { data: { audioDataUri: result.audioDataUri } };
 
   } catch (error: any) {
-    console.error(error);
     return { error: `Failed to synthesize speech. Details: ${error.message}` };
   }
 }

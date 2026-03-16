@@ -127,13 +127,7 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
 
     if (audioCache[sentence]) {
       const audio = new Audio(audioCache[sentence]);
-      audio.play().catch(() => {
-        toast({
-          variant: "destructive",
-          title: "Audio Playback Error",
-          description: "Could not play the audio file.",
-        });
-      });
+      audio.play().catch(() => {});
       audio.onended = () => setPlayingSentence(null);
       return;
     }
@@ -148,16 +142,9 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
             const audioDataUri = response.data.audioDataUri;
             setAudioCache(prev => ({ ...prev, [sentence]: audioDataUri }));
             const audio = new Audio(audioDataUri);
-            audio.play().catch(err => {
-                 toast({
-                    variant: "destructive",
-                    title: "Audio Playback Error",
-                    description: "Could not play the audio file.",
-                });
-            });
+            audio.play().catch(() => {});
             audio.onended = () => setPlayingSentence(null);
         } else {
-            console.error("Speech synthesis error:", response.error);
             setPlayingSentence(null);
         }
     });

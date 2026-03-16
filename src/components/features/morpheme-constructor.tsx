@@ -200,13 +200,7 @@ export function MorphemeConstructor() {
     if (isAudioPending) return;
 
     if (audioCache[word]) {
-      new Audio(audioCache[word]).play().catch(() => {
-        toast({
-          variant: "destructive",
-          title: "Audio Playback Error",
-          description: "Could not play the audio.",
-        });
-      });
+      new Audio(audioCache[word]).play().catch(() => {});
       return;
     }
 
@@ -217,15 +211,7 @@ export function MorphemeConstructor() {
       if (response.data?.audioDataUri) {
         const audioDataUri = response.data.audioDataUri;
         setAudioCache(prev => ({ ...prev, [word]: audioDataUri }));
-        new Audio(audioDataUri).play().catch(() => {
-          toast({
-            variant: "destructive",
-            title: "Audio Playback Error",
-            description: "Could not play the audio.",
-          });
-        });
-      } else {
-        console.error("Speech synthesis error:", response.error);
+        new Audio(audioDataUri).play().catch(() => {});
       }
     });
   };

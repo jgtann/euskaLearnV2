@@ -66,13 +66,7 @@ export function IntroductionBuilder() {
     if (!introductionText || isAudioPending) return;
 
     if (audioCache[introductionText]) {
-      new Audio(audioCache[introductionText]).play().catch(() => {
-        toast({
-          variant: "destructive",
-          title: "Audio Playback Error",
-          description: "Could not play the audio file.",
-        });
-      });
+      new Audio(audioCache[introductionText]).play().catch(() => {});
       return;
     }
 
@@ -85,15 +79,7 @@ export function IntroductionBuilder() {
             const audioDataUri = response.data.audioDataUri;
             setAudioCache(prev => ({ ...prev, [introductionText]: audioDataUri }));
             const audio = new Audio(audioDataUri);
-            audio.play().catch(err => {
-                 toast({
-                    variant: "destructive",
-                    title: "Audio Playback Error",
-                    description: "Could not play the audio file.",
-                });
-            });
-        } else {
-            console.error("Speech synthesis error:", response.error);
+            audio.play().catch(() => {});
         }
     });
   }
