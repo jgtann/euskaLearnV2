@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import { CheckCircle, RefreshCw, Sparkles, ArrowRight, XCircle, Volume2, Loader2 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
+import { useToast } from '@/hooks/use-toast';
 
 // Thesis 5.4: Expanded Syntax Scrambles (A1 & A2 levels)
 const sentenceChallenges = [
@@ -142,7 +143,9 @@ export function SentenceBuilder() {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [palette, setPalette] = useState<string[]>([]);
   const [isAudioPending, startAudioTransition] = useTransition();
+  const [playingSentence, setPlayingSentence] = useState<string | null>(null);
   const [audioCache, setAudioCache] = useState<Record<string, string>>({});
+  const { toast } = useToast();
 
   const current = sentenceChallenges[challengeIdx];
 
@@ -177,8 +180,14 @@ export function SentenceBuilder() {
     const sentenceText = current.correct.join(' ');
     if (!sentenceText || isAudioPending) return;
 
+    setPlayingSentence(sentenceText);
+
     if (audioCache[sentenceText]) {
-      new Audio(audioCache[sentenceText]).play().catch(() => {});
+      const audio = new Audio(audioCache[sentenceText]);
+      audio.play()
+        .then(() => {})
+        .catch(() => setPlayingSentence(null));
+      audio.onended = () => setPlayingSentence(null);
       return;
     }
 
@@ -190,7 +199,20 @@ export function SentenceBuilder() {
       if (response.data?.audioDataUri) {
         const audioDataUri = response.data.audioDataUri;
         setAudioCache(prev => ({ ...prev, [sentenceText]: audioDataUri }));
-        new Audio(audioDataUri).play().catch(() => {});
+        const audio = new Audio(audioDataUri);
+        audio.play()
+          .then(() => {})
+          .catch(() => setPlayingSentence(null));
+        audio.onended = () => setPlayingSentence(null);
+      } else {
+        setPlayingSentence(null);
+        if (response.error) {
+           toast({
+             variant: "destructive",
+             title: "Audio Unavailable",
+             description: response.error,
+           });
+        }
       }
     });
   };
@@ -247,8 +269,18 @@ export function SentenceBuilder() {
             </Button>
             {feedback === 'correct' ? (
               <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending} className="size-11">
-                  {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handlePlayAudio} 
+                  disabled={isAudioPending} 
+                  className="size-11"
+                >
+                  {playingSentence === current.correct.join(' ') ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <Volume2 className="size-5" />
+                  )}
                   <span className="sr-only">Play audio</span>
                 </Button>
                 <Button className="bg-basque-green hover:bg-green-700 px-8 h-11" onClick={() => setChallengeIdx((i) => (i + 1) % sentenceChallenges.length)}>
