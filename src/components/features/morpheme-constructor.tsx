@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
@@ -23,23 +22,6 @@ const challenges = [
   { id: 'm-8', initialMorphemes: ['alaba', '-ak'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters' },
   { id: 'm-9', initialMorphemes: ['haur', '-ak'], correctSequence: ['haur', '-ak'], correctWord: 'haurrak', targetMeaning: 'the children' },
   { id: 'm-10', initialMorphemes: ['hiri', '-a', '-n'], correctSequence: ['hiri', '-a', '-n'], correctWord: 'hirian', targetMeaning: 'in the city' },
-  { id: 'm-11', initialMorphemes: ['mahai', '-a'], correctSequence: ['mahai', '-a'], correctWord: 'mahaia', targetMeaning: 'the table' },
-  { id: 'm-12', initialMorphemes: ['lan', '-a'], correctSequence: ['lan', '-a'], correctWord: 'lana', targetMeaning: 'the work' },
-  { id: 'm-13', initialMorphemes: ['auto', '-a'], correctSequence: ['auto', '-a'], correctWord: 'autoa', targetMeaning: 'the car' },
-  { id: 'm-14', initialMorphemes: ['janari', '-a'], correctSequence: ['janari', '-a'], correctWord: 'janaria', targetMeaning: 'the food' },
-  { id: 'm-15', initialMorphemes: ['diru', '-a'], correctSequence: ['diru', '-a'], correctWord: 'dirua', targetMeaning: 'the money' },
-  { id: 'm-16', initialMorphemes: ['etxe', '-ak'], correctSequence: ['etxe', '-ak'], correctWord: 'etxeak', targetMeaning: 'the houses' },
-  { id: 'm-17', initialMorphemes: ['liburu', '-ak'], correctSequence: ['liburu', '-ak'], correctWord: 'liburuak', targetMeaning: 'the books' },
-  { id: 'm-18', initialMorphemes: ['lagun', '-ak'], correctSequence: ['lagun', '-ak'], correctWord: 'lagunak', targetMeaning: 'the friends' },
-  { id: 'm-19', initialMorphemes: ['eskola', '-a', '-n'], correctSequence: ['eskola', '-a', '-n'], correctWord: 'eskolan', targetMeaning: 'in the school' },
-  { id: 'm-20', initialMorphemes: ['gizon', '-a', '-ri'], correctSequence: ['gizon', '-a', '-ri'], correctWord: 'gizonari', targetMeaning: 'to the man' },
-  { id: 'm-21', initialMorphemes: ['lagun', '-a', '-ri'], correctSequence: ['lagun', '-a', '-ri'], correctWord: 'lagunari', targetMeaning: 'to the friend' },
-  { id: 'm-22', initialMorphemes: ['lagun', '-a', '-ekin'], correctSequence: ['lagun', '-a', '-ekin'], correctWord: 'lagunarekin', targetMeaning: 'with the friend' },
-  { id: 'm-23', initialMorphemes: ['etxe', '-a', '-ra'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
-  { id: 'm-24', initialMorphemes: ['hiri', '-ko'], correctSequence: ['hiri', '-ko'], correctWord: 'hiriko', targetMeaning: 'of the city' },
-  { id: 'm-25', initialMorphemes: ['begi', '-a'], correctSequence: ['begi', '-a'], correctWord: 'begia', targetMeaning: 'the eye' },
-  { id: 'm-26', initialMorphemes: ['esku', '-ak'], correctSequence: ['esku', '-ak'], correctWord: 'eskuak', targetMeaning: 'the hands' },
-  { id: 'm-27', initialMorphemes: ['Haiek', 'haurra', 'ikusi', 'zuten'], correctSequence: ['Haiek', 'haurra', 'ikusi', 'zuten'], correctWord: 'Haiek haurra ikusi zuten', targetMeaning: 'They saw the child' },
 ];
 
 const MorphemeTile = ({
