@@ -12,7 +12,8 @@ import {
   XCircle, 
   BrainCircuit, 
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Trophy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -46,11 +47,9 @@ export function SentenceBuilder() {
       const dueA = recA ? recA.nextReview : 0;
       const dueB = recB ? recB.nextReview : 0;
       
-      // Prioritize due items
       if (dueA <= now && dueB > now) return -1;
       if (dueB <= now && dueA > now) return 1;
       
-      // Otherwise random
       return Math.random() - 0.5;
     });
   }, [userItems]);
@@ -129,8 +128,8 @@ export function SentenceBuilder() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <Card className={cn(
-        "border-t-8 transition-colors duration-500 shadow-xl overflow-hidden",
-        feedback === 'correct' ? "border-t-basque-green bg-green-50/10" : "border-t-primary bg-basque-stone/10"
+        "border-t-8 transition-all duration-700 shadow-2xl overflow-hidden",
+        feedback === 'correct' ? "border-t-basque-green bg-green-50/20" : "border-t-primary bg-basque-stone/10"
       )}>
         <CardHeader className="text-center pb-2">
           <div className="flex justify-between items-center mb-4">
@@ -138,49 +137,74 @@ export function SentenceBuilder() {
               {current.type}
             </Badge>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <BrainCircuit className="size-4" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Activation</span>
+              <Trophy className="size-4 text-yellow-600" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Master Builder Quest</span>
             </div>
           </div>
-          <CardTitle className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60 font-black mb-1">Translate into Basque</CardTitle>
+          <CardTitle className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60 font-black mb-1">Mission Objective</CardTitle>
           <div className="text-3xl font-black text-basque-earth tracking-tight leading-tight">"{current.english}"</div>
         </CardHeader>
         
-        <CardContent className="space-y-8 p-8">
+        <CardContent className="space-y-10 p-10">
           
           {feedback === 'correct' ? (
-            <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
-              <div className="flex flex-col items-center justify-center gap-6">
-                <div className="flex items-center gap-3 text-basque-green font-black text-5xl uppercase tracking-tighter">
-                  <Sparkles className="size-8 animate-bounce text-yellow-500" />
-                  Zorionak!
-                  <Sparkles className="size-8 animate-bounce text-yellow-500" />
+            <div className="space-y-8">
+              {/* SUCCESS HEADER: ZORIONAK! */}
+              <div className="flex flex-col items-center justify-center gap-3 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center gap-4 text-basque-green font-black text-5xl uppercase tracking-tighter">
+                  <Sparkles className="size-10 animate-bounce text-yellow-500" />
+                  ZORIONAK!
+                  <Sparkles className="size-10 animate-bounce text-yellow-500" />
                 </div>
-                
-                <div className="w-full flex flex-col items-center gap-2">
-                   <p className="text-[10px] font-bold uppercase text-basque-green tracking-widest">Final Assembly</p>
-                   <div className="w-full flex items-center justify-center p-8 bg-white rounded-3xl border-4 border-basque-green shadow-xl">
-                      <span className="text-3xl font-black text-basque-green tracking-tight leading-snug text-center">
-                        {current.correct.join(' ')}
-                      </span>
-                   </div>
-                </div>
+                <p className="text-basque-green/80 font-bold uppercase tracking-widest text-xs">Sentence Fully Functional</p>
+              </div>
+              
+              {/* DROPPING BRICKS VISUAL */}
+              <div className="flex flex-col items-center gap-4">
+                 <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-green shadow-xl relative overflow-hidden">
+                    {/* Background faint grid to look like a lego baseplate */}
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                    
+                    {current.correct.map((word, i) => (
+                      <div 
+                        key={i} 
+                        className="animate-in fade-in slide-in-from-top-12 fill-mode-both"
+                        style={{ animationDelay: `${i * 150}ms`, animationDuration: '600ms' }}
+                      >
+                        <div className="h-14 px-8 bg-white border-2 border-basque-green/30 border-b-8 border-b-basque-green/60 font-black text-2xl rounded-2xl flex items-center justify-center text-basque-green shadow-sm">
+                          {word}
+                        </div>
+                      </div>
+                    ))}
+                 </div>
               </div>
 
-              <div className="bg-basque-green/5 p-6 rounded-2xl border-2 border-dashed border-basque-green/30">
-                <div className="flex items-center gap-2 mb-3 text-basque-green font-black text-xs uppercase tracking-widest">
-                   <Zap className="size-4" /> Master Builder Logic
+              {/* PEDAGOGICAL EXPLANATION */}
+              <div className="bg-basque-green/10 p-8 rounded-2xl border-2 border-dashed border-basque-green/30 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                <div className="flex items-center gap-2 mb-4 text-basque-green font-black text-xs uppercase tracking-widest">
+                   <Zap className="size-5" /> Master Builder Logic
                 </div>
-                <p className="text-sm leading-relaxed text-basque-earth font-medium">
+                <p className="text-base leading-relaxed text-basque-earth font-medium">
                   {current.meaning}
                 </p>
+              </div>
+
+              {/* NEXT ACTION */}
+              <div className="flex justify-center animate-in zoom-in-50 duration-500 delay-1000 fill-mode-both">
+                <Button 
+                  size="lg"
+                  className="bg-basque-green hover:bg-green-700 px-16 h-20 text-2xl font-black rounded-3xl shadow-2xl hover:shadow-basque-green/20 transition-all border-b-8 border-b-green-900 active:border-b-0 active:translate-y-2" 
+                  onClick={handleNext}
+                >
+                  Next Build <ArrowRight className="ml-3 size-8" />
+                </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-8">
               {/* Construction Zone */}
               <div className={cn(
-                  "flex flex-wrap items-center justify-center gap-3 p-8 min-h-[160px] rounded-3xl border-4 border-dashed transition-all duration-500", 
+                  "flex flex-wrap items-center justify-center gap-3 p-10 min-h-[200px] rounded-3xl border-4 border-dashed transition-all duration-500", 
                   feedback === 'incorrect' ? "border-basque-red bg-red-50/50 animate-shake" : "bg-white/50 border-muted-foreground/20 shadow-inner"
               )}>
                   {constructed.map((word, i) => (
@@ -198,17 +222,17 @@ export function SentenceBuilder() {
                     </Button>
                   ))}
                   {constructed.length === 0 && (
-                    <div className="flex flex-col items-center gap-2 opacity-30">
-                      <Sparkles className="size-8" />
-                      <p className="text-sm font-bold uppercase tracking-widest italic">Assemble your spaceship...</p>
+                    <div className="flex flex-col items-center gap-3 opacity-20">
+                      <BrainCircuit className="size-12" />
+                      <p className="text-sm font-bold uppercase tracking-widest italic">Assemble the syntax engine...</p>
                     </div>
                   )}
               </div>
 
               {/* Bricks Palette */}
               <div className="space-y-4">
-                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground/60 tracking-widest">Available Bricks</p>
-                  <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/10">
+                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground/60 tracking-widest">Cargo Hold: Available Bricks</p>
+                  <div className="flex flex-wrap justify-center gap-3 p-8 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/10">
                       {palette.map((word, i) => (
                         <Button 
                             key={i} 
@@ -227,50 +251,38 @@ export function SentenceBuilder() {
               </div>
 
               {feedback === 'incorrect' && (
-                <div className="bg-basque-red/10 p-4 rounded-2xl border-2 border-basque-red/20 flex items-center justify-center gap-3 text-basque-red animate-in fade-in slide-in-from-top-2">
-                  <XCircle className="size-5" />
-                  <p className="font-bold text-xs uppercase tracking-tight">Brick alignment error! Check your syntax engine. The verb often sits at the end!</p>
+                <div className="bg-basque-red/10 p-6 rounded-2xl border-2 border-basque-red/20 flex items-center justify-center gap-4 text-basque-red animate-in fade-in slide-in-from-top-2">
+                  <XCircle className="size-6 shrink-0" />
+                  <p className="font-bold text-sm uppercase tracking-tight">Brick alignment error! The syntax engine requires a different sequence. Remember: Verbs usually sit at the end!</p>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-6 border-t border-muted-foreground/10">
-            {feedback === 'correct' ? (
-              <Button 
-                size="lg"
-                className="bg-basque-green hover:bg-green-700 px-14 h-16 text-xl font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all animate-in zoom-in" 
-                onClick={handleNext}
-              >
-                Next Build <ArrowRight className="ml-2 size-6" />
-              </Button>
-            ) : (
-              <>
+              {/* Action Buttons */}
+              <div className="flex justify-center gap-4 pt-4 border-t border-muted-foreground/10">
                 <Button 
                   variant="ghost" 
                   onClick={handleReset}
-                  className="font-bold text-muted-foreground hover:text-primary"
+                  className="font-bold text-muted-foreground hover:text-primary h-14 px-6 rounded-xl"
                 >
                   <RefreshCw className="size-4 mr-2" /> Start Over
                 </Button>
                 <Button 
                   size="lg"
-                  className="bg-basque-earth hover:bg-black text-white px-12 h-16 text-lg font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all disabled:opacity-30" 
+                  className="bg-basque-earth hover:bg-black text-white px-12 h-16 text-xl font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all disabled:opacity-30 border-b-4 border-b-black/40" 
                   onClick={checkBuild} 
                   disabled={constructed.length === 0}
                 >
                   Snap Bricks & Test
                 </Button>
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       
-      <div className="flex items-center justify-center gap-8 text-muted-foreground/30 mt-4">
-        <div className="flex items-center gap-1"><Sparkles className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Engine V2.0</span></div>
-        <div className="flex items-center gap-1"><CheckCircle2 className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Master Builder Achievement</span></div>
+      <div className="flex items-center justify-center gap-8 text-muted-foreground/30 mt-6">
+        <div className="flex items-center gap-2"><Sparkles className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Engine V2.0</span></div>
+        <div className="flex items-center gap-2"><CheckCircle2 className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Procedural Mastery Validated</span></div>
       </div>
     </div>
   );
