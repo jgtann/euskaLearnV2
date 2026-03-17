@@ -127,9 +127,13 @@ export function MorphemeConstructor() {
     if (!user || !firestore || !currentChallenge) return;
     const records = userItems || [];
     const record = records.find(r => r.learningItemId === currentChallenge.id);
-    const level = record ? (success ? Math.min(record.level + 1, 5) : Math.max(record.level - 1, 0)) : (success ? 1 : 0);
-    const intervals = [0, 1, 3, 7, 14, 30];
-    const nextReview = Date.now() + (intervals[level] || 0) * 24 * 60 * 60 * 1000;
+    
+    // Simple logic for level progression
+    let currentLevel = record?.level || 0;
+    const newLevel = success ? Math.min(currentLevel + 1, 5) : Math.max(currentLevel - 1, 0);
+    
+    const intervals = [0, 1, 3, 7, 14, 30]; // Days
+    const nextReview = Date.now() + (intervals[newLevel] || 0) * 24 * 60 * 60 * 1000;
     
     const docId = record?.id || `${user.uid}_${currentChallenge.id}`;
     const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
@@ -140,38 +144,51 @@ export function MorphemeConstructor() {
       learningItemId: currentChallenge.id,
       lastReviewed: Date.now(),
       nextReview,
-      level,
+      level: newLevel,
       correctCount: (record?.correctCount || 0) + (success ? 1 : 0),
       incorrectCount: (record?.incorrectCount || 0) + (success ? 0 : 1),
     }, { merge: true });
   };
 
-  const handleCheck = () => {
-    const isCorrect = JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence);
-    setFeedback(isCorrect ? 'correct' : 'incorrect');
-    updateSRS(isCorrect);
-    if (isCorrect) handlePlayAudio(currentChallenge.correctWord);
-  };
-
-  const handleNext = () => {
-    setCurrentIdx((prev) => (prev + 1) % sortedChallenges.length);
-  };
-
   const handlePlayAudio = (word: string) => {
-    if (isAudioPending) return;
-    if (audioCache[word]) { new Audio(audioCache[word]).play().catch(() => {}); return; }
+    if (isAudioPending || !word) return;
+    if (audioCache[word]) {
+      const audio = new Audio(audioCache[word]);
+      audio.play().catch(() => {});
+      return;
+    }
     startAudioTransition(async () => {
       const formData = new FormData();
       formData.append('text', word);
       const response = await getSpeech(null, formData);
       if (response.data?.audioDataUri) {
         setAudioCache(prev => ({ ...prev, [word]: response.data.audioDataUri }));
-        new Audio(response.data.audioDataUri).play().catch(() => {});
+        const audio = new Audio(response.data.audioDataUri);
+        audio.play().catch(() => {});
+      } else if (response.error) {
+        toast({
+          variant: "destructive",
+          title: "Audio Error",
+          description: response.error,
+        });
       }
     });
   };
 
-  if (!currentChallenge) return <div className="p-8 text-center">Loading construction site...</div>;
+  const handleCheck = () => {
+    const isCorrect = JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence);
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+    updateSRS(isCorrect);
+    if (isCorrect) {
+      handlePlayAudio(currentChallenge.correctWord);
+    }
+  };
+
+  const handleNext = () => {
+    setCurrentIdx((prev) => (prev + 1) % sortedChallenges.length);
+  };
+
+  if (!currentChallenge) return <div className="p-8 text-center text-muted-foreground">Loading construction site...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -190,14 +207,26 @@ export function MorphemeConstructor() {
           <CardDescription>Assemble the building blocks of the word</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 p-8">
+          
           {feedback === 'correct' && (
-            <div className="flex flex-col items-center justify-center gap-2 py-4 animate-in zoom-in-95 fade-in duration-500">
-              <div className="flex items-center gap-2 text-basque-green font-black text-2xl uppercase tracking-tighter">
-                <Sparkles className="size-6 animate-bounce" />
+            <div className="flex flex-col items-center justify-center gap-4 py-4 animate-in zoom-in-95 fade-in duration-500">
+              <div className="flex items-center gap-3 text-basque-green font-black text-4xl uppercase tracking-tighter">
+                <Sparkles className="size-8 animate-bounce text-yellow-500" />
                 Zorionak!
-                <Sparkles className="size-6 animate-bounce" />
+                <Sparkles className="size-8 animate-bounce text-yellow-500" />
               </div>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Construction Correct</p>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="rounded-full gap-2 border-basque-green text-basque-green" 
+                  onClick={() => handlePlayAudio(currentChallenge.correctWord)}
+                  disabled={isAudioPending}
+                >
+                  {isAudioPending ? <Loader2 className="size-4 animate-spin" /> : <Volume2 className="size-4" />}
+                  Listen to "{currentChallenge.correctWord}"
+                </Button>
+              </div>
             </div>
           )}
 
@@ -207,7 +236,13 @@ export function MorphemeConstructor() {
             feedback === 'incorrect' && 'bg-red-100 border-red-500 animate-in shake'
           )}>
             {constructed.map((m, i) => (
-              <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={() => !feedback && setConstructed(prev => prev.filter((_, idx) => idx !== i))} disabled={feedback === 'correct'} variant={m.startsWith('-') ? "suffix" : "root"} />
+              <MorphemeTile 
+                key={`${m}-${i}`} 
+                morpheme={m} 
+                onClick={() => !feedback && setConstructed(prev => prev.filter((_, idx) => idx !== i))} 
+                disabled={feedback === 'correct'} 
+                variant={m.startsWith('-') ? "suffix" : "root"} 
+              />
             ))}
             {constructed.length === 0 && <p className="text-gray-400 italic">Start building...</p>}
           </div>
@@ -219,38 +254,34 @@ export function MorphemeConstructor() {
                 feedback === 'correct' ? "bg-basque-green text-white border-transparent scale-110 shadow-lg" : "bg-basque-green/10 text-basque-green border-basque-green/30"
               )}>
                 <span className="text-2xl font-bold font-code">{getDisplayWord(constructed)}</span>
-                {feedback === 'correct' && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 text-white hover:bg-white/20"
-                    onClick={() => handlePlayAudio(currentChallenge.correctWord)}
-                    disabled={isAudioPending}
-                  >
-                    {isAudioPending ? <Loader2 className="size-4 animate-spin" /> : <Volume2 className="size-4" />}
-                  </Button>
-                )}
+                {feedback === 'correct' && <CheckCircle2 className="size-5 text-white" />}
               </div>
             )}
           </div>
 
           <div className="flex flex-wrap justify-center content-start gap-4 py-6 border-y border-gray-100 min-h-[160px]">
             {availableMorphemes.map((m, i) => (
-              <MorphemeTile key={`${m}-${i}`} morpheme={m} variant={m.startsWith('-') ? "suffix" : "root"} onClick={() => setConstructed(prev => [...prev, m])} disabled={feedback === 'correct'} />
+              <MorphemeTile 
+                key={`${m}-${i}`} 
+                morpheme={m} 
+                variant={m.startsWith('-') ? "suffix" : "root"} 
+                onClick={() => setConstructed(prev => [...prev, m])} 
+                disabled={feedback === 'correct'} 
+              />
             ))}
           </div>
 
           <div className="flex justify-center gap-3">
-            <Button variant="ghost" onClick={resetBoard}><RefreshCw className="mr-2 h-4 w-4" /> Reset</Button>
+            <Button variant="ghost" onClick={resetBoard} disabled={feedback === 'correct'}><RefreshCw className="mr-2 h-4 w-4" /> Reset</Button>
             {feedback !== 'correct' ? (
-              <Button size="lg" className="bg-basque-earth hover:bg-black text-white px-8" disabled={constructed.length === 0} onClick={handleCheck}>Check</Button>
+              <Button size="lg" className="bg-basque-earth hover:bg-black text-white px-8" disabled={constructed.length === 0} onClick={handleCheck}>Check Construction</Button>
             ) : (
-              <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next <ArrowRight className="ml-2 h-5 w-5" /></Button>
+              <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next Challenge <ArrowRight className="ml-2 h-5 w-5" /></Button>
             )}
           </div>
         </CardContent>
       </Card>
-      {feedback === 'incorrect' && <p className="text-center text-basque-red font-bold animate-in fade-in">Try again! Remember: Root + Suffixes.</p>}
+      {feedback === 'incorrect' && <p className="text-center text-basque-red font-bold animate-in fade-in">Try again! Remember the order: [Root] + [Definite Article] + [Case Suffix].</p>}
     </div>
   );
 }
