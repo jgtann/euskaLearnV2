@@ -13,8 +13,8 @@ import {
   Volume2, 
   Loader2, 
   BrainCircuit, 
-  CheckCircle2,
-  Zap
+  Zap,
+  VolumeX
 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
@@ -44,6 +44,7 @@ export function SentenceBuilder() {
     const records = userItems || [];
     const recordMap = new Map(records.map(r => [r.learningItemId, r]));
 
+    // Simple priority: Due/New items first, then randomized
     return [...SENTENCE_CHALLENGES].sort((a, b) => {
       const recA = recordMap.get(a.id);
       const recB = recordMap.get(b.id);
@@ -76,7 +77,7 @@ export function SentenceBuilder() {
     const intervals = [0, 1, 3, 7, 14, 30];
     const nextReview = Date.now() + (intervals[newLevel] || 0) * 24 * 60 * 60 * 1000;
     
-    const docId = record?.id || `${user.uid}_${current.id}`;
+    const docId = record?.id || `syntax_${current.id}`;
     const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
     
     setDocumentNonBlocking(docRef, {
@@ -106,14 +107,29 @@ export function SentenceBuilder() {
       if (response.data?.audioDataUri) {
         setAudioCache(prev => ({ ...prev, [text]: response.data.audioDataUri }));
         new Audio(response.data.audioDataUri).play().catch(() => {});
+      } else if (response.error) {
+        toast({
+          variant: "destructive",
+          title: "Audio Error",
+          description: "Could not generate speech for this sentence."
+        });
       }
     });
   };
 
-  const check = () => {
-    const isCorrect = JSON.stringify(constructed) === JSON.stringify(current.correct);
+  const checkBuild = () => {
+    if (constructed.length < current.correct.length) {
+      toast({
+        title: "Incomplete Sentence",
+        description: "You need to use all the bricks to complete the build!",
+      });
+      return;
+    }
+
+    const isCorrect = constructed.join(' ') === current.correct.join(' ');
     setFeedback(isCorrect ? 'correct' : 'incorrect');
     updateSRS(isCorrect);
+    
     if (isCorrect) {
       handlePlayAudio();
     }
@@ -123,55 +139,70 @@ export function SentenceBuilder() {
     setCurrentIdx((prev) => (prev + 1) % sortedChallenges.length);
   };
 
-  if (!current) return <div className="p-8 text-center text-muted-foreground">Loading syntax workshop...</div>;
+  const handleReset = () => {
+    setPalette([...current.correct].sort(() => Math.random() - 0.5));
+    setConstructed([]);
+    setFeedback(null);
+  };
+
+  if (!current) {
+    return (
+      <Card className="p-12 text-center">
+        <Loader2 className="size-8 animate-spin mx-auto text-primary mb-4" />
+        <p className="text-muted-foreground font-bold uppercase tracking-widest">Loading syntax module...</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      <Card className="border-t-8 border-t-primary shadow-xl overflow-hidden bg-basque-stone/20">
-        <CardHeader className="text-center">
-          <div className="flex justify-between items-center mb-2">
-            <Badge variant="secondary" className="text-[10px] uppercase tracking-widest bg-primary/10 text-primary border-primary/20">
+      <Card className="border-t-8 border-t-primary shadow-xl overflow-hidden bg-basque-stone/10">
+        <CardHeader className="text-center pb-2">
+          <div className="flex justify-between items-center mb-4">
+            <Badge variant="secondary" className="text-[10px] uppercase tracking-widest bg-primary/10 text-primary border-primary/20 px-3">
               {current.type}
             </Badge>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <BrainCircuit className="size-3" />
-              <span className="text-[10px] font-bold uppercase tracking-tighter">Syntax Activation</span>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <BrainCircuit className="size-4" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Activation</span>
             </div>
           </div>
-          <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground font-bold">The Scramble Engine</CardTitle>
-          <div className="text-3xl font-black mt-2 text-basque-earth tracking-tight">"{current.english}"</div>
+          <CardTitle className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60 font-black mb-1">Translate into Basque</CardTitle>
+          <div className="text-3xl font-black text-basque-earth tracking-tight leading-tight">"{current.english}"</div>
         </CardHeader>
+        
         <CardContent className="space-y-8 p-8">
           
+          {/* SUCCESS STATE */}
           {feedback === 'correct' && (
             <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
-              <div className="flex flex-col items-center justify-center gap-4">
-                <div className="flex items-center gap-3 text-basque-green font-black text-4xl uppercase tracking-tighter">
+              <div className="flex flex-col items-center justify-center gap-6">
+                <div className="flex items-center gap-3 text-basque-green font-black text-5xl uppercase tracking-tighter">
                   <Sparkles className="size-8 animate-bounce text-yellow-500" />
                   Zorionak!
                   <Sparkles className="size-8 animate-bounce text-yellow-500" />
                 </div>
                 
-                <div className="flex items-center gap-4 px-6 py-4 bg-white rounded-2xl border-2 border-basque-green/20 shadow-sm">
-                  <span className="text-3xl font-black text-basque-green tracking-tight">
+                <div className="w-full flex items-center justify-between gap-4 p-6 bg-white rounded-3xl border-4 border-basque-green/20 shadow-xl">
+                  <span className="text-3xl font-black text-basque-green tracking-tight leading-snug">
                     {current.correct.join(' ')}
                   </span>
                   <Button 
-                    variant="ghost" 
+                    variant="secondary" 
                     size="icon" 
-                    className="h-10 w-10 text-basque-green hover:bg-basque-green/10"
+                    className="h-14 w-14 rounded-full bg-basque-green/10 text-basque-green hover:bg-basque-green hover:text-white transition-all shadow-md"
                     onClick={handlePlayAudio}
                     disabled={isAudioPending}
                   >
-                    {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
+                    {isAudioPending ? <Loader2 className="size-6 animate-spin" /> : <Volume2 className="size-6" />}
                     <span className="sr-only">Play audio</span>
                   </Button>
                 </div>
               </div>
 
-              <div className="bg-basque-green/5 p-5 rounded-2xl border border-basque-green/20 shadow-sm">
-                <div className="flex items-center gap-2 mb-2 text-basque-green font-bold text-xs uppercase tracking-widest">
-                   <Zap className="size-4" /> Grammar Logic Breakdown
+              <div className="bg-basque-green/5 p-6 rounded-2xl border-2 border-dashed border-basque-green/30">
+                <div className="flex items-center gap-2 mb-3 text-basque-green font-black text-xs uppercase tracking-widest">
+                   <Zap className="size-4" /> Master Builder Logic
                 </div>
                 <p className="text-sm leading-relaxed text-basque-earth font-medium">
                   {current.meaning}
@@ -180,78 +211,99 @@ export function SentenceBuilder() {
             </div>
           )}
 
+          {/* ACTIVE BUILDING STATE */}
           {feedback !== 'correct' && (
             <>
               <div className={cn(
-                  "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all duration-500", 
-                  "bg-white/50 border-gray-200 shadow-inner"
+                  "flex flex-wrap items-center justify-center gap-3 p-8 min-h-[160px] rounded-3xl border-4 border-dashed transition-all duration-500", 
+                  feedback === 'incorrect' ? "border-basque-red bg-red-50/50 animate-shake" : "bg-white/50 border-muted-foreground/20 shadow-inner"
               )}>
-                  {constructed.map((w, i) => (
+                  {constructed.map((word, i) => (
                     <Button 
                         key={i} 
                         variant="outline" 
-                        className="h-12 px-6 bg-white font-bold border-b-4 border-b-gray-200 active:border-b-0 animate-in slide-in-from-bottom-2 text-lg rounded-xl hover:scale-105 transition-transform" 
+                        className="h-14 px-8 bg-white font-black border-b-4 border-b-muted active:border-b-0 animate-in slide-in-from-bottom-2 text-xl rounded-2xl hover:bg-white hover:text-primary transition-all" 
                         onClick={() => {
                           setConstructed(prev => prev.filter((_, idx) => idx !== i));
-                          setPalette(prev => [...prev, w]);
+                          setPalette(prev => [...prev, word]);
                           setFeedback(null);
                         }}
                     >
-                        {w}
+                        {word}
                     </Button>
                   ))}
-                  {constructed.length === 0 && <p className="text-gray-400 italic">Snap bricks to build the sentence...</p>}
+                  {constructed.length === 0 && (
+                    <div className="flex flex-col items-center gap-2 opacity-30">
+                      <Sparkles className="size-8" />
+                      <p className="text-sm font-bold uppercase tracking-widest italic">Assemble your spaceship...</p>
+                    </div>
+                  )}
               </div>
 
               <div className="space-y-4">
-                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Available Bricks</p>
-                  <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted/30 rounded-2xl border border-dashed">
-                      {palette.map((w, i) => (
+                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground/60 tracking-widest">Available Bricks</p>
+                  <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/10">
+                      {palette.map((word, i) => (
                         <Button 
                             key={i} 
                             variant="secondary" 
-                            className="h-12 px-6 font-bold bg-white border-b-4 border-b-gray-300 hover:shadow-md hover:scale-105 transition-all text-lg rounded-xl" 
+                            className="h-14 px-8 font-black bg-white border-b-4 border-b-muted hover:shadow-lg hover:scale-105 transition-all text-xl rounded-2xl text-basque-earth" 
                             onClick={() => {
-                              setConstructed(prev => [...prev, w]);
+                              setConstructed(prev => [...prev, word]);
                               setPalette(prev => prev.filter((_, idx) => idx !== i));
                               setFeedback(null);
                             }}
                         >
-                            {w}
+                            {word}
                         </Button>
                       ))}
                   </div>
               </div>
+
+              {feedback === 'incorrect' && (
+                <div className="bg-basque-red/10 p-4 rounded-2xl border-2 border-basque-red/20 flex items-center justify-center gap-3 text-basque-red animate-in fade-in slide-in-from-top-2">
+                  <XCircle className="size-5" />
+                  <p className="font-bold text-xs uppercase tracking-tight">Not quite! Check the brick order. Remember: the Verb Engine often goes last!</p>
+                </div>
+              )}
             </>
           )}
 
-          <div className="flex justify-center gap-4 pt-4 border-t">
-            <Button variant="ghost" disabled={feedback === 'correct'} onClick={() => { setPalette([...current.correct].sort()); setConstructed([]); setFeedback(null); }}>
+          {/* ACTION BUTTONS */}
+          <div className="flex justify-center gap-4 pt-6 border-t border-muted-foreground/10">
+            <Button 
+              variant="ghost" 
+              disabled={feedback === 'correct'} 
+              onClick={handleReset}
+              className="font-bold text-muted-foreground hover:text-primary"
+            >
               <RefreshCw className="size-4 mr-2" /> Start Over
             </Button>
+            
             {feedback === 'correct' ? (
-              <Button className="bg-basque-green hover:bg-green-700 px-12 h-12 text-white font-bold rounded-xl shadow-lg" onClick={handleNext}>
-                Next Challenge <ArrowRight className="ml-2 size-5" />
+              <Button 
+                className="bg-basque-green hover:bg-green-700 px-14 h-14 text-lg font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all" 
+                onClick={handleNext}
+              >
+                Next Build <ArrowRight className="ml-2 size-6" />
               </Button>
             ) : (
               <Button 
-                className="bg-basque-earth hover:bg-black text-white px-10 h-12 font-bold rounded-xl shadow-lg" 
-                onClick={check} 
+                className="bg-basque-earth hover:bg-black text-white px-12 h-14 text-lg font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all disabled:opacity-30" 
+                onClick={checkBuild} 
                 disabled={constructed.length === 0}
               >
-                Test My Syntax
+                Snap Bricks & Test
               </Button>
             )}
           </div>
         </CardContent>
       </Card>
       
-      {feedback === 'incorrect' && (
-        <div className="bg-destructive/10 p-5 rounded-2xl border border-destructive/20 text-center flex items-center justify-center gap-3 text-destructive animate-in shake">
-          <XCircle className="size-6" />
-          <p className="font-bold text-sm">Not quite! Check the order of your bricks. Remember, the verb often goes last!</p>
-        </div>
-      )}
+      <div className="flex items-center justify-center gap-8 text-muted-foreground/40 mt-4">
+        <div className="flex items-center gap-1"><Sparkles className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Engine V2.0</span></div>
+        <div className="flex items-center gap-1"><BrainCircuit className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Procedural Acquisition</span></div>
+      </div>
     </div>
   );
 }
