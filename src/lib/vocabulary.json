@@ -1,3 +1,4 @@
+
 {
   "words": [
     { "basque": "etxe", "english": "house", "category": "noun" },
@@ -115,7 +116,6 @@
     { "basque": "lan egin", "english": "to work", "category": "verb", "tense": "infinitive" },
     { "basque": "sentitu", "english": "to feel", "category": "verb", "tense": "infinitive" },
     { "basque": "naiz", "english": "I am", "category": "verb", "tense": "present" },
-    { "basque": "dut", "english": "I have it", "category": "verb", "tense": "present" },
     { "basque": "da", "english": "he/she/it is", "category": "verb", "tense": "present" },
     { "basque": "dago", "english": "he/she/it is (location)", "category": "verb", "tense": "present" },
     { "basque": "doa", "english": "he/she/it goes", "category": "verb", "tense": "present" },
