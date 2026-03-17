@@ -11,7 +11,8 @@ import {
   ArrowRight, 
   XCircle, 
   BrainCircuit, 
-  Zap
+  Zap,
+  CheckCircle2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -34,17 +35,22 @@ export function SentenceBuilder() {
   const { data: userItems } = useCollection(userItemsQuery);
 
   const sortedChallenges = useMemo(() => {
-    const now = Date.now();
     const records = userItems || [];
     const recordMap = new Map(records.map(r => [r.learningItemId, r]));
+    const now = Date.now();
 
     return [...SENTENCE_CHALLENGES].sort((a, b) => {
       const recA = recordMap.get(a.id);
       const recB = recordMap.get(b.id);
+      
       const dueA = recA ? recA.nextReview : 0;
       const dueB = recB ? recB.nextReview : 0;
+      
+      // Prioritize due items
       if (dueA <= now && dueB > now) return -1;
       if (dueB <= now && dueA > now) return 1;
+      
+      // Otherwise random
       return Math.random() - 0.5;
     });
   }, [userItems]);
@@ -89,6 +95,7 @@ export function SentenceBuilder() {
   const checkBuild = () => {
     if (constructed.length < current.correct.length) {
       toast({
+        variant: "destructive",
         title: "Incomplete Sentence",
         description: "You need to use all the bricks to complete the build!",
       });
@@ -112,16 +119,19 @@ export function SentenceBuilder() {
 
   if (!current) {
     return (
-      <Card className="p-12 text-center">
+      <Card className="p-12 text-center border-dashed border-2">
         <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-muted-foreground font-bold uppercase tracking-widest">Loading syntax module...</p>
+        <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading syntax engine...</p>
       </Card>
     );
   }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      <Card className="border-t-8 border-t-primary shadow-xl overflow-hidden bg-basque-stone/10">
+      <Card className={cn(
+        "border-t-8 transition-colors duration-500 shadow-xl overflow-hidden",
+        feedback === 'correct' ? "border-t-basque-green bg-green-50/10" : "border-t-primary bg-basque-stone/10"
+      )}>
         <CardHeader className="text-center pb-2">
           <div className="flex justify-between items-center mb-4">
             <Badge variant="secondary" className="text-[10px] uppercase tracking-widest bg-primary/10 text-primary border-primary/20 px-3">
@@ -138,7 +148,7 @@ export function SentenceBuilder() {
         
         <CardContent className="space-y-8 p-8">
           
-          {feedback === 'correct' && (
+          {feedback === 'correct' ? (
             <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
               <div className="flex flex-col items-center justify-center gap-6">
                 <div className="flex items-center gap-3 text-basque-green font-black text-5xl uppercase tracking-tighter">
@@ -147,10 +157,13 @@ export function SentenceBuilder() {
                   <Sparkles className="size-8 animate-bounce text-yellow-500" />
                 </div>
                 
-                <div className="w-full flex items-center justify-center p-6 bg-white rounded-3xl border-4 border-basque-green/20 shadow-xl">
-                  <span className="text-3xl font-black text-basque-green tracking-tight leading-snug text-center">
-                    {current.correct.join(' ')}
-                  </span>
+                <div className="w-full flex flex-col items-center gap-2">
+                   <p className="text-[10px] font-bold uppercase text-basque-green tracking-widest">Final Assembly</p>
+                   <div className="w-full flex items-center justify-center p-8 bg-white rounded-3xl border-4 border-basque-green shadow-xl">
+                      <span className="text-3xl font-black text-basque-green tracking-tight leading-snug text-center">
+                        {current.correct.join(' ')}
+                      </span>
+                   </div>
                 </div>
               </div>
 
@@ -163,10 +176,9 @@ export function SentenceBuilder() {
                 </p>
               </div>
             </div>
-          )}
-
-          {feedback !== 'correct' && (
-            <>
+          ) : (
+            <div className="space-y-8">
+              {/* Construction Zone */}
               <div className={cn(
                   "flex flex-wrap items-center justify-center gap-3 p-8 min-h-[160px] rounded-3xl border-4 border-dashed transition-all duration-500", 
                   feedback === 'incorrect' ? "border-basque-red bg-red-50/50 animate-shake" : "bg-white/50 border-muted-foreground/20 shadow-inner"
@@ -193,6 +205,7 @@ export function SentenceBuilder() {
                   )}
               </div>
 
+              {/* Bricks Palette */}
               <div className="space-y-4">
                  <p className="text-[10px] text-center font-bold uppercase text-muted-foreground/60 tracking-widest">Available Bricks</p>
                   <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/10">
@@ -216,45 +229,48 @@ export function SentenceBuilder() {
               {feedback === 'incorrect' && (
                 <div className="bg-basque-red/10 p-4 rounded-2xl border-2 border-basque-red/20 flex items-center justify-center gap-3 text-basque-red animate-in fade-in slide-in-from-top-2">
                   <XCircle className="size-5" />
-                  <p className="font-bold text-xs uppercase tracking-tight">Not quite! Check the brick order. Remember: the Verb Engine often goes last!</p>
+                  <p className="font-bold text-xs uppercase tracking-tight">Brick alignment error! Check your syntax engine. The verb often sits at the end!</p>
                 </div>
               )}
-            </>
+            </div>
           )}
 
+          {/* Action Buttons */}
           <div className="flex justify-center gap-4 pt-6 border-t border-muted-foreground/10">
-            <Button 
-              variant="ghost" 
-              disabled={feedback === 'correct'} 
-              onClick={handleReset}
-              className="font-bold text-muted-foreground hover:text-primary"
-            >
-              <RefreshCw className="size-4 mr-2" /> Start Over
-            </Button>
-            
             {feedback === 'correct' ? (
               <Button 
-                className="bg-basque-green hover:bg-green-700 px-14 h-14 text-lg font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all" 
+                size="lg"
+                className="bg-basque-green hover:bg-green-700 px-14 h-16 text-xl font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all animate-in zoom-in" 
                 onClick={handleNext}
               >
                 Next Build <ArrowRight className="ml-2 size-6" />
               </Button>
             ) : (
-              <Button 
-                className="bg-basque-earth hover:bg-black text-white px-12 h-14 text-lg font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all disabled:opacity-30" 
-                onClick={checkBuild} 
-                disabled={constructed.length === 0}
-              >
-                Snap Bricks & Test
-              </Button>
+              <>
+                <Button 
+                  variant="ghost" 
+                  onClick={handleReset}
+                  className="font-bold text-muted-foreground hover:text-primary"
+                >
+                  <RefreshCw className="size-4 mr-2" /> Start Over
+                </Button>
+                <Button 
+                  size="lg"
+                  className="bg-basque-earth hover:bg-black text-white px-12 h-16 text-lg font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all disabled:opacity-30" 
+                  onClick={checkBuild} 
+                  disabled={constructed.length === 0}
+                >
+                  Snap Bricks & Test
+                </Button>
+              </>
             )}
           </div>
         </CardContent>
       </Card>
       
-      <div className="flex items-center justify-center gap-8 text-muted-foreground/40 mt-4">
+      <div className="flex items-center justify-center gap-8 text-muted-foreground/30 mt-4">
         <div className="flex items-center gap-1"><Sparkles className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Engine V2.0</span></div>
-        <div className="flex items-center gap-1"><BrainCircuit className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Procedural Acquisition</span></div>
+        <div className="flex items-center gap-1"><CheckCircle2 className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Master Builder Achievement</span></div>
       </div>
     </div>
   );
