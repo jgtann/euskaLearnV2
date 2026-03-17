@@ -8,7 +8,7 @@ export default function GrammarCheckPage() {
       <div>
         <h1 className="font-heading text-4xl font-bold">Friction Analysis</h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Check your Basque phrases and get "10-year-old friendly" corrections.
+          Check your Basque phrases and get corrections.
         </p>
       </div>
       

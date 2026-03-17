@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -23,7 +22,7 @@ import {
   Sparkles,
   CheckCircle2,
   Clock,
-  LayoutDashboard
+  BrainCircuit
 } from "lucide-react";
 import { useUser } from '@/firebase';
 
@@ -31,6 +30,7 @@ const features = [
   { title: "Morpheme Construct", description: "Manage agglutination with snap-tiles.", href: "/learn", icon: <BookOpen className="size-6 text-primary" /> },
   { title: "Smart Vocabulary", description: "SRS-driven flashcard review.", href: "/vocabulary", icon: <CheckCircle2 className="size-6 text-primary" /> },
   { title: "Translanguaging", description: "AI-powered cognitive scaffolding.", href: "/translate", icon: <Languages className="size-6 text-primary" /> },
+  { title: "Grammar Check", description: "AI-powered friction and error analysis.", href: "/grammar-check", icon: <BrainCircuit className="size-6 text-primary" /> },
   { title: "Evaluative Indicators", description: "Map your grammatical competence.", href: "/progress", icon: <BarChart className="size-6 text-primary" /> },
 ];
 
