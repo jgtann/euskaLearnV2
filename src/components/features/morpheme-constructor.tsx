@@ -1,27 +1,24 @@
 'use client';
 
-import { useState, useMemo, useTransition, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
   ArrowRight, 
-  Volume2, 
   Sparkles, 
   Boxes, 
   Zap, 
   Trophy,
   RefreshCw,
-  Loader2,
   Dices,
   Clock
 } from 'lucide-react';
-import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { FREQUENT_NOUNS, generateLegoLevels, type LegoLevel } from '@/lib/lego-data';
+import { FREQUENT_NOUNS, generateLegoLevels } from '@/lib/lego-data';
 
 export function MorphemeConstructor() {
   const { user } = useUser();
@@ -32,17 +29,14 @@ export function MorphemeConstructor() {
   const [levelIdx, setLevelIdx] = useState(0);
   const [built, setBuilt] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [isAudioPending, startAudioTransition] = useTransition();
   const [shuffledNouns, setShuffledNouns] = useState<typeof FREQUENT_NOUNS>([]);
 
-  // SRS Data Fetching
   const userItemsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return collection(firestore, 'users', user.uid, 'user_learning_items');
   }, [user, firestore]);
   const { data: userItems, isLoading: isLoadingSRS } = useCollection(userItemsQuery);
 
-  // Thesis 5.3: SRS-Driven Logic - Stabilize the list for the session to prevent jumping words
   useEffect(() => {
     if (userItems && shuffledNouns.length === 0) {
       const records = userItems || [];
@@ -127,7 +121,6 @@ export function MorphemeConstructor() {
       setIsCorrect(true);
       const isFinal = levelIdx === legoLevels.length - 1;
       updateSRS(isFinal);
-      handlePlayAudio(currentLevel.target);
     } else {
       toast({
         variant: "destructive",
@@ -135,24 +128,6 @@ export function MorphemeConstructor() {
         description: "Snap all the bricks together to finish the module!"
       });
     }
-  };
-
-  const handlePlayAudio = (text: string) => {
-    if (isAudioPending) return;
-    startAudioTransition(async () => {
-      const formData = new FormData();
-      formData.append('text', text);
-      const res = await getSpeech(null, formData);
-      if (res.data?.audioDataUri) {
-        new Audio(res.data.audioDataUri).play().catch(() => {});
-      } else if (res.error) {
-        toast({
-          variant: "destructive",
-          title: "Audio Error",
-          description: res.error,
-        });
-      }
-    });
   };
 
   const RoleColors: Record<string, string> = {
@@ -167,7 +142,7 @@ export function MorphemeConstructor() {
   if (isLoadingSRS && shuffledNouns.length === 0) {
     return (
       <Card className="p-12 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="size-8 animate-spin text-primary" />
+        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Sorting Bricks...</p>
       </Card>
     );
@@ -241,13 +216,10 @@ export function MorphemeConstructor() {
                   Zorionak!
                   <Sparkles className="size-6 text-yellow-500 animate-bounce" />
                 </div>
-                <div className="flex items-center gap-4 px-6 py-3 bg-white rounded-2xl border-2 border-basque-green/20 shadow-sm">
+                <div className="flex items-center justify-center px-6 py-3 bg-white rounded-2xl border-2 border-basque-green/20 shadow-sm">
                   <span className="text-3xl font-black text-basque-green tracking-tight">
                     {currentLevel.target}
                   </span>
-                  <Button variant="ghost" size="icon" onClick={() => handlePlayAudio(currentLevel.target)} disabled={isAudioPending}>
-                    {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5 text-basque-green" />}
-                  </Button>
                 </div>
               </div>
               

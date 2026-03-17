@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState, useRef, useTransition } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { getIntroduction } from '@/app/actions';
-import { getSpeech } from '@/app/actions/speech';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, User, BookText, RefreshCw, Volume2 } from 'lucide-react';
+import { Loader2, Sparkles, User, BookText, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
@@ -36,8 +35,6 @@ function SubmitButton() {
 
 export function IntroductionBuilder() {
   const [state, setState] = useState<any>(initialState);
-  const [isAudioPending, startAudioTransition] = useTransition();
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
@@ -59,29 +56,6 @@ export function IntroductionBuilder() {
   const handleReset = () => {
     formRef.current?.reset();
     setState(initialState);
-  }
-
-  const handlePlayAudio = () => {
-    const introductionText = state.data?.introduction;
-    if (!introductionText || isAudioPending) return;
-
-    if (audioCache[introductionText]) {
-      new Audio(audioCache[introductionText]).play().catch(() => {});
-      return;
-    }
-
-    startAudioTransition(async () => {
-        const formData = new FormData();
-        formData.append('text', introductionText);
-        const response = await getSpeech(null, formData);
-
-        if (response.data?.audioDataUri) {
-            const audioDataUri = response.data.audioDataUri;
-            setAudioCache(prev => ({ ...prev, [introductionText]: audioDataUri }));
-            const audio = new Audio(audioDataUri);
-            audio.play().catch(() => {});
-        }
-    });
   }
 
   return (
@@ -133,13 +107,7 @@ export function IntroductionBuilder() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                    <p className="text-lg font-semibold">{state.data.introduction}</p>
-                    <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending}>
-                        {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
-                        <span className="sr-only">Play audio</span>
-                    </Button>
-                </div>
+                <p className="text-lg font-semibold text-center">{state.data.introduction}</p>
             </CardContent>
           </Card>
           <Card>

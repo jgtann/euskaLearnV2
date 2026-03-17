@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,12 +10,9 @@ import {
   Sparkles, 
   ArrowRight, 
   XCircle, 
-  Volume2, 
-  Loader2, 
   BrainCircuit, 
   Zap
 } from 'lucide-react';
-import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
@@ -28,8 +25,6 @@ export function SentenceBuilder() {
   const [constructed, setConstructed] = useState<string[]>([]);
   const [palette, setPalette] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [isAudioPending, startAudioTransition] = useTransition();
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const userItemsQuery = useMemoFirebase(() => {
@@ -43,7 +38,6 @@ export function SentenceBuilder() {
     const records = userItems || [];
     const recordMap = new Map(records.map(r => [r.learningItemId, r]));
 
-    // Simple priority: Due/New items first, then randomized
     return [...SENTENCE_CHALLENGES].sort((a, b) => {
       const recA = recordMap.get(a.id);
       const recB = recordMap.get(b.id);
@@ -92,30 +86,6 @@ export function SentenceBuilder() {
     }, { merge: true });
   };
 
-  const handlePlayAudio = () => {
-    const text = current.correct.join(' ');
-    if (isAudioPending || !text) return;
-    if (audioCache[text]) {
-      new Audio(audioCache[text]).play().catch(() => {});
-      return;
-    }
-    startAudioTransition(async () => {
-      const formData = new FormData();
-      formData.append('text', text);
-      const response = await getSpeech(null, formData);
-      if (response.data?.audioDataUri) {
-        setAudioCache(prev => ({ ...prev, [text]: response.data.audioDataUri }));
-        new Audio(response.data.audioDataUri).play().catch(() => {});
-      } else if (response.error) {
-        toast({
-          variant: "destructive",
-          title: "Audio Error",
-          description: response.error,
-        });
-      }
-    });
-  };
-
   const checkBuild = () => {
     if (constructed.length < current.correct.length) {
       toast({
@@ -128,10 +98,6 @@ export function SentenceBuilder() {
     const isCorrect = constructed.join(' ') === current.correct.join(' ');
     setFeedback(isCorrect ? 'correct' : 'incorrect');
     updateSRS(isCorrect);
-    
-    if (isCorrect) {
-      handlePlayAudio();
-    }
   };
 
   const handleNext = () => {
@@ -147,7 +113,7 @@ export function SentenceBuilder() {
   if (!current) {
     return (
       <Card className="p-12 text-center">
-        <Loader2 className="size-8 animate-spin mx-auto text-primary mb-4" />
+        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-muted-foreground font-bold uppercase tracking-widest">Loading syntax module...</p>
       </Card>
     );
@@ -172,7 +138,6 @@ export function SentenceBuilder() {
         
         <CardContent className="space-y-8 p-8">
           
-          {/* SUCCESS STATE */}
           {feedback === 'correct' && (
             <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
               <div className="flex flex-col items-center justify-center gap-6">
@@ -182,20 +147,10 @@ export function SentenceBuilder() {
                   <Sparkles className="size-8 animate-bounce text-yellow-500" />
                 </div>
                 
-                <div className="w-full flex items-center justify-between gap-4 p-6 bg-white rounded-3xl border-4 border-basque-green/20 shadow-xl">
-                  <span className="text-3xl font-black text-basque-green tracking-tight leading-snug">
+                <div className="w-full flex items-center justify-center p-6 bg-white rounded-3xl border-4 border-basque-green/20 shadow-xl">
+                  <span className="text-3xl font-black text-basque-green tracking-tight leading-snug text-center">
                     {current.correct.join(' ')}
                   </span>
-                  <Button 
-                    variant="secondary" 
-                    size="icon" 
-                    className="h-14 w-14 rounded-full bg-basque-green/10 text-basque-green hover:bg-basque-green hover:text-white transition-all shadow-md"
-                    onClick={handlePlayAudio}
-                    disabled={isAudioPending}
-                  >
-                    {isAudioPending ? <Loader2 className="size-6 animate-spin" /> : <Volume2 className="size-6" />}
-                    <span className="sr-only">Play audio</span>
-                  </Button>
                 </div>
               </div>
 
@@ -210,7 +165,6 @@ export function SentenceBuilder() {
             </div>
           )}
 
-          {/* ACTIVE BUILDING STATE */}
           {feedback !== 'correct' && (
             <>
               <div className={cn(
@@ -268,7 +222,6 @@ export function SentenceBuilder() {
             </>
           )}
 
-          {/* ACTION BUTTONS */}
           <div className="flex justify-center gap-4 pt-6 border-t border-muted-foreground/10">
             <Button 
               variant="ghost" 

@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef, useTransition } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { getTranslation } from '@/app/actions';
-import { getSpeech } from '@/app/actions/speech';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, FileText, Languages, RefreshCw, Volume2, HelpCircle } from 'lucide-react';
+import { Loader2, Sparkles, FileText, Languages, RefreshCw, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -35,9 +34,7 @@ function SubmitButton() {
 
 export function TranslationTool() {
   const [state, setState] = useState<any>(initialState);
-  const [isAudioPending, startAudioTransition] = useTransition();
   const [showHint, setShowHint] = useState(false);
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
@@ -61,30 +58,6 @@ export function TranslationTool() {
     formRef.current?.reset();
     setState(initialState);
     setShowHint(false);
-  }
-
-  const handlePlayAudio = () => {
-    const translationText = state.data?.basqueTranslation;
-    if (!translationText || isAudioPending) return;
-
-    if (audioCache[translationText]) {
-      const audio = new Audio(audioCache[translationText]);
-      audio.play().catch(() => {});
-      return;
-    }
-
-    startAudioTransition(async () => {
-        const formData = new FormData();
-        formData.append('text', translationText);
-        const response = await getSpeech(null, formData);
-
-        if (response.data?.audioDataUri) {
-            const audioDataUri = response.data.audioDataUri;
-            setAudioCache(prev => ({ ...prev, [translationText]: audioDataUri }));
-            const audio = new Audio(audioDataUri);
-            audio.play().catch(() => {});
-        }
-    });
   }
 
   return (
@@ -137,13 +110,7 @@ export function TranslationTool() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-2xl font-bold tracking-tight text-basque-earth">{state.data.basqueTranslation}</p>
-                <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending}>
-                    {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
-                    <span className="sr-only">Play audio</span>
-                </Button>
-              </div>
+              <p className="text-2xl font-bold tracking-tight text-basque-earth text-center">{state.data.basqueTranslation}</p>
             </CardContent>
           </Card>
           

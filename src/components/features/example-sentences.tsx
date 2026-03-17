@@ -2,11 +2,10 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { getSentenceExamplesAction, getGrammarExplanationAction } from '@/app/actions';
-import { getSpeech } from '@/app/actions/speech';
 import type { Word } from '@/lib/vocabulary';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, Volume2, AlertTriangle, BookOpen } from 'lucide-react';
+import { Loader2, AlertTriangle, BookOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Popover,
@@ -38,13 +37,11 @@ const grammarInitialState = {
     error: null as string | null,
 };
 
-// New component for the grammar explanation popover content
 function GrammarExplanation({ sentence }: { sentence: SentenceExample }) {
     const [state, setState] = useState(grammarInitialState);
     const [isFetching, startFetching] = useTransition();
 
     const handleFetchExplanation = () => {
-        // Only fetch if not already fetched or fetching
         if (state.data || isFetching) return;
 
         startFetching(async () => {
@@ -59,7 +56,7 @@ function GrammarExplanation({ sentence }: { sentence: SentenceExample }) {
     return (
         <Popover onOpenChange={(open) => { if(open) handleFetchExplanation()}}>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
                     <BookOpen className="size-4 text-muted-foreground" />
                     <span className="sr-only">Show grammar explanation</span>
                 </Button>
@@ -96,9 +93,6 @@ function GrammarExplanation({ sentence }: { sentence: SentenceExample }) {
 export function ExampleSentences({ word }: ExampleSentencesProps) {
   const [state, setState] = useState(sentenceInitialState);
   const [isFetchingSentences, startFetchingSentences] = useTransition();
-  const [playingSentence, setPlayingSentence] = useState<string | null>(null);
-  const [isAudioPending, startAudioTransition] = useTransition();
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const { toast } = useToast();
   
   useEffect(() => {
@@ -119,36 +113,6 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
       }
     });
   }, [word, toast]);
-
-  const handlePlayAudio = (sentence: string) => {
-    if (isAudioPending) return;
-
-    setPlayingSentence(sentence);
-
-    if (audioCache[sentence]) {
-      const audio = new Audio(audioCache[sentence]);
-      audio.play().catch(() => {});
-      audio.onended = () => setPlayingSentence(null);
-      return;
-    }
-
-    startAudioTransition(async () => {
-        const formData = new FormData();
-        formData.append('text', sentence);
-
-        const response = await getSpeech(null, formData);
-
-        if (response.data?.audioDataUri) {
-            const audioDataUri = response.data.audioDataUri;
-            setAudioCache(prev => ({ ...prev, [sentence]: audioDataUri }));
-            const audio = new Audio(audioDataUri);
-            audio.play().catch(() => {});
-            audio.onended = () => setPlayingSentence(null);
-        } else {
-            setPlayingSentence(null);
-        }
-    });
-  }
 
   if (isFetchingSentences) {
     return (
@@ -178,19 +142,7 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
             <p className="font-semibold">{example.basque}</p>
             <p className="text-sm text-muted-foreground">{example.english}</p>
           </div>
-          
           <GrammarExplanation sentence={example} />
-
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handlePlayAudio(example.basque)}
-            disabled={isAudioPending}
-            className="h-8 w-8"
-          >
-            {playingSentence === example.basque ? <Loader2 className="size-5 animate-spin"/> : <Volume2 className="size-5" />}
-            <span className="sr-only">Play sentence</span>
-          </Button>
         </div>
       ))}
     </div>
