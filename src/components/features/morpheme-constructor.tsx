@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { RefreshCw, ArrowRight, BrainCircuit, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, ArrowRight, BrainCircuit, Loader2, Volume2 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -197,7 +197,7 @@ export function MorphemeConstructor() {
         <CardHeader className="text-center pb-2">
           <div className="flex justify-between items-center mb-2">
             <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-basque-green/60">
-                Word Construction
+                Constructional Entrenchment
             </Badge>
             <div className="flex items-center gap-1">
               <BrainCircuit className="size-3 text-primary" />
@@ -208,12 +208,15 @@ export function MorphemeConstructor() {
           <CardDescription>Assemble the building blocks of the word</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 p-8">
+          {/* RESULT BOX */}
           <div className={cn("flex flex-wrap items-center justify-center gap-3 p-6 min-h-[120px] rounded-2xl border-4 border-dashed transition-all", feedback === 'correct' ? 'bg-green-100/50 border-green-500 shadow-inner' : 'bg-white/50 border-gray-200', feedback === 'incorrect' && 'bg-red-100/50 border-red-500 animate-in shake')}>
             {constructed.map((m, i) => (
               <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={() => !feedback && setConstructed(prev => prev.filter((_, idx) => idx !== i))} disabled={feedback === 'correct'} variant={m.startsWith('-') ? "suffix" : "root"} />
             ))}
             {constructed.length === 0 && <p className="text-gray-400 italic">Start building...</p>}
           </div>
+
+          {/* WORD RESULT PREVIEW */}
           <div className="h-12 flex items-center justify-center">
             {constructed.length > 0 && (
               <div className="flex items-center gap-3 px-6 py-2 bg-basque-green/5 rounded-full border border-basque-green/10">
@@ -221,17 +224,25 @@ export function MorphemeConstructor() {
               </div>
             )}
           </div>
+
+          {/* PALETTE */}
           <div className="flex flex-wrap justify-center content-start gap-4 py-6 border-y border-gray-100 min-h-[160px]">
             {availableMorphemes.map((m, i) => (
               <MorphemeTile key={`${m}-${i}`} morpheme={m} variant={m.startsWith('-') ? "suffix" : "root"} onClick={() => setConstructed(prev => [...prev, m])} disabled={feedback === 'correct'} />
             ))}
           </div>
+
           <div className="flex justify-center gap-3">
             <Button variant="ghost" onClick={resetBoard}><RefreshCw className="mr-2 h-4 w-4" /> Reset</Button>
             {feedback !== 'correct' ? (
               <Button size="lg" className="bg-basque-earth hover:bg-black text-white px-8" disabled={constructed.length === 0} onClick={handleCheck}>Check</Button>
             ) : (
-              <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next <ArrowRight className="ml-2 h-5 w-5" /></Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={() => handlePlayAudio(currentChallenge.correctWord)} disabled={isAudioPending}>
+                  {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
+                </Button>
+                <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next <ArrowRight className="ml-2 h-5 w-5" /></Button>
+              </div>
             )}
           </div>
         </CardContent>

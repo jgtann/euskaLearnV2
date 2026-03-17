@@ -129,6 +129,7 @@ export function SentenceBuilder() {
           <div className="text-2xl font-bold mt-2 text-basque-earth">"{current.english}"</div>
         </CardHeader>
         <CardContent className="space-y-8">
+          {/* RESULT BOX */}
           <div className={cn("flex flex-wrap items-center justify-center gap-2 p-6 min-h-[120px] rounded-2xl border-2 border-dashed transition-all", feedback === 'correct' ? "bg-green-50 border-green-500" : "bg-muted/50 border-border")}>
             {constructed.map((w, i) => (
               <Button key={i} variant="outline" className="bg-white font-bold border-b-4 active:border-b-0" onClick={() => {
@@ -139,7 +140,10 @@ export function SentenceBuilder() {
                 {w}
               </Button>
             ))}
+            {constructed.length === 0 && <p className="text-gray-400 italic">Select words to build the sentence...</p>}
           </div>
+
+          {/* PALETTE */}
           <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted rounded-xl border">
             {palette.map((w, i) => (
               <Button key={i} variant="secondary" className="font-bold bg-white border-b-4" onClick={() => {
@@ -151,6 +155,7 @@ export function SentenceBuilder() {
               </Button>
             ))}
           </div>
+
           <div className="flex justify-center gap-4">
             <Button variant="ghost" onClick={() => { setPalette([...current.correct].sort()); setConstructed([]); setFeedback(null); }}>
               <RefreshCw className="size-4 mr-2" /> Reset
