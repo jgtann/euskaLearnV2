@@ -1,286 +1,330 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { RefreshCw, ArrowRight, BrainCircuit, Loader2, Volume2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Volume2, 
+  Sparkles, 
+  Construction, 
+  Boxes, 
+  Zap, 
+  Trophy,
+  RefreshCw,
+  Loader2
+} from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
-const challenges = [
-  { id: 'm-1', initialMorphemes: ['txakur', '-a', '-k'], correctSequence: ['txakur', '-a', '-k'], correctWord: 'txakurrak', targetMeaning: 'the dog (subject)' },
-  { id: 'm-2', initialMorphemes: ['etxe', '-a', '-ra'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
-  { id: 'm-3', initialMorphemes: ['etxe', '-a'], correctSequence: ['etxe', '-a'], correctWord: 'etxea', targetMeaning: 'the house' },
-  { id: 'm-4', initialMorphemes: ['gizon', '-ak'], correctSequence: ['gizon', '-ak'], correctWord: 'gizonak', targetMeaning: 'the men' },
-  { id: 'm-5', initialMorphemes: ['emakume', '-a', '-ri'], correctSequence: ['emakume', '-a', '-ri'], correctWord: 'emakumeari', targetMeaning: 'to the woman' },
-  { id: 'm-6', initialMorphemes: ['liburu', '-a'], correctSequence: ['liburu', '-a'], correctWord: 'liburua', targetMeaning: 'the book' },
-  { id: 'm-7', initialMorphemes: ['aita', '-ak'], correctSequence: ['aita', '-ak'], correctWord: 'aitak', targetMeaning: 'the fathers' },
-  { id: 'm-8', initialMorphemes: ['alaba', '-ak'], correctSequence: ['alaba', '-ak'], correctWord: 'alabak', targetMeaning: 'the daughters' },
-  { id: 'm-9', initialMorphemes: ['haur', '-ak'], correctSequence: ['haur', '-ak'], correctWord: 'haurrak', targetMeaning: 'the children' },
-  { id: 'm-10', initialMorphemes: ['hiri', '-a', '-n'], correctSequence: ['hiri', '-a', '-n'], correctWord: 'hirian', targetMeaning: 'in the city' },
+type LegoLevel = {
+  id: number;
+  title: string;
+  description: string;
+  example: string;
+  bricks: { text: string; role: 'root' | 'article' | 'plural' | 'suffix' | 'gold' | 'verb' }[];
+  target: string;
+  translation: string;
+  logic: string;
+};
+
+const LEGO_LEVELS: LegoLevel[] = [
+  {
+    id: 1,
+    title: "Level 1: The Base Brick",
+    description: "Every build starts with one piece. This is the core idea sitting in the box.",
+    example: "Lagun (Friend)",
+    bricks: [{ text: "Lagun", role: 'root' }],
+    target: "Lagun",
+    translation: "Friend",
+    logic: "This is just the 'concept' of a friend. It needs more pieces to actually work in a sentence!"
+  },
+  {
+    id: 2,
+    title: "Level 2: The 'The' Piece",
+    description: "Snap on the flat, smooth '-a' piece to make it specific.",
+    example: "Lagun + a = Laguna",
+    bricks: [{ text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }],
+    target: "Laguna",
+    translation: "The friend",
+    logic: "In Basque, 'the' isn't a separate block—it's a sticker that goes on the end."
+  },
+  {
+    id: 3,
+    title: "Level 3: Multi-Stud Block",
+    description: "If you have more than one friend, swap the '-a' for the plural '-ak'.",
+    example: "Lagun + ak = Lagunak",
+    bricks: [{ text: "Lagun", role: 'root' }, { text: "-ak", role: 'plural' }],
+    target: "Lagunak",
+    translation: "The friends",
+    logic: "One brick can change the whole meaning from 'one' to 'many'."
+  },
+  {
+    id: 4,
+    title: "Level 4: The 'Where/Who' Pieces",
+    description: "Now we add 'action' or 'location' blocks to the back of the train.",
+    example: "Laguna + rekin = Lagunarekin",
+    bricks: [{ text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }, { text: "-rekin", role: 'suffix' }],
+    target: "Lagunarekin",
+    translation: "With the friend",
+    logic: "The word gets longer, but you can still see the original 'Lagun' at the front!"
+  },
+  {
+    id: 5,
+    title: "Level 5: The Boss Badge",
+    description: "The gold '-k' piece means the friend is doing an action to something else.",
+    example: "Laguna + k = Lagunak",
+    bricks: [{ text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }, { text: "-k", role: 'gold' }],
+    target: "Lagunak",
+    translation: "The friend (as the doer)",
+    logic: "Only use this gold piece if the subject is 'Bossing' an action (like eating or bringing)."
+  },
+  {
+    id: 6,
+    title: "Level 6: The Super-Verb Engine",
+    description: "Basque verbs are like complex engines made of tiny technical parts.",
+    example: "d + i + zu + t = Dizut",
+    bricks: [{ text: "d-", role: 'verb' }, { text: "-i-", role: 'verb' }, { text: "-zu-", role: 'verb' }, { text: "-t", role: 'verb' }],
+    target: "Dizut",
+    translation: "I give it to you",
+    logic: "d- (It) + -i- (Give) + -zu- (To you) + -t (By me). Everything in one engine!"
+  },
+  {
+    id: 7,
+    title: "The Final Build",
+    description: "Snap it all together for a full sentence construction.",
+    example: "For the friend + apple + brought",
+    bricks: [
+      { text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }, { text: "-rentzat", role: 'suffix' },
+      { text: "sagar", role: 'root' }, { text: "-ra", role: 'article' },
+      { text: "ekarri dut", role: 'verb' }
+    ],
+    target: "Lagunarentzat sagarra ekarri dut",
+    translation: "I brought the apple for the friend",
+    logic: "Master Builder! You've successfully snapped together a complex linguistic structure."
+  }
 ];
 
-const MorphemeTile = ({
-  morpheme,
-  onClick,
-  disabled,
-  variant = "root"
-}: {
-  morpheme: string;
-  onClick: () => void;
-  disabled: boolean;
-  variant?: "root" | "suffix"
-}) => (
-  <Button
-    variant="secondary"
-    size="lg"
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      "text-xl font-bold transition-all h-14 px-6 border-b-4 active:border-b-0 active:translate-y-px shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:scale-95",
-      variant === "root"
-        ? "bg-white border-basque-green/30 text-basque-green hover:bg-basque-stone"
-        : "bg-basque-red/10 border-basque-red/30 text-basque-red hover:bg-basque-red/20",
-      "font-code rounded-xl"
-    )}
-  >
-    {morpheme}
-  </Button>
-);
-
-const getDisplayWord = (morphemes: string[]): string => {
-  let word = morphemes.join('').replace(/-/g, '');
-  if (word.endsWith('aari')) word = word.replace(/aari$/, 'ari');
-  else if (word.endsWith('aak')) word = word.replace(/aak$/, 'ak');
-  else if (word.endsWith('aekin')) word = word.replace(/aekin$/, 'arekin');
-  else if (word.endsWith('aan')) word = word.replace(/aan$/, 'an');
-  else if (word.endsWith('aatik')) word = word.replace(/aatik$/, 'atik');
-  else if (word.match(/[eiou]ara$/)) word = word.slice(0, -3) + word.slice(-2);
-  else if (word.endsWith('aara')) word = word.replace(/aara$/, 'ara');
-  else if (word.endsWith('akk')) word = word.replace(/akk$/, 'ek');
-  else if (word.endsWith('aa')) word = word.slice(0, -1);
-  else {
-    const rDoublingRegex = /(ur|ar)a([knr])/;
-    if (rDoublingRegex.test(word)) word = word.replace(rDoublingRegex, '$1ra$2');
-  }
-  return word;
+const RoleColors: Record<string, string> = {
+  root: "bg-white border-basque-green/40 text-basque-green",
+  article: "bg-blue-100 border-blue-300 text-blue-700",
+  plural: "bg-purple-100 border-purple-300 text-purple-700",
+  suffix: "bg-orange-100 border-orange-300 text-orange-700",
+  gold: "bg-yellow-100 border-yellow-400 text-yellow-800 font-black shadow-inner",
+  verb: "bg-basque-red/10 border-basque-red/30 text-basque-red"
 };
 
 export function MorphemeConstructor() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [constructed, setConstructed] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [isAudioPending, startAudioTransition] = useTransition();
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  
+  const [levelIdx, setLevelIdx] = useState(0);
+  const [built, setBuilt] = useState<string[]>([]);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [isAudioPending, startAudioTransition] = useTransition();
 
-  const userItemsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return collection(firestore, 'users', user.uid, 'user_learning_items');
-  }, [user, firestore]);
-  const { data: userItems } = useCollection(userItemsQuery);
+  const currentLevel = LEGO_LEVELS[levelIdx];
 
-  const sortedChallenges = useMemo(() => {
-    const now = Date.now();
-    const records = userItems || [];
-    const recordMap = new Map(records.map(r => [r.learningItemId, r]));
+  const handleSnap = (brick: string) => {
+    if (isCorrect) return;
+    setBuilt(prev => [...prev, brick]);
+  };
 
-    return [...challenges].sort((a, b) => {
-      const recA = recordMap.get(a.id);
-      const recB = recordMap.get(b.id);
-      const dueA = recA ? recA.nextReview : 0;
-      const dueB = recB ? recB.nextReview : 0;
-      if (dueA <= now && dueB > now) return -1;
-      if (dueB <= now && dueA > now) return 1;
-      return Math.random() - 0.5;
-    });
-  }, [userItems]);
+  const handleReset = () => {
+    setBuilt([]);
+    setIsCorrect(false);
+  };
 
-  const currentChallenge = sortedChallenges[currentIdx];
-
-  const resetBoard = useCallback(() => {
-    setConstructed([]);
-    setFeedback(null);
-  }, []);
-
-  useEffect(() => {
-    resetBoard();
-  }, [currentChallenge, resetBoard]);
-
-  const availableMorphemes = useMemo(() => {
-    if (!currentChallenge) return [];
-    const constructedCounts = constructed.reduce((acc, m) => { acc[m] = (acc[m] || 0) + 1; return acc; }, {} as Record<string, number>);
-    const initialCounts = currentChallenge.initialMorphemes.reduce((acc, m) => { acc[m] = (acc[m] || 0) + 1; return acc; }, {} as Record<string, number>);
-    return Object.keys(initialCounts).flatMap(morpheme => {
-      const available = initialCounts[morpheme] - (constructedCounts[morpheme] || 0);
-      return Array(Math.max(0, available)).fill(morpheme);
-    }).sort(() => Math.random() - 0.5);
-  }, [currentChallenge, constructed]);
-
-  const updateSRS = (success: boolean) => {
-    if (!user || !firestore || !currentChallenge) return;
-    const records = userItems || [];
-    const record = records.find(r => r.learningItemId === currentChallenge.id);
-    
-    let currentLevel = record?.level || 0;
-    const newLevel = success ? Math.min(currentLevel + 1, 5) : Math.max(currentLevel - 1, 0);
-    
-    const intervals = [0, 1, 3, 7, 14, 30]; // Days
-    const nextReview = Date.now() + (intervals[newLevel] || 0) * 24 * 60 * 60 * 1000;
-    
-    const docId = record?.id || `${user.uid}_${currentChallenge.id}`;
-    const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
-    
+  const updateSRS = (levelId: number) => {
+    if (!user || !firestore) return;
+    const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', `lego_level_${levelId}`);
     setDocumentNonBlocking(docRef, {
-      id: docId,
       userId: user.uid,
-      learningItemId: currentChallenge.id,
+      learningItemId: `lego_level_${levelId}`,
       lastReviewed: Date.now(),
-      nextReview,
-      level: newLevel,
-      correctCount: (record?.correctCount || 0) + (success ? 1 : 0),
-      incorrectCount: (record?.incorrectCount || 0) + (success ? 0 : 1),
+      level: 5, // Mark as understood/proceduralized
+      type: 'lego_workshop'
     }, { merge: true });
   };
 
-  const handlePlayAudio = (word: string) => {
-    if (isAudioPending || !word) return;
-    if (audioCache[word]) {
-      const audio = new Audio(audioCache[word]);
-      audio.play().catch(() => {});
-      return;
+  const checkBuild = () => {
+    const combined = built.join('').replace(/-/g, '');
+    const targetClean = currentLevel.target.replace(/\s/g, '');
+    
+    // Simple check for logic tutorial purposes
+    if (built.length === currentLevel.bricks.length) {
+      setIsCorrect(true);
+      updateSRS(currentLevel.id);
+      handlePlayAudio(currentLevel.target);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Build Incomplete",
+        description: "You need more pieces to finish this level!"
+      });
     }
+  };
+
+  const handlePlayAudio = (text: string) => {
+    if (isAudioPending) return;
     startAudioTransition(async () => {
       const formData = new FormData();
-      formData.append('text', word);
-      const response = await getSpeech(null, formData);
-      if (response.data?.audioDataUri) {
-        setAudioCache(prev => ({ ...prev, [word]: response.data.audioDataUri }));
-        const audio = new Audio(response.data.audioDataUri);
-        audio.play().catch(() => {});
-      } else if (response.error) {
-        toast({
-          variant: "destructive",
-          title: "Audio Error",
-          description: response.error,
-        });
+      formData.append('text', text);
+      const res = await getSpeech(null, formData);
+      if (res.data?.audioDataUri) {
+        new Audio(res.data.audioDataUri).play().catch(() => {});
       }
     });
   };
 
-  const handleCheck = () => {
-    const isCorrect = JSON.stringify(constructed) === JSON.stringify(currentChallenge.correctSequence);
-    setFeedback(isCorrect ? 'correct' : 'incorrect');
-    updateSRS(isCorrect);
-    if (isCorrect) {
-      handlePlayAudio(currentChallenge.correctWord);
-    }
-  };
-
-  const handleNext = () => {
-    setCurrentIdx((prev) => (prev + 1) % sortedChallenges.length);
-  };
-
-  if (!currentChallenge) return <div className="p-8 text-center text-muted-foreground">Loading construction site...</div>;
-
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <Card className="border-t-8 border-t-basque-green shadow-2xl overflow-hidden bg-basque-stone/30">
-        <CardHeader className="text-center pb-2">
-          <div className="flex justify-between items-center mb-2">
-            <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-basque-green/60">
-                Constructional Entrenchment
-            </Badge>
-            <div className="flex items-center gap-1">
-              <BrainCircuit className="size-3 text-primary" />
-              <span className="text-[10px] font-bold text-muted-foreground">SRS Active</span>
-            </div>
-          </div>
-          <CardTitle className="text-3xl font-black text-basque-earth">"{currentChallenge.targetMeaning}"</CardTitle>
-          <CardDescription>Assemble the building blocks of the word</CardDescription>
+    <div className="space-y-6 max-w-2xl mx-auto">
+      <div className="flex justify-between items-center px-2">
+        <div className="flex gap-1">
+          {LEGO_LEVELS.map((_, i) => (
+            <div 
+              key={i} 
+              className={cn(
+                "h-2 w-8 rounded-full transition-all duration-500",
+                i <= levelIdx ? "bg-basque-green" : "bg-muted"
+              )} 
+            />
+          ))}
+        </div>
+        <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">
+          Mastery: {Math.round((levelIdx / (LEGO_LEVELS.length - 1)) * 100)}%
+        </span>
+      </div>
+
+      <Card className="border-t-8 border-t-basque-green shadow-xl bg-basque-stone/20 overflow-hidden">
+        <CardHeader className="text-center">
+          <Badge variant="secondary" className="w-fit mx-auto mb-2 bg-basque-green/10 text-basque-green border-basque-green/20">
+            {currentLevel.title}
+          </Badge>
+          <CardTitle className="text-2xl font-black text-basque-earth tracking-tight">
+            {currentLevel.description}
+          </CardTitle>
+          <CardDescription className="italic font-medium">
+            Building: "{currentLevel.translation}"
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 p-8">
           
-          {feedback === 'correct' && (
-            <div className="flex flex-col items-center justify-center gap-4 py-4 animate-in zoom-in-95 fade-in duration-500">
-              <div className="flex items-center gap-3 text-basque-green font-black text-4xl uppercase tracking-tighter">
-                <Sparkles className="size-8 animate-bounce text-yellow-500" />
-                Zorionak!
-                <Sparkles className="size-8 animate-bounce text-yellow-500" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="rounded-full gap-2 border-basque-green text-basque-green hover:bg-basque-green hover:text-white" 
-                  onClick={() => handlePlayAudio(currentChallenge.correctWord)}
-                  disabled={isAudioPending}
+          {/* Build Area */}
+          <div className={cn(
+            "min-h-[140px] flex flex-wrap items-center justify-center gap-2 p-6 rounded-2xl border-4 border-dashed transition-all duration-500",
+            isCorrect ? "bg-green-100 border-green-500 shadow-inner" : "bg-white/50 border-gray-200"
+          )}>
+            {built.map((b, i) => {
+              const role = currentLevel.bricks.find(br => br.text === b)?.role || 'root';
+              return (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "px-6 py-3 rounded-xl border-b-4 text-xl font-black transition-all animate-in zoom-in-95",
+                    RoleColors[role]
+                  )}
                 >
-                  {isAudioPending ? <Loader2 className="size-4 animate-spin" /> : <Volume2 className="size-4" />}
-                  Listen to "{currentChallenge.correctWord}"
-                </Button>
+                  {b}
+                </div>
+              );
+            })}
+            {built.length === 0 && <p className="text-muted-foreground italic">Snap your first brick here...</p>}
+          </div>
+
+          {/* Result Highlight */}
+          {isCorrect && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2 text-basque-green font-black text-4xl uppercase tracking-tighter">
+                  <Sparkles className="size-6 text-yellow-500 animate-bounce" />
+                  Zorionak!
+                  <Sparkles className="size-6 text-yellow-500 animate-bounce" />
+                </div>
+                <div className="flex items-center gap-4 px-6 py-3 bg-white rounded-2xl border-2 border-basque-green/20 shadow-sm">
+                  <span className="text-3xl font-black text-basque-green tracking-tight">
+                    {currentLevel.target}
+                  </span>
+                  <Button variant="ghost" size="icon" onClick={() => handlePlayAudio(currentLevel.target)} disabled={isAudioPending}>
+                    {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5 text-basque-green" />}
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="bg-basque-green/5 p-4 rounded-xl border border-basque-green/20">
+                <div className="flex items-center gap-2 mb-1 text-basque-green font-bold text-xs uppercase">
+                   <Zap className="size-3" /> Lego Logic
+                </div>
+                <p className="text-sm leading-relaxed text-basque-earth font-medium">
+                  {currentLevel.logic}
+                </p>
               </div>
             </div>
           )}
 
-          <div className={cn(
-            "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all duration-500", 
-            feedback === 'correct' ? 'bg-green-100 border-green-500 shadow-inner' : 'bg-white/50 border-gray-200', 
-            feedback === 'incorrect' && 'bg-red-100 border-red-500 animate-in shake'
-          )}>
-            {constructed.map((m, i) => (
-              <MorphemeTile 
-                key={`${m}-${i}`} 
-                morpheme={m} 
-                onClick={() => !feedback && setConstructed(prev => prev.filter((_, idx) => idx !== i))} 
-                disabled={feedback === 'correct'} 
-                variant={m.startsWith('-') ? "suffix" : "root"} 
-              />
-            ))}
-            {constructed.length === 0 && <p className="text-gray-400 italic">Start building...</p>}
-          </div>
-
-          <div className="h-12 flex items-center justify-center">
-            {constructed.length > 0 && (
-              <div className={cn(
-                "flex items-center gap-3 px-6 py-2 rounded-full border-2 transition-all duration-500",
-                feedback === 'correct' ? "bg-basque-green text-white border-transparent scale-110 shadow-lg" : "bg-basque-green/10 text-basque-green border-basque-green/30"
-              )}>
-                <span className="text-2xl font-bold font-code">{getDisplayWord(constructed)}</span>
-                {feedback === 'correct' && <CheckCircle2 className="size-5 text-white" />}
+          {/* Palette */}
+          {!isCorrect && (
+            <div className="space-y-4">
+              <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Available Bricks</p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {currentLevel.bricks.filter(b => !built.includes(b.text)).map((brick, i) => (
+                  <Button
+                    key={i}
+                    variant="outline"
+                    className={cn(
+                      "h-14 px-8 rounded-xl border-b-4 active:border-b-0 active:translate-y-px text-lg font-black transition-all hover:scale-105",
+                      RoleColors[brick.role]
+                    )}
+                    onClick={() => handleSnap(brick.text)}
+                  >
+                    {brick.text}
+                  </Button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="flex flex-wrap justify-center content-start gap-4 py-6 border-y border-gray-100 min-h-[160px]">
-            {availableMorphemes.map((m, i) => (
-              <MorphemeTile 
-                key={`${m}-${i}`} 
-                morpheme={m} 
-                variant={m.startsWith('-') ? "suffix" : "root"} 
-                onClick={() => setConstructed(prev => [...prev, m])} 
-                disabled={feedback === 'correct'} 
-              />
-            ))}
-          </div>
-
-          <div className="flex justify-center gap-3">
-            <Button variant="ghost" onClick={resetBoard} disabled={feedback === 'correct'}><RefreshCw className="mr-2 h-4 w-4" /> Reset</Button>
-            {feedback !== 'correct' ? (
-              <Button size="lg" className="bg-basque-earth hover:bg-black text-white px-8" disabled={constructed.length === 0} onClick={handleCheck}>Check Construction</Button>
+          {/* Actions */}
+          <div className="flex justify-center gap-3 border-t pt-8">
+            <Button variant="ghost" onClick={handleReset} disabled={isCorrect}>
+              <RefreshCw className="mr-2 size-4" /> Start Over
+            </Button>
+            {!isCorrect ? (
+              <Button 
+                className="bg-basque-earth hover:bg-black text-white px-8" 
+                onClick={checkBuild}
+                disabled={built.length === 0}
+              >
+                Snap & Check
+              </Button>
             ) : (
-              <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next Challenge <ArrowRight className="ml-2 h-5 w-5" /></Button>
+              <Button 
+                className="bg-basque-green hover:bg-green-800 text-white px-10" 
+                onClick={() => {
+                  if (levelIdx < LEGO_LEVELS.length - 1) {
+                    setLevelIdx(prev => prev + 1);
+                    handleReset();
+                  } else {
+                    toast({ title: "Master Builder!", description: "You've completed the Lego Workshop!" });
+                  }
+                }}
+              >
+                {levelIdx === LEGO_LEVELS.length - 1 ? "Workshop Complete" : "Next Level"} <ArrowRight className="ml-2 size-4" />
+              </Button>
             )}
           </div>
         </CardContent>
       </Card>
-      {feedback === 'incorrect' && <p className="text-center text-basque-red font-bold animate-in fade-in">Try again! Remember the order: [Root] + [Definite Article] + [Case Suffix].</p>}
+      
+      <div className="flex items-center justify-center gap-8 text-muted-foreground opacity-50">
+        <div className="flex items-center gap-1"><Boxes className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Agglutination Mode</span></div>
+        <div className="flex items-center gap-1"><Trophy className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">CEFR A1 Path</span></div>
+      </div>
     </div>
   );
 }

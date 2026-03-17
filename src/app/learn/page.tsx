@@ -1,27 +1,25 @@
-
 'use client';
 
-import { useState } from 'react';
 import { MorphemeConstructor } from "@/components/features/morpheme-constructor";
 import { SentenceBuilder } from "@/components/features/sentence-builder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Layers } from "lucide-react";
+import { BookOpen, Construction } from "lucide-react";
 
 export default function LearnPage() {
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="font-heading text-4xl font-bold">Construction Workshop</h1>
+        <h1 className="font-heading text-4xl font-bold">Master Builder Workshop</h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Physicalize Basque grammar through morphological and syntactic puzzles.
+          Snap together Basque grammar like Lego bricks to build your linguistic spaceship.
         </p>
       </div>
 
-      <Tabs defaultValue="word" className="w-full">
+      <Tabs defaultValue="lego" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-8 h-auto p-1 bg-muted rounded-xl">
-          <TabsTrigger value="word" className="py-3 rounded-lg data-[state=active]:bg-background">
-            <Layers className="size-4 mr-2" />
-            Word Construction
+          <TabsTrigger value="lego" className="py-3 rounded-lg data-[state=active]:bg-background">
+            <Construction className="size-4 mr-2" />
+            Lego Builder
           </TabsTrigger>
           <TabsTrigger value="sentence" className="py-3 rounded-lg data-[state=active]:bg-background">
             <BookOpen className="size-4 mr-2" />
@@ -29,7 +27,7 @@ export default function LearnPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="word" className="animate-in fade-in slide-in-from-left-4">
+        <TabsContent value="lego" className="animate-in fade-in slide-in-from-left-4">
           <MorphemeConstructor />
         </TabsContent>
 
