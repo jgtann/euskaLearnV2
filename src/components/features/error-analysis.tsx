@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useTransition, useMemo } from 'react';
 import { getErrorAnalysis } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, BrainCircuit, AlertTriangle, Sparkles } from 'lucide-react';
+import { Loader2, BrainCircuit, AlertTriangle, Sparkles, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -17,57 +18,33 @@ type AnalysisResult = {
 export function ErrorAnalysis() {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<AnalysisResult>(null);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { user } = useUser();
   const firestore = useFirestore();
 
-  // Fetch user's learning items with stats
   const userLearningItemsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return collection(firestore, 'users', user.uid, 'user_learning_items');
   }, [user, firestore]);
   const { data: userItems, isLoading: isLoadingUserItems } = useCollection(userLearningItemsQuery);
 
-  // Fetch all learning items to map IDs to text
-  const allLearningItemsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'learning_items');
-  }, [firestore]);
-  const { data: allItems, isLoading: isLoadingAllItems } = useCollection(allLearningItemsQuery);
-  
   const userDataString = useMemo(() => {
-    if (!userItems || !allItems) return null;
-
-    const learningItemsMap = new Map(allItems.map(item => [item.id, item]));
+    if (!userItems || userItems.length === 0) return null;
 
     return userItems
-      .filter(item => item.incorrectCount > 0)
+      .filter(item => (item.incorrectCount || 0) > 0)
       .map(userItem => {
-          const learningItem = learningItemsMap.get(userItem.learningItemId);
-          if (!learningItem) return null;
-          // Format for the AI: Item text, correct/incorrect counts
-          return `Item: "${learningItem.basqueText}", Correct: ${userItem.correctCount}, Incorrect: ${userItem.incorrectCount}`;
+          return `Item: "${userItem.learningItemId}", Correct: ${userItem.correctCount || 0}, Incorrect: ${userItem.incorrectCount || 0}`;
       })
-      .filter(Boolean)
       .join('\n');
-  }, [userItems, allItems]);
-
+  }, [userItems]);
 
   const handleAnalysis = () => {
-    setError(null);
-    setResult(null);
-
-    if (isLoadingUserItems || isLoadingAllItems) {
-      toast({ title: "Please wait", description: "Learning data is still loading." });
-      return;
-    }
-    
     if (!userDataString) {
       setResult({
-        identifiedMorphemes: "No patterns to analyze yet.",
-        errorHeatmap: "You haven't made any mistakes! Keep up the great work. Come back after you've completed more exercises.",
+        identifiedMorphemes: "Insufficient data for pattern detection.",
+        errorHeatmap: "You haven't logged any errors yet! Keep practicing to generate diagnostic data.",
       });
       return;
     }
@@ -75,10 +52,9 @@ export function ErrorAnalysis() {
     startTransition(async () => {
       const response = await getErrorAnalysis(userDataString);
       if (response.error) {
-        setError(response.error);
         toast({
           variant: "destructive",
-          title: "Analysis Error",
+          title: "Analysis Failed",
           description: response.error,
         });
       } else {
@@ -87,51 +63,49 @@ export function ErrorAnalysis() {
     });
   };
 
-  const isLoading = isPending || isLoadingUserItems || isLoadingAllItems;
+  const isLoading = isPending || isLoadingUserItems;
 
   return (
-    <div className="space-y-6 text-center">
-      <Button onClick={handleAnalysis} disabled={isLoading} size="lg">
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 animate-spin" /> Analyzing...
-          </>
-        ) : (
-          <>
-            <BrainCircuit className="mr-2" /> Analyze My Errors
-          </>
-        )}
-      </Button>
-
-      {isLoading && !isPending && (
-         <div className="text-muted-foreground flex items-center justify-center gap-2">
-            <Loader2 className="animate-spin" />
-            <p>Loading your learning data...</p>
-        </div>
-      )}
+    <div className="space-y-6">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <p className="text-sm text-muted-foreground max-w-md">
+            Our AI analyzes your unique mistake history to identify specific patterns of confusion between Basque and English structures.
+        </p>
+        <Button onClick={handleAnalysis} disabled={isLoading} size="lg">
+            {isPending ? (
+            <>
+                <Loader2 className="mr-2 animate-spin" /> Analyzing Patterns...
+            </>
+            ) : (
+            <>
+                <BrainCircuit className="mr-2" /> Run AI Diagnostics
+            </>
+            )}
+        </Button>
+      </div>
 
       {result && (
-        <div className="space-y-6 text-left animate-in fade-in">
-          <Card>
+        <div className="grid gap-6 md:grid-cols-2 animate-in fade-in slide-in-from-bottom-4">
+          <Card className="border-l-4 border-l-primary">
             <CardHeader>
-              <CardTitle className="font-heading flex items-center gap-2">
-                <Sparkles className="text-primary"/>
-                Morpheme Friction Points
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="size-4 text-primary"/>
+                Inferred Friction Points
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-foreground/90">{result.identifiedMorphemes}</p>
+              <p className="text-sm leading-relaxed">{result.identifiedMorphemes}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-l-4 border-l-orange-500">
             <CardHeader>
-              <CardTitle className="font-heading flex items-center gap-2">
-                <AlertTriangle className="text-destructive"/>
-                Error Heatmap
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="size-4 text-orange-500"/>
+                Cognitive Error Heatmap
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-foreground/90">{result.errorHeatmap}</p>
+              <p className="text-sm leading-relaxed">{result.errorHeatmap}</p>
             </CardContent>
           </Card>
         </div>

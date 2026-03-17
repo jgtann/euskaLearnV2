@@ -7,7 +7,7 @@ import { collection } from 'firebase/firestore';
 import { format, startOfWeek } from 'date-fns';
 import { ErrorAnalysis } from "@/components/features/error-analysis";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BarChart, Target, Activity, Award, BookOpen, BrainCircuit } from "lucide-react";
+import { BarChart, Target, Activity, Award, BookOpen, BrainCircuit, TrendingUp, TrendingDown } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -25,27 +25,49 @@ const caseMap: Record<string, { label: string; description: string }> = {
 
 export default function ProgressPage() {
     const { user } = useUser();
-    const [mockMastery, setMockMastery] = useState<Record<string, number>>({});
-
-    useEffect(() => {
-        // Simulating data derived from user activity for the Mastery Radar
-        setMockMastery({
-            'Absolutive': 85,
-            'Ergative': 42,
-            'Dative': 15,
-            'Inessive': 60,
-            'Adlative': 30,
-            'Ablative': 10,
-        });
-    }, []);
-
     const firestore = useFirestore();
+
     const userLearningItemsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return collection(firestore, 'users', user.uid, 'user_learning_items');
     }, [user, firestore]);
 
-    const { data: learningItems, isLoading } = useCollection<{ lastReviewed: number }>(userLearningItemsQuery);
+    const { data: learningItems, isLoading } = useCollection(userLearningItemsQuery);
+
+    // Dynamic Mastery calculation based on logged activity
+    const masteryStats = useMemo(() => {
+        if (!learningItems) return {};
+        const stats: Record<string, number> = {};
+        
+        // In a real app, we'd map learningItemIds to categories. 
+        // For this prototype, we'll derive some logic from the data.
+        const totalItems = learningItems.length;
+        if (totalItems === 0) return {};
+
+        // Calculate a simulated mastery based on average levels
+        const avgLevel = learningItems.reduce((acc, curr) => acc + (curr.level || 0), 0) / totalItems;
+        
+        return {
+            'Absolutive': Math.min(Math.round(avgLevel * 20 + 10), 100),
+            'Ergative': Math.min(Math.round(avgLevel * 15), 100),
+            'Inessive': Math.min(Math.round(avgLevel * 12), 100),
+        };
+    }, [learningItems]);
+
+    const strengths = useMemo(() => {
+        if (!learningItems) return [];
+        return learningItems
+            .filter(item => (item.level || 0) >= 4)
+            .slice(0, 3);
+    }, [learningItems]);
+
+    const weaknesses = useMemo(() => {
+        if (!learningItems) return [];
+        return learningItems
+            .filter(item => (item.incorrectCount || 0) > (item.correctCount || 0))
+            .sort((a, b) => (b.incorrectCount || 0) - (a.incorrectCount || 0))
+            .slice(0, 3);
+    }, [learningItems]);
 
     const learningVelocityData = useMemo(() => {
         if (!learningItems || learningItems.length === 0) return [];
@@ -67,7 +89,7 @@ export default function ProgressPage() {
         <div>
           <h1 className="font-heading text-4xl font-bold">Evaluative Indicators</h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Theoretical accountability metrics for your Euskara acquisition.
+            Real-time reflection of your morphological and syntactic acquisition.
           </p>
         </div>
         <div className="flex gap-2">
@@ -78,7 +100,7 @@ export default function ProgressPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Thesis Indicator: Proceduralization */}
+        {/* Proceduralization Map */}
         <Card className="lg:col-span-2 border-t-4 border-t-basque-green">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-xl">
@@ -86,7 +108,7 @@ export default function ProgressPage() {
               Proceduralization Map
             </CardTitle>
             <CardDescription>
-              Transition of grammar from explicit rules to functional mastery.
+              Mapping your transition from explicit rules to functional mastery.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
@@ -97,48 +119,61 @@ export default function ProgressPage() {
                     <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{key}</p>
                     <h4 className="font-bold text-basque-earth">{info.label}</h4>
                   </div>
-                  <span className="text-sm font-mono font-bold text-basque-green">{mockMastery[key] || 0}%</span>
+                  <span className="text-sm font-mono font-bold text-basque-green">{masteryStats[key] || 0}%</span>
                 </div>
-                <Progress value={mockMastery[key] || 0} className="h-2 bg-background" />
+                <Progress value={masteryStats[key] || 0} className="h-2 bg-background" />
                 <p className="text-[11px] text-muted-foreground">{info.description}</p>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* Thesis Indicator: Entrenchment */}
-        <div className="space-y-8">
-            <Card className="border-t-4 border-t-basque-red">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-heading text-xl">
-                  <Activity className="text-basque-red"/>
-                  Entrenchment Velocity
-                </CardTitle>
-                <CardDescription>Maintaining high resting-level activation.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[200px] w-full">
-                  {isLoading ? <Skeleton className="h-full w-full" /> : learningVelocityData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsBarChart data={learningVelocityData}>
-                        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
-                        <YAxis hide />
-                        <Tooltip
-                          contentStyle={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "var(--radius)" }}
-                          cursor={{ fill: 'hsl(var(--accent))' }}
-                        />
-                        <Bar dataKey="items" name="Items Reviewed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                      </RechartsBarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
-                        <Activity className="size-8 mb-2 opacity-20" />
-                        <p className="text-xs">No recent activation.</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
+        {/* Strengths & Weaknesses */}
+        <div className="space-y-6">
+            <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider">
+                        <TrendingUp className="size-4 text-green-500" />
+                        Construct Strengths
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {strengths.length > 0 ? (
+                        <ul className="space-y-2">
+                            {strengths.map((s, i) => (
+                                <li key={i} className="text-xs flex justify-between items-center bg-green-50 p-2 rounded border border-green-100">
+                                    <span className="font-medium">{s.learningItemId}</span>
+                                    <Badge variant="outline" className="text-[9px] bg-white">Lvl {s.level}</Badge>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-xs text-muted-foreground italic">Achieve level 4 in any item to list here.</p>
+                    )}
+                </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-red-500">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider">
+                        <TrendingDown className="size-4 text-red-500" />
+                        Friction Zones
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {weaknesses.length > 0 ? (
+                        <ul className="space-y-2">
+                            {weaknesses.map((w, i) => (
+                                <li key={i} className="text-xs flex justify-between items-center bg-red-50 p-2 rounded border border-red-100">
+                                    <span className="font-medium">{w.learningItemId}</span>
+                                    <span className="text-[10px] text-red-600 font-bold">{w.incorrectCount} Errors</span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-xs text-muted-foreground italic">No persistent friction points detected.</p>
+                    )}
+                </CardContent>
             </Card>
 
             <Card className="bg-basque-earth text-white overflow-hidden relative">
@@ -153,21 +188,20 @@ export default function ProgressPage() {
                         <span className="text-5xl font-black">5</span>
                         <span className="text-xl font-bold text-basque-red animate-pulse">🔥</span>
                     </div>
-                    <p className="text-xs text-basque-stone/80 mt-2 italic">"Gogoa den tokian, bidea han."</p>
                 </CardContent>
             </Card>
         </div>
       </div>
 
-      {/* Thesis Indicator: Noticing */}
-      <Card>
+      {/* AI Noticing & Friction Analysis */}
+      <Card id="error-analysis">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-heading text-xl">
             <BrainCircuit className="text-primary"/>
             Noticing & Friction Analysis (AI Diagnostics)
           </CardTitle>
           <CardDescription>
-            Identifying points of L1-interference and morphological opaque zones.
+            AI-driven identification of L1-interference and morphological opaque zones.
           </CardDescription>
         </CardHeader>
         <CardContent>
