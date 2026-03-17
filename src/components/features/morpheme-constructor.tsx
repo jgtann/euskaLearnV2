@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,126 +10,38 @@ import {
   ArrowRight, 
   Volume2, 
   Sparkles, 
-  Construction, 
   Boxes, 
   Zap, 
   Trophy,
   RefreshCw,
-  Loader2
+  Loader2,
+  Dices
 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
-
-type LegoLevel = {
-  id: number;
-  title: string;
-  description: string;
-  example: string;
-  bricks: { text: string; role: 'root' | 'article' | 'plural' | 'suffix' | 'gold' | 'verb' }[];
-  target: string;
-  translation: string;
-  logic: string;
-};
-
-const LEGO_LEVELS: LegoLevel[] = [
-  {
-    id: 1,
-    title: "Level 1: The Base Brick",
-    description: "Every build starts with one piece. This is the core idea sitting in the box.",
-    example: "Lagun (Friend)",
-    bricks: [{ text: "Lagun", role: 'root' }],
-    target: "Lagun",
-    translation: "Friend",
-    logic: "This is just the 'concept' of a friend. It needs more pieces to actually work in a sentence!"
-  },
-  {
-    id: 2,
-    title: "Level 2: The 'The' Piece",
-    description: "Snap on the flat, smooth '-a' piece to make it specific.",
-    example: "Lagun + a = Laguna",
-    bricks: [{ text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }],
-    target: "Laguna",
-    translation: "The friend",
-    logic: "In Basque, 'the' isn't a separate block—it's a sticker that goes on the end."
-  },
-  {
-    id: 3,
-    title: "Level 3: Multi-Stud Block",
-    description: "If you have more than one friend, swap the '-a' for the plural '-ak'.",
-    example: "Lagun + ak = Lagunak",
-    bricks: [{ text: "Lagun", role: 'root' }, { text: "-ak", role: 'plural' }],
-    target: "Lagunak",
-    translation: "The friends",
-    logic: "One brick can change the whole meaning from 'one' to 'many'."
-  },
-  {
-    id: 4,
-    title: "Level 4: The 'Where/Who' Pieces",
-    description: "Now we add 'action' or 'location' blocks to the back of the train.",
-    example: "Laguna + rekin = Lagunarekin",
-    bricks: [{ text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }, { text: "-rekin", role: 'suffix' }],
-    target: "Lagunarekin",
-    translation: "With the friend",
-    logic: "The word gets longer, but you can still see the original 'Lagun' at the front!"
-  },
-  {
-    id: 5,
-    title: "Level 5: The Boss Badge",
-    description: "The gold '-k' piece means the friend is doing an action to something else.",
-    example: "Laguna + k = Lagunak",
-    bricks: [{ text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }, { text: "-k", role: 'gold' }],
-    target: "Lagunak",
-    translation: "The friend (as the doer)",
-    logic: "Only use this gold piece if the subject is 'Bossing' an action (like eating or bringing)."
-  },
-  {
-    id: 6,
-    title: "Level 6: The Super-Verb Engine",
-    description: "Basque verbs are like complex engines made of tiny technical parts.",
-    example: "d + i + zu + t = Dizut",
-    bricks: [{ text: "d-", role: 'verb' }, { text: "-i-", role: 'verb' }, { text: "-zu-", role: 'verb' }, { text: "-t", role: 'verb' }],
-    target: "Dizut",
-    translation: "I give it to you",
-    logic: "d- (It) + -i- (Give) + -zu- (To you) + -t (By me). Everything in one engine!"
-  },
-  {
-    id: 7,
-    title: "The Final Build",
-    description: "Snap it all together for a full sentence construction.",
-    example: "For the friend + apple + brought",
-    bricks: [
-      { text: "Lagun", role: 'root' }, { text: "-a", role: 'article' }, { text: "-rentzat", role: 'suffix' },
-      { text: "sagar", role: 'root' }, { text: "-ra", role: 'article' },
-      { text: "ekarri dut", role: 'verb' }
-    ],
-    target: "Lagunarentzat sagarra ekarri dut",
-    translation: "I brought the apple for the friend",
-    logic: "Master Builder! You've successfully snapped together a complex linguistic structure."
-  }
-];
-
-const RoleColors: Record<string, string> = {
-  root: "bg-white border-basque-green/40 text-basque-green",
-  article: "bg-blue-100 border-blue-300 text-blue-700",
-  plural: "bg-purple-100 border-purple-300 text-purple-700",
-  suffix: "bg-orange-100 border-orange-300 text-orange-700",
-  gold: "bg-yellow-100 border-yellow-400 text-yellow-800 font-black shadow-inner",
-  verb: "bg-basque-red/10 border-basque-red/30 text-basque-red"
-};
+import { FREQUENT_NOUNS, generateLegoLevels, type LegoLevel } from '@/lib/lego-data';
 
 export function MorphemeConstructor() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   
+  const [nounIdx, setNounIdx] = useState(0);
   const [levelIdx, setLevelIdx] = useState(0);
   const [built, setBuilt] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isAudioPending, startAudioTransition] = useTransition();
 
-  const currentLevel = LEGO_LEVELS[levelIdx];
+  const currentNoun = FREQUENT_NOUNS[nounIdx];
+  const legoLevels = useMemo(() => generateLegoLevels(currentNoun), [currentNoun]);
+  const currentLevel = legoLevels[levelIdx];
+
+  // Reset when level changes
+  useEffect(() => {
+    handleReset();
+  }, [levelIdx, nounIdx]);
 
   const handleSnap = (brick: string) => {
     if (isCorrect) return;
@@ -140,23 +53,26 @@ export function MorphemeConstructor() {
     setIsCorrect(false);
   };
 
+  const handleRandomNoun = () => {
+    const next = Math.floor(Math.random() * FREQUENT_NOUNS.length);
+    setNounIdx(next);
+    setLevelIdx(0);
+  };
+
   const updateSRS = (levelId: number) => {
     if (!user || !firestore) return;
-    const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', `lego_level_${levelId}`);
+    const docId = `lego_${currentNoun.basque.toLowerCase()}_lvl${levelId}`;
+    const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
     setDocumentNonBlocking(docRef, {
       userId: user.uid,
-      learningItemId: `lego_level_${levelId}`,
+      learningItemId: docId,
       lastReviewed: Date.now(),
-      level: 5, // Mark as understood/proceduralized
+      level: 5,
       type: 'lego_workshop'
     }, { merge: true });
   };
 
   const checkBuild = () => {
-    const combined = built.join('').replace(/-/g, '');
-    const targetClean = currentLevel.target.replace(/\s/g, '');
-    
-    // Simple check for logic tutorial purposes
     if (built.length === currentLevel.bricks.length) {
       setIsCorrect(true);
       updateSRS(currentLevel.id);
@@ -182,22 +98,36 @@ export function MorphemeConstructor() {
     });
   };
 
+  const RoleColors: Record<string, string> = {
+    root: "bg-white border-basque-green/40 text-basque-green",
+    article: "bg-blue-100 border-blue-300 text-blue-700",
+    plural: "bg-purple-100 border-purple-300 text-purple-700",
+    suffix: "bg-orange-100 border-orange-300 text-orange-700",
+    gold: "bg-yellow-100 border-yellow-400 text-yellow-800 font-black shadow-inner",
+    verb: "bg-basque-red/10 border-basque-red/30 text-basque-red"
+  };
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex justify-between items-center px-2">
-        <div className="flex gap-1">
-          {LEGO_LEVELS.map((_, i) => (
-            <div 
-              key={i} 
-              className={cn(
-                "h-2 w-8 rounded-full transition-all duration-500",
-                i <= levelIdx ? "bg-basque-green" : "bg-muted"
-              )} 
-            />
-          ))}
+        <div className="flex items-center gap-4">
+            <div className="flex gap-1">
+            {legoLevels.map((_, i) => (
+                <div 
+                key={i} 
+                className={cn(
+                    "h-2 w-8 rounded-full transition-all duration-500",
+                    i <= levelIdx ? "bg-basque-green" : "bg-muted"
+                )} 
+                />
+            ))}
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleRandomNoun} className="h-8 text-[10px] uppercase font-bold tracking-widest">
+                <Dices className="size-3 mr-1" /> Swap Base Brick
+            </Button>
         </div>
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">
-          Mastery: {Math.round((levelIdx / (LEGO_LEVELS.length - 1)) * 100)}%
+          Mastery: {Math.round((levelIdx / (legoLevels.length - 1)) * 100)}%
         </span>
       </div>
 
@@ -234,10 +164,10 @@ export function MorphemeConstructor() {
                 </div>
               );
             })}
-            {built.length === 0 && <p className="text-muted-foreground italic">Snap your first brick here...</p>}
+            {built.length === 0 && <p className="text-muted-foreground italic">Snap the first brick: "{currentNoun.basque}"</p>}
           </div>
 
-          {/* Result Highlight */}
+          {/* Success Box */}
           {isCorrect && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
               <div className="flex flex-col items-center gap-3">
@@ -306,15 +236,14 @@ export function MorphemeConstructor() {
               <Button 
                 className="bg-basque-green hover:bg-green-800 text-white px-10" 
                 onClick={() => {
-                  if (levelIdx < LEGO_LEVELS.length - 1) {
+                  if (levelIdx < legoLevels.length - 1) {
                     setLevelIdx(prev => prev + 1);
-                    handleReset();
                   } else {
-                    toast({ title: "Master Builder!", description: "You've completed the Lego Workshop!" });
+                    handleRandomNoun();
                   }
                 }}
               >
-                {levelIdx === LEGO_LEVELS.length - 1 ? "Workshop Complete" : "Next Level"} <ArrowRight className="ml-2 size-4" />
+                {levelIdx === legoLevels.length - 1 ? "Next Base Brick" : "Next Level"} <ArrowRight className="ml-2 size-4" />
               </Button>
             )}
           </div>

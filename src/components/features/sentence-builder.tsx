@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useTransition } from 'react';
@@ -10,19 +11,7 @@ import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-
-const sentenceChallenges = [
-  { id: 's-1', english: "I am Jon.", correct: ["Ni", "Jon", "naiz"], meaning: "Subject + Complement + Verb", type: "A1 Basics" },
-  { id: 's-2', english: "You are a student.", correct: ["Zu", "ikaslea", "zara"], meaning: "Subject + Noun + Verb", type: "A1 Basics" },
-  { id: 's-3', english: "The house is big.", correct: ["Etxea", "handia", "da"], meaning: "Subject + Adjective + Verb", type: "A1 Basics" },
-  { id: 's-4', english: "We are friends.", correct: ["Gu", "lagunak", "gara"], meaning: "Plural Subject + Plural Noun + Verb", type: "A1 Basics" },
-  { id: 's-5', english: "I am in the house.", correct: ["Ni", "etxean", "naiz"], meaning: "Subject + Inessive + Verb", type: "A1 Location" },
-  { id: 's-6', english: "The book is on the table.", correct: ["Liburua", "mahaian", "dago"], meaning: "Subject + Locative + Verb (State)", type: "A1 Location" },
-  { id: 's-7', english: "I have a book.", correct: ["Nik", "liburu", "bat", "dut"], meaning: "Ergative + Object + Bat + Aux", type: "A1 Transitive" },
-  { id: 's-8', english: "I drink water.", correct: ["Nik", "ura", "edaten", "dut"], meaning: "Ergative + Object + Main Verb + Aux", type: "A1 Daily" },
-  { id: 's-9', english: "I am not a doctor.", correct: ["Ni", "ez", "naiz", "medikua"], meaning: "Negation + Aux + Complement", type: "A1 Negation" },
-  { id: 's-10', english: "I always study.", correct: ["Nik", "beti", "ikasten", "dut"], meaning: "Ergative + Adverb + Verb + Aux", type: "A2 Time" },
-];
+import { SENTENCE_CHALLENGES } from '@/lib/sentence-challenges';
 
 export function SentenceBuilder() {
   const { user } = useUser();
@@ -46,7 +35,7 @@ export function SentenceBuilder() {
     const records = userItems || [];
     const recordMap = new Map(records.map(r => [r.learningItemId, r]));
 
-    return [...sentenceChallenges].sort((a, b) => {
+    return [...SENTENCE_CHALLENGES].sort((a, b) => {
       const recA = recordMap.get(a.id);
       const recB = recordMap.get(b.id);
       const dueA = recA ? recA.nextReview : 0;
@@ -97,8 +86,7 @@ export function SentenceBuilder() {
     const text = current.correct.join(' ');
     if (isAudioPending || !text) return;
     if (audioCache[text]) {
-      const audio = new Audio(audioCache[text]);
-      audio.play().catch(() => {});
+      new Audio(audioCache[text]).play().catch(() => {});
       return;
     }
     startAudioTransition(async () => {
@@ -107,14 +95,7 @@ export function SentenceBuilder() {
       const response = await getSpeech(null, formData);
       if (response.data?.audioDataUri) {
         setAudioCache(prev => ({ ...prev, [text]: response.data.audioDataUri }));
-        const audio = new Audio(response.data.audioDataUri);
-        audio.play().catch(() => {});
-      } else if (response.error) {
-        toast({
-          variant: "destructive",
-          title: "Audio Error",
-          description: response.error,
-        });
+        new Audio(response.data.audioDataUri).play().catch(() => {});
       }
     });
   };
