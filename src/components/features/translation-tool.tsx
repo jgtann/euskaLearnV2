@@ -111,9 +111,9 @@ export function TranslationTool() {
           {!showHint && (
             <Alert className="bg-primary/5 border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => setShowHint(true)}>
               <HelpCircle className="h-4 w-4 text-primary" />
-              <AlertTitle className="text-xs font-bold uppercase tracking-tight">Adaptive Hint Available</AlertTitle>
+              <AlertTitle className="text-xs font-bold uppercase tracking-tight">Got a Clue!</AlertTitle>
               <AlertDescription className="text-xs">
-                Click to see a structural clue before the full translation.
+                Click to see a secret tip about how this sentence is built!
               </AlertDescription>
             </Alert>
           )}
@@ -121,9 +121,9 @@ export function TranslationTool() {
           {showHint && (
             <Alert className="bg-orange-50 border-orange-200 animate-in slide-in-from-top-2">
               <Sparkles className="h-4 w-4 text-orange-500" />
-              <AlertTitle className="text-xs font-bold uppercase">Structural Scaffold</AlertTitle>
+              <AlertTitle className="text-xs font-bold uppercase">Language Secret</AlertTitle>
               <AlertDescription className="text-sm">
-                Focus on the <strong>{state.data.explanation[0]?.concept}</strong>. In Basque, this marks the relationship between the participants.
+                Watch out for the <strong>{state.data.explanation[0]?.concept}</strong>. It helps us know who is doing what!
               </AlertDescription>
             </Alert>
           )}
@@ -152,7 +152,7 @@ export function TranslationTool() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-heading text-lg">
                 <FileText className="text-accent" />
-                Pedagogical Breakdown
+                How Basque Works!
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -160,7 +160,7 @@ export function TranslationTool() {
                 <div key={index} className="p-4 border rounded-lg bg-muted/30 text-foreground/90">
                   <p className="font-bold text-primary font-code">{item.concept}</p>
                   <p className="mt-1 text-sm leading-relaxed">{item.explanation}</p>
-                  {item.example && <p className="mt-2 text-[11px] italic text-muted-foreground">e.g., "{item.example}"</p>}
+                  {item.example && <p className="mt-2 text-[11px] italic text-muted-foreground">Example: "{item.example}"</p>}
                 </div>
               ))}
             </CardContent>
