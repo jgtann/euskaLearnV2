@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
@@ -15,12 +14,13 @@ import {
   Trophy,
   RefreshCw,
   Loader2,
-  Dices
+  Dices,
+  Clock
 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { FREQUENT_NOUNS, generateLegoLevels, type LegoLevel } from '@/lib/lego-data';
 
 export function MorphemeConstructor() {
@@ -28,20 +28,57 @@ export function MorphemeConstructor() {
   const firestore = useFirestore();
   const { toast } = useToast();
   
-  const [nounIdx, setNounIdx] = useState(0);
+  const [currentNounIdx, setCurrentNounIdx] = useState(0);
   const [levelIdx, setLevelIdx] = useState(0);
   const [built, setBuilt] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isAudioPending, startAudioTransition] = useTransition();
 
-  const currentNoun = FREQUENT_NOUNS[nounIdx];
+  // SRS Data Fetching
+  const userItemsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'user_learning_items');
+  }, [user, firestore]);
+  const { data: userItems, isLoading: isLoadingSRS } = useCollection(userItemsQuery);
+
+  // Thesis 5.3: SRS-Driven Logic - Prioritize New/Due, push Seen to back
+  const sortedNouns = useMemo(() => {
+    const records = userItems || [];
+    const recordMap = new Map(records.filter(r => r.type === 'lego_workshop').map(r => [r.learningItemId.replace('lego_noun_', ''), r]));
+    const now = Date.now();
+
+    const newNouns: any[] = [];
+    const dueNouns: any[] = [];
+    const seenNouns: any[] = [];
+
+    FREQUENT_NOUNS.forEach(noun => {
+      const record = recordMap.get(noun.basque.toLowerCase());
+      if (!record) {
+        newNouns.push(noun);
+      } else if (record.nextReview <= now) {
+        dueNouns.push(noun);
+      } else {
+        seenNouns.push(noun);
+      }
+    });
+
+    // Randomize within groups per React pedagogical best practices
+    const shuffle = (array: any[]) => [...array].sort(() => Math.random() - 0.5);
+
+    return [
+      ...shuffle(newNouns),
+      ...shuffle(dueNouns),
+      ...shuffle(seenNouns)
+    ];
+  }, [userItems]);
+
+  const currentNoun = sortedNouns[currentNounIdx] || FREQUENT_NOUNS[0];
   const legoLevels = useMemo(() => generateLegoLevels(currentNoun), [currentNoun]);
   const currentLevel = legoLevels[levelIdx];
 
-  // Reset when level changes
   useEffect(() => {
     handleReset();
-  }, [levelIdx, nounIdx]);
+  }, [levelIdx, currentNounIdx]);
 
   const handleSnap = (brick: string) => {
     if (isCorrect) return;
@@ -53,35 +90,49 @@ export function MorphemeConstructor() {
     setIsCorrect(false);
   };
 
-  const handleRandomNoun = () => {
-    const next = Math.floor(Math.random() * FREQUENT_NOUNS.length);
-    setNounIdx(next);
+  const handleNextNoun = () => {
+    setCurrentNounIdx(prev => (prev + 1) % sortedNouns.length);
     setLevelIdx(0);
   };
 
-  const updateSRS = (levelId: number) => {
+  const updateSRS = (isFinalLevel: boolean) => {
     if (!user || !firestore) return;
-    const docId = `lego_${currentNoun.basque.toLowerCase()}_lvl${levelId}`;
+    
+    // Track SRS at the Noun level for the Lego workshop
+    const docId = `lego_noun_${currentNoun.basque.toLowerCase()}`;
+    const record = (userItems || []).find(r => r.id === docId);
+    
+    let currentMastery = record?.level || 0;
+    // Only bump level significantly if they finish the whole build (Level 6)
+    const newMastery = isFinalLevel ? Math.min(currentMastery + 1, 5) : currentMastery;
+    
+    const intervals = [0, 1, 3, 7, 14, 30]; // Days
+    const nextReview = Date.now() + (intervals[newMastery] || 0) * 24 * 60 * 60 * 1000;
+
     const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
     setDocumentNonBlocking(docRef, {
+      id: docId,
       userId: user.uid,
-      learningItemId: docId,
+      learningItemId: currentNoun.basque.toLowerCase(),
       lastReviewed: Date.now(),
-      level: 5,
-      type: 'lego_workshop'
+      nextReview,
+      level: newMastery,
+      type: 'lego_workshop',
+      currentWorkshopLevel: levelIdx + 1
     }, { merge: true });
   };
 
   const checkBuild = () => {
     if (built.length === currentLevel.bricks.length) {
       setIsCorrect(true);
-      updateSRS(currentLevel.id);
+      const isFinal = levelIdx === legoLevels.length - 1;
+      updateSRS(isFinal);
       handlePlayAudio(currentLevel.target);
     } else {
       toast({
         variant: "destructive",
         title: "Build Incomplete",
-        description: "You need more pieces to finish this level!"
+        description: "Snap all the bricks together to finish the module!"
       });
     }
   };
@@ -107,6 +158,15 @@ export function MorphemeConstructor() {
     verb: "bg-basque-red/10 border-basque-red/30 text-basque-red"
   };
 
+  if (isLoadingSRS) {
+    return (
+      <Card className="p-12 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="size-8 animate-spin text-primary" />
+        <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Sorting Bricks...</p>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex justify-between items-center px-2">
@@ -122,19 +182,20 @@ export function MorphemeConstructor() {
                 />
             ))}
             </div>
-            <Button variant="ghost" size="sm" onClick={handleRandomNoun} className="h-8 text-[10px] uppercase font-bold tracking-widest">
-                <Dices className="size-3 mr-1" /> Swap Base Brick
+            <Button variant="ghost" size="sm" onClick={handleNextNoun} className="h-8 text-[10px] uppercase font-bold tracking-widest">
+                <Dices className="size-3 mr-1" /> New Base Brick
             </Button>
         </div>
-        <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">
-          Mastery: {Math.round((levelIdx / (legoLevels.length - 1)) * 100)}%
-        </span>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
+          <Clock className="size-3" />
+          SRS Priority: {currentNounIdx + 1} / {sortedNouns.length}
+        </div>
       </div>
 
       <Card className="border-t-8 border-t-basque-green shadow-xl bg-basque-stone/20 overflow-hidden">
         <CardHeader className="text-center">
           <Badge variant="secondary" className="w-fit mx-auto mb-2 bg-basque-green/10 text-basque-green border-basque-green/20">
-            {currentLevel.title}
+            Level {currentLevel.id}: {currentLevel.title}
           </Badge>
           <CardTitle className="text-2xl font-black text-basque-earth tracking-tight">
             {currentLevel.description}
@@ -164,10 +225,10 @@ export function MorphemeConstructor() {
                 </div>
               );
             })}
-            {built.length === 0 && <p className="text-muted-foreground italic">Snap the first brick: "{currentNoun.basque}"</p>}
+            {built.length === 0 && <p className="text-muted-foreground italic">Start with: "{currentNoun.basque}"</p>}
           </div>
 
-          {/* Success Box */}
+          {/* Success Box / Zorionak */}
           {isCorrect && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
               <div className="flex flex-col items-center gap-3">
@@ -188,7 +249,7 @@ export function MorphemeConstructor() {
               
               <div className="bg-basque-green/5 p-4 rounded-xl border border-basque-green/20">
                 <div className="flex items-center gap-2 mb-1 text-basque-green font-bold text-xs uppercase">
-                   <Zap className="size-3" /> Lego Logic
+                   <Zap className="size-3" /> Master Builder Logic
                 </div>
                 <p className="text-sm leading-relaxed text-basque-earth font-medium">
                   {currentLevel.logic}
@@ -222,7 +283,7 @@ export function MorphemeConstructor() {
           {/* Actions */}
           <div className="flex justify-center gap-3 border-t pt-8">
             <Button variant="ghost" onClick={handleReset} disabled={isCorrect}>
-              <RefreshCw className="mr-2 size-4" /> Start Over
+              <RefreshCw className="mr-2 size-4" /> Reset Build
             </Button>
             {!isCorrect ? (
               <Button 
@@ -230,7 +291,7 @@ export function MorphemeConstructor() {
                 onClick={checkBuild}
                 disabled={built.length === 0}
               >
-                Snap & Check
+                Snap Bricks
               </Button>
             ) : (
               <Button 
@@ -239,11 +300,11 @@ export function MorphemeConstructor() {
                   if (levelIdx < legoLevels.length - 1) {
                     setLevelIdx(prev => prev + 1);
                   } else {
-                    handleRandomNoun();
+                    handleNextNoun();
                   }
                 }}
               >
-                {levelIdx === legoLevels.length - 1 ? "Next Base Brick" : "Next Level"} <ArrowRight className="ml-2 size-4" />
+                {levelIdx === legoLevels.length - 1 ? "Next Base Brick" : "Next Module"} <ArrowRight className="ml-2 size-4" />
               </Button>
             )}
           </div>
@@ -251,8 +312,8 @@ export function MorphemeConstructor() {
       </Card>
       
       <div className="flex items-center justify-center gap-8 text-muted-foreground opacity-50">
-        <div className="flex items-center gap-1"><Boxes className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Agglutination Mode</span></div>
-        <div className="flex items-center gap-1"><Trophy className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">CEFR A1 Path</span></div>
+        <div className="flex items-center gap-1"><Boxes className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Construction Mode</span></div>
+        <div className="flex items-center gap-1"><Trophy className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">A1 Achievement Path</span></div>
       </div>
     </div>
   );
