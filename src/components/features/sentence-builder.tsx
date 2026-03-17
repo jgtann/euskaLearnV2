@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useTransition } from 'react';
@@ -6,7 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Sparkles, ArrowRight, XCircle, Volume2, Loader2, BrainCircuit, CheckCircle2 } from 'lucide-react';
+import { 
+  RefreshCw, 
+  Sparkles, 
+  ArrowRight, 
+  XCircle, 
+  Volume2, 
+  Loader2, 
+  BrainCircuit, 
+  CheckCircle2,
+  Zap
+} from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -158,7 +167,7 @@ export function SentenceBuilder() {
 
               <div className="bg-basque-green/5 p-5 rounded-2xl border border-basque-green/20">
                 <div className="flex items-center gap-2 mb-2 text-basque-green font-bold text-xs uppercase tracking-widest">
-                   <CheckCircle2 className="size-4" /> Grammar Logic Breakdown
+                   <Zap className="size-4" /> Grammar Logic Breakdown
                 </div>
                 <p className="text-sm leading-relaxed text-basque-earth font-medium">
                   {current.meaning}
@@ -167,49 +176,49 @@ export function SentenceBuilder() {
             </div>
           )}
 
-          {!feedback || feedback === 'incorrect' ? (
-            <div className={cn(
-                "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all duration-500", 
-                "bg-muted/30 border-border shadow-inner"
-            )}>
-                {constructed.map((w, i) => (
-                <Button 
-                    key={i} 
-                    variant="outline" 
-                    className="h-12 px-6 bg-white font-bold border-b-4 border-b-gray-200 active:border-b-0 animate-in slide-in-from-bottom-2 text-lg" 
-                    onClick={() => {
-                    setConstructed(prev => prev.filter((_, idx) => idx !== i));
-                    setPalette(prev => [...prev, w]);
-                    setFeedback(null);
-                    }}
-                >
-                    {w}
-                </Button>
-                ))}
-                {constructed.length === 0 && <p className="text-gray-400 italic">Drag or click bricks to build the sentence...</p>}
-            </div>
-          ) : null}
-
-          {(!feedback || feedback === 'incorrect') && (
-            <div className="space-y-4">
-               <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Available Bricks</p>
-                <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted/50 rounded-2xl border border-dashed">
-                    {palette.map((w, i) => (
+          {feedback !== 'correct' && (
+            <>
+              <div className={cn(
+                  "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all duration-500", 
+                  "bg-muted/30 border-border shadow-inner"
+              )}>
+                  {constructed.map((w, i) => (
                     <Button 
                         key={i} 
-                        variant="secondary" 
-                        className="h-12 px-6 font-bold bg-white border-b-4 border-b-gray-300 hover:shadow-md transition-shadow text-lg" 
+                        variant="outline" 
+                        className="h-12 px-6 bg-white font-bold border-b-4 border-b-gray-200 active:border-b-0 animate-in slide-in-from-bottom-2 text-lg" 
                         onClick={() => {
-                        setConstructed(prev => [...prev, w]);
-                        setPalette(prev => prev.filter((_, idx) => idx !== i));
-                        setFeedback(null);
+                          setConstructed(prev => prev.filter((_, idx) => idx !== i));
+                          setPalette(prev => [...prev, w]);
+                          setFeedback(null);
                         }}
                     >
                         {w}
                     </Button>
-                    ))}
-                </div>
-            </div>
+                  ))}
+                  {constructed.length === 0 && <p className="text-gray-400 italic">Drag or click bricks to build the sentence...</p>}
+              </div>
+
+              <div className="space-y-4">
+                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Available Bricks</p>
+                  <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted/50 rounded-2xl border border-dashed">
+                      {palette.map((w, i) => (
+                        <Button 
+                            key={i} 
+                            variant="secondary" 
+                            className="h-12 px-6 font-bold bg-white border-b-4 border-b-gray-300 hover:shadow-md transition-shadow text-lg" 
+                            onClick={() => {
+                              setConstructed(prev => [...prev, w]);
+                              setPalette(prev => prev.filter((_, idx) => idx !== i));
+                              setFeedback(null);
+                            }}
+                        >
+                            {w}
+                        </Button>
+                      ))}
+                  </div>
+              </div>
+            </>
           )}
 
           <div className="flex justify-center gap-4 pt-4">
