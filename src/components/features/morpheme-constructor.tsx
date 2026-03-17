@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { RefreshCw, ArrowRight } from 'lucide-react';
+import { RefreshCw, ArrowRight, Layers } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 
@@ -224,6 +225,11 @@ export function MorphemeConstructor() {
     <div className="max-w-2xl mx-auto space-y-6">
       <Card className="border-t-8 border-t-basque-green shadow-2xl overflow-hidden bg-basque-stone/30">
         <CardHeader className="text-center pb-2">
+          <div className="flex justify-center mb-2">
+            <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-basque-green/60">
+                Constructional Entrenchment
+            </Badge>
+          </div>
           <CardTitle className="text-3xl font-black text-basque-earth">
             "{currentChallenge.targetMeaning}"
           </CardTitle>

@@ -7,7 +7,7 @@ import { collection } from 'firebase/firestore';
 import { format, startOfWeek } from 'date-fns';
 import { ErrorAnalysis } from "@/components/features/error-analysis";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BarChart, Target, Activity, Award, BookOpen } from "lucide-react";
+import { BarChart, Target, Activity, Award, BookOpen, BrainCircuit } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -65,9 +65,9 @@ export default function ProgressPage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="font-heading text-4xl font-bold">Euskal Maila</h1>
+          <h1 className="font-heading text-4xl font-bold">Evaluative Indicators</h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Your linguistic proficiency and CEFR A1-A2 activation map.
+            Theoretical accountability metrics for your Euskara acquisition.
           </p>
         </div>
         <div className="flex gap-2">
@@ -78,15 +78,15 @@ export default function ProgressPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Thesis 6.5: Mastery Dashboard / Grammatical Radar */}
+        {/* Thesis Indicator: Proceduralization */}
         <Card className="lg:col-span-2 border-t-4 border-t-basque-green">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-xl">
               <Award className="text-basque-green"/>
-              Grammatical Competency Map
+              Proceduralization Map
             </CardTitle>
             <CardDescription>
-              Proficiency across the Basque Case (Deklinabidea) system.
+              Transition of grammar from explicit rules to functional mastery.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
@@ -106,15 +106,15 @@ export default function ProgressPage() {
           </CardContent>
         </Card>
 
-        {/* Thesis 2.1: Recency Factor / Activity */}
+        {/* Thesis Indicator: Entrenchment */}
         <div className="space-y-8">
             <Card className="border-t-4 border-t-basque-red">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-heading text-xl">
                   <Activity className="text-basque-red"/>
-                  Activation Threshold
+                  Entrenchment Velocity
                 </CardTitle>
-                <CardDescription>Weekly cognitive reinforcement.</CardDescription>
+                <CardDescription>Maintaining high resting-level activation.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[200px] w-full">
@@ -146,7 +146,7 @@ export default function ProgressPage() {
                     <BookOpen size={120} />
                 </div>
                 <CardHeader>
-                    <CardTitle className="text-sm uppercase tracking-widest text-basque-stone/60">Study Streak</CardTitle>
+                    <CardTitle className="text-sm uppercase tracking-widest text-basque-stone/60">Activation Streak</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-baseline gap-2">
@@ -159,14 +159,15 @@ export default function ProgressPage() {
         </div>
       </div>
 
+      {/* Thesis Indicator: Noticing */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-heading text-xl">
-            <Target className="text-primary"/>
-            Linguistic Friction Points (AI Analysis)
+            <BrainCircuit className="text-primary"/>
+            Noticing & Friction Analysis (AI Diagnostics)
           </CardTitle>
           <CardDescription>
-            Personalized detection of "learned attention" interference.
+            Identifying points of L1-interference and morphological opaque zones.
           </CardDescription>
         </CardHeader>
         <CardContent>

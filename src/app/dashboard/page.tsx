@@ -22,7 +22,8 @@ import {
   Users,
   Sparkles,
   CheckCircle2,
-  Clock
+  Clock,
+  LayoutDashboard
 } from "lucide-react";
 import { useUser } from '@/firebase';
 
@@ -30,7 +31,7 @@ const features = [
   { title: "Morpheme Construct", description: "Manage agglutination with snap-tiles.", href: "/learn", icon: <BookOpen className="size-6 text-primary" /> },
   { title: "Smart Vocabulary", description: "SRS-driven flashcard review.", href: "/vocabulary", icon: <CheckCircle2 className="size-6 text-primary" /> },
   { title: "Translanguaging", description: "AI-powered cognitive scaffolding.", href: "/translate", icon: <Languages className="size-6 text-primary" /> },
-  { title: "Proficiency Radar", description: "Map your grammatical competence.", href: "/progress", icon: <BarChart className="size-6 text-primary" /> },
+  { title: "Evaluative Indicators", description: "Map your grammatical competence.", href: "/progress", icon: <BarChart className="size-6 text-primary" /> },
 ];
 
 export default function DashboardPage() {
@@ -47,13 +48,13 @@ export default function DashboardPage() {
           <div className="space-y-2">
             <h1 className="font-heading text-4xl font-black tracking-tight">Kaixo, {user?.displayName?.split(' ')[0] || 'Ikasle'}!</h1>
             <div className="flex gap-2 items-center">
-              <Badge className="bg-basque-red hover:bg-basque-red border-none">CEFR A1 Scholar</Badge>
-              <span className="text-basque-stone/80 text-sm font-medium">5 Day Streak 🔥</span>
+              <Badge className="bg-basque-red hover:bg-basque-red border-none uppercase tracking-wider text-[10px]">CEFR A1 Scholar</Badge>
+              <span className="text-basque-stone/80 text-sm font-medium">5 Day Activation Streak 🔥</span>
             </div>
           </div>
           <div className="flex gap-4">
             <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-4 min-w-[140px] border border-white/20">
-              <p className="text-[10px] uppercase opacity-70 font-bold tracking-widest">Daily Progress</p>
+              <p className="text-[10px] uppercase opacity-70 font-bold tracking-widest">Resting-Level Activation</p>
               <p className="text-2xl font-black">80%</p>
               <Progress value={80} className="h-1 mt-2 bg-white/20" />
             </div>
@@ -80,7 +81,7 @@ export default function DashboardPage() {
             </Card>
           ))}
           
-          {/* Thesis 4.5: Retrieval Practice - Daily Quests */}
+          {/* Thesis 5.3: SRS-Driven Quest Logic */}
           <Card className="md:col-span-2 bg-muted/30 border-dashed">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base font-bold">
@@ -92,14 +93,14 @@ export default function DashboardPage() {
                <div className="flex items-center gap-3 p-3 rounded-xl bg-background border">
                   <CheckCircle2 className="size-5 text-green-500" />
                   <div className="flex-1">
-                    <p className="text-xs font-bold">Case Study: Nork</p>
+                    <p className="text-xs font-bold">Constructional Entrenchment</p>
                     <p className="text-[10px] text-muted-foreground">Complete 5 Ergative puzzles.</p>
                   </div>
                </div>
                <div className="flex items-center gap-3 p-3 rounded-xl bg-background border opacity-60">
                   <div className="size-5 rounded-full border-2 border-muted" />
                   <div className="flex-1">
-                    <p className="text-xs font-bold">Syntax Master</p>
+                    <p className="text-xs font-bold">Syntax Activation</p>
                     <p className="text-[10px] text-muted-foreground">Reconstruct 3 complex sentences.</p>
                   </div>
                </div>
@@ -115,7 +116,7 @@ export default function DashboardPage() {
                 <Users className="text-basque-earth size-5" />
                 Community Tavern
               </CardTitle>
-              <CardDescription>Learning alongside others.</CardDescription>
+              <CardDescription>Investment in an imagined community.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
@@ -143,10 +144,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Your activation threshold is dropping! Complete a quick session to earn a <strong>Streak Shield</strong>.
+                Your activation threshold is dropping! Complete a session to earn a <strong>Streak Shield</strong>.
               </p>
               <Button size="sm" className="w-full mt-4" asChild>
-                <Link href="/learn?mission=rescue">Activate Now</Link>
+                <Link href="/learn?mission=rescue">Mitigate Attrition</Link>
               </Button>
             </CardContent>
           </Card>
