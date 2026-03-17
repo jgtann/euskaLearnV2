@@ -33,6 +33,7 @@ export function MorphemeConstructor() {
   const [built, setBuilt] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isAudioPending, startAudioTransition] = useTransition();
+  const [shuffledNouns, setShuffledNouns] = useState<typeof FREQUENT_NOUNS>([]);
 
   // SRS Data Fetching
   const userItemsQuery = useMemoFirebase(() => {
@@ -41,44 +42,45 @@ export function MorphemeConstructor() {
   }, [user, firestore]);
   const { data: userItems, isLoading: isLoadingSRS } = useCollection(userItemsQuery);
 
-  // Thesis 5.3: SRS-Driven Logic - Prioritize New/Due, push Seen to back
-  const sortedNouns = useMemo(() => {
-    const records = userItems || [];
-    const recordMap = new Map(records.filter(r => r.type === 'lego_workshop').map(r => [r.learningItemId.replace('lego_noun_', ''), r]));
-    const now = Date.now();
+  // Thesis 5.3: SRS-Driven Logic - Stabilize the list for the session to prevent jumping words
+  useEffect(() => {
+    if (userItems && shuffledNouns.length === 0) {
+      const records = userItems || [];
+      const recordMap = new Map(records.filter(r => r.type === 'lego_workshop').map(r => [r.learningItemId.toLowerCase(), r]));
+      const now = Date.now();
 
-    const newNouns: any[] = [];
-    const dueNouns: any[] = [];
-    const seenNouns: any[] = [];
+      const newNouns: any[] = [];
+      const dueNouns: any[] = [];
+      const seenNouns: any[] = [];
 
-    FREQUENT_NOUNS.forEach(noun => {
-      const record = recordMap.get(noun.basque.toLowerCase());
-      if (!record) {
-        newNouns.push(noun);
-      } else if (record.nextReview <= now) {
-        dueNouns.push(noun);
-      } else {
-        seenNouns.push(noun);
-      }
-    });
+      FREQUENT_NOUNS.forEach(noun => {
+        const record = recordMap.get(noun.basque.toLowerCase());
+        if (!record) {
+          newNouns.push(noun);
+        } else if (record.nextReview <= now) {
+          dueNouns.push(noun);
+        } else {
+          seenNouns.push(noun);
+        }
+      });
 
-    // Randomize within groups per React pedagogical best practices
-    const shuffle = (array: any[]) => [...array].sort(() => Math.random() - 0.5);
+      const shuffle = (array: any[]) => [...array].sort(() => Math.random() - 0.5);
 
-    return [
-      ...shuffle(newNouns),
-      ...shuffle(dueNouns),
-      ...shuffle(seenNouns)
-    ];
-  }, [userItems]);
+      setShuffledNouns([
+        ...shuffle(newNouns),
+        ...shuffle(dueNouns),
+        ...shuffle(seenNouns)
+      ]);
+    }
+  }, [userItems, shuffledNouns.length]);
 
-  const currentNoun = sortedNouns[currentNounIdx] || FREQUENT_NOUNS[0];
+  const currentNoun = shuffledNouns[currentNounIdx] || FREQUENT_NOUNS[0];
   const legoLevels = useMemo(() => generateLegoLevels(currentNoun), [currentNoun]);
   const currentLevel = legoLevels[levelIdx];
 
   useEffect(() => {
     handleReset();
-  }, [levelIdx, currentNounIdx]);
+  }, [levelIdx, currentNounIdx, currentNoun.basque]);
 
   const handleSnap = (brick: string) => {
     if (isCorrect) return;
@@ -91,22 +93,20 @@ export function MorphemeConstructor() {
   };
 
   const handleNextNoun = () => {
-    setCurrentNounIdx(prev => (prev + 1) % sortedNouns.length);
+    setCurrentNounIdx(prev => (prev + 1) % (shuffledNouns.length || FREQUENT_NOUNS.length));
     setLevelIdx(0);
   };
 
   const updateSRS = (isFinalLevel: boolean) => {
     if (!user || !firestore) return;
     
-    // Track SRS at the Noun level for the Lego workshop
     const docId = `lego_noun_${currentNoun.basque.toLowerCase()}`;
     const record = (userItems || []).find(r => r.id === docId);
     
     let currentMastery = record?.level || 0;
-    // Only bump level significantly if they finish the whole build (Level 6)
     const newMastery = isFinalLevel ? Math.min(currentMastery + 1, 5) : currentMastery;
     
-    const intervals = [0, 1, 3, 7, 14, 30]; // Days
+    const intervals = [0, 1, 3, 7, 14, 30];
     const nextReview = Date.now() + (intervals[newMastery] || 0) * 24 * 60 * 60 * 1000;
 
     const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
@@ -158,7 +158,7 @@ export function MorphemeConstructor() {
     verb: "bg-basque-red/10 border-basque-red/30 text-basque-red"
   };
 
-  if (isLoadingSRS) {
+  if (isLoadingSRS && shuffledNouns.length === 0) {
     return (
       <Card className="p-12 flex flex-col items-center justify-center gap-4">
         <Loader2 className="size-8 animate-spin text-primary" />
@@ -188,7 +188,7 @@ export function MorphemeConstructor() {
         </div>
         <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
           <Clock className="size-3" />
-          SRS Priority: {currentNounIdx + 1} / {sortedNouns.length}
+          SRS Priority: {currentNounIdx + 1} / {shuffledNouns.length || FREQUENT_NOUNS.length}
         </div>
       </div>
 
@@ -206,7 +206,6 @@ export function MorphemeConstructor() {
         </CardHeader>
         <CardContent className="space-y-8 p-8">
           
-          {/* Build Area */}
           <div className={cn(
             "min-h-[140px] flex flex-wrap items-center justify-center gap-2 p-6 rounded-2xl border-4 border-dashed transition-all duration-500",
             isCorrect ? "bg-green-100 border-green-500 shadow-inner" : "bg-white/50 border-gray-200"
@@ -228,7 +227,6 @@ export function MorphemeConstructor() {
             {built.length === 0 && <p className="text-muted-foreground italic">Start with: "{currentNoun.basque}"</p>}
           </div>
 
-          {/* Success Box / Zorionak */}
           {isCorrect && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
               <div className="flex flex-col items-center gap-3">
@@ -258,7 +256,6 @@ export function MorphemeConstructor() {
             </div>
           )}
 
-          {/* Palette */}
           {!isCorrect && (
             <div className="space-y-4">
               <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Available Bricks</p>
@@ -280,7 +277,6 @@ export function MorphemeConstructor() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex justify-center gap-3 border-t pt-8">
             <Button variant="ghost" onClick={handleReset} disabled={isCorrect}>
               <RefreshCw className="mr-2 size-4" /> Reset Build
