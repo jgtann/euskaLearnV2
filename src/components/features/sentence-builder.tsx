@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Sparkles, ArrowRight, XCircle, Volume2, Loader2, BrainCircuit } from 'lucide-react';
+import { RefreshCw, Sparkles, ArrowRight, XCircle, Volume2, Loader2, BrainCircuit, CheckCircle2 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -62,7 +62,6 @@ const sentenceChallenges = [
   { id: 's-48', english: "The door is closed.", correct: ["Atea", "itxita", "dago"], meaning: "Subject + Participle (state) + Verb", type: "A1 States" },
   { id: 's-49', english: "I buy bread every day.", correct: ["Egunero", "ogia", "erosten", "dut"], meaning: "Frequency + Object + Verb + Aux", type: "A1 Daily" },
   { id: 's-50', english: "She speaks Basque very well.", correct: ["Hark", "oso", "ondo", "hitz", "egiten", "du", "euskaraz"], meaning: "Ergative + Adv + Verb + In language", type: "A2 Daily" },
-  // ... Adding more challenges to reach 100
   { id: 's-51', english: "I live in Donostia.", correct: ["Donostian", "bizi", "naiz"], meaning: "Inessive + Verb", type: "A1 Basics" },
   { id: 's-52', english: "My father is a teacher.", correct: ["Nire", "aita", "irakaslea", "da"], meaning: "My + Subject + Noun + Verb", type: "A1 Family" },
   { id: 's-53', english: "Your house is beautiful.", correct: ["Zure", "etxea", "ederra", "da"], meaning: "Your + Subject + Adj + Verb", type: "A1 Basics" },
@@ -163,7 +162,7 @@ export function SentenceBuilder() {
     const records = userItems || [];
     const record = records.find(r => r.learningItemId === current.id);
     const level = record ? (success ? Math.min(record.level + 1, 5) : Math.max(record.level - 1, 0)) : (success ? 1 : 0);
-    const intervals = [0, 1, 3, 7, 14, 30]; // Days
+    const intervals = [0, 1, 3, 7, 14, 30];
     const nextReview = Date.now() + (intervals[level] || 0) * 24 * 60 * 60 * 1000;
     
     const docId = record?.id || `${user.uid}_${current.id}`;
@@ -207,7 +206,7 @@ export function SentenceBuilder() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-t-8 border-t-primary shadow-xl">
+      <Card className="border-t-8 border-t-primary shadow-xl overflow-hidden">
         <CardHeader className="text-center">
           <div className="flex justify-between items-center mb-2">
             <Badge variant="secondary" className="text-[10px] uppercase tracking-widest">{current.type}</Badge>
@@ -220,9 +219,19 @@ export function SentenceBuilder() {
           <div className="text-2xl font-bold mt-2 text-basque-earth">"{current.english}"</div>
         </CardHeader>
         <CardContent className="space-y-8">
-          {/* RESULT BOX */}
+          {feedback === 'correct' && (
+            <div className="flex flex-col items-center justify-center gap-2 py-4 animate-in zoom-in-95 fade-in duration-500">
+              <div className="flex items-center gap-2 text-basque-green font-black text-2xl uppercase tracking-tighter">
+                <Sparkles className="size-6 animate-bounce" />
+                Zorionak!
+                <Sparkles className="size-6 animate-bounce" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Syntax Correct</p>
+            </div>
+          )}
+
           <div className={cn(
-            "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-2 border-dashed transition-all", 
+            "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-2 border-dashed transition-all duration-500", 
             feedback === 'correct' ? "bg-green-100 border-green-500 shadow-sm" : "bg-muted/50 border-border"
           )}>
             {constructed.map((w, i) => (
@@ -237,7 +246,6 @@ export function SentenceBuilder() {
             {constructed.length === 0 && <p className="text-gray-400 italic">Select words to build the sentence...</p>}
           </div>
 
-          {/* PALETTE */}
           <div className="flex flex-wrap justify-center gap-3 p-6 bg-muted rounded-xl border">
             {palette.map((w, i) => (
               <Button key={i} variant="secondary" className="font-bold bg-white border-b-4 hover:shadow-md transition-shadow" onClick={() => {
@@ -255,7 +263,7 @@ export function SentenceBuilder() {
               <RefreshCw className="size-4 mr-2" /> Reset
             </Button>
             {feedback === 'correct' ? (
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending}>
                   {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
                 </Button>

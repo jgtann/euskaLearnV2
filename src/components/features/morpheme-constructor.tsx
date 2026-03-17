@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { RefreshCw, ArrowRight, BrainCircuit, Loader2, Volume2 } from 'lucide-react';
+import { RefreshCw, ArrowRight, BrainCircuit, Loader2, Volume2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -54,7 +54,6 @@ const MorphemeTile = ({
 
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
-  // Basic Basque phonological adjustments
   if (word.endsWith('aari')) word = word.replace(/aari$/, 'ari');
   else if (word.endsWith('aak')) word = word.replace(/aak$/, 'ak');
   else if (word.endsWith('aekin')) word = word.replace(/aekin$/, 'arekin');
@@ -129,7 +128,7 @@ export function MorphemeConstructor() {
     const records = userItems || [];
     const record = records.find(r => r.learningItemId === currentChallenge.id);
     const level = record ? (success ? Math.min(record.level + 1, 5) : Math.max(record.level - 1, 0)) : (success ? 1 : 0);
-    const intervals = [0, 1, 3, 7, 14, 30]; // Days
+    const intervals = [0, 1, 3, 7, 14, 30];
     const nextReview = Date.now() + (intervals[level] || 0) * 24 * 60 * 60 * 1000;
     
     const docId = record?.id || `${user.uid}_${currentChallenge.id}`;
@@ -191,9 +190,19 @@ export function MorphemeConstructor() {
           <CardDescription>Assemble the building blocks of the word</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 p-8">
-          {/* RESULT BOX */}
+          {feedback === 'correct' && (
+            <div className="flex flex-col items-center justify-center gap-2 py-4 animate-in zoom-in-95 fade-in duration-500">
+              <div className="flex items-center gap-2 text-basque-green font-black text-2xl uppercase tracking-tighter">
+                <Sparkles className="size-6 animate-bounce" />
+                Zorionak!
+                <Sparkles className="size-6 animate-bounce" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Construction Correct</p>
+            </div>
+          )}
+
           <div className={cn(
-            "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all", 
+            "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all duration-500", 
             feedback === 'correct' ? 'bg-green-100 border-green-500 shadow-inner' : 'bg-white/50 border-gray-200', 
             feedback === 'incorrect' && 'bg-red-100 border-red-500 animate-in shake'
           )}>
@@ -203,16 +212,28 @@ export function MorphemeConstructor() {
             {constructed.length === 0 && <p className="text-gray-400 italic">Start building...</p>}
           </div>
 
-          {/* WORD RESULT PREVIEW */}
           <div className="h-12 flex items-center justify-center">
             {constructed.length > 0 && (
-              <div className="flex items-center gap-3 px-6 py-2 bg-basque-green/10 rounded-full border-2 border-basque-green/30 animate-in fade-in zoom-in-95">
-                <span className="text-2xl font-bold text-basque-green font-code">{getDisplayWord(constructed)}</span>
+              <div className={cn(
+                "flex items-center gap-3 px-6 py-2 rounded-full border-2 transition-all duration-500",
+                feedback === 'correct' ? "bg-basque-green text-white border-transparent scale-110 shadow-lg" : "bg-basque-green/10 text-basque-green border-basque-green/30"
+              )}>
+                <span className="text-2xl font-bold font-code">{getDisplayWord(constructed)}</span>
+                {feedback === 'correct' && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-white hover:bg-white/20"
+                    onClick={() => handlePlayAudio(currentChallenge.correctWord)}
+                    disabled={isAudioPending}
+                  >
+                    {isAudioPending ? <Loader2 className="size-4 animate-spin" /> : <Volume2 className="size-4" />}
+                  </Button>
+                )}
               </div>
             )}
           </div>
 
-          {/* PALETTE */}
           <div className="flex flex-wrap justify-center content-start gap-4 py-6 border-y border-gray-100 min-h-[160px]">
             {availableMorphemes.map((m, i) => (
               <MorphemeTile key={`${m}-${i}`} morpheme={m} variant={m.startsWith('-') ? "suffix" : "root"} onClick={() => setConstructed(prev => [...prev, m])} disabled={feedback === 'correct'} />
@@ -224,12 +245,7 @@ export function MorphemeConstructor() {
             {feedback !== 'correct' ? (
               <Button size="lg" className="bg-basque-earth hover:bg-black text-white px-8" disabled={constructed.length === 0} onClick={handleCheck}>Check</Button>
             ) : (
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => handlePlayAudio(currentChallenge.correctWord)} disabled={isAudioPending}>
-                  {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
-                </Button>
-                <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next <ArrowRight className="ml-2 h-5 w-5" /></Button>
-              </div>
+              <Button size="lg" className="bg-basque-green hover:bg-green-700 text-white px-10" onClick={handleNext}>Next <ArrowRight className="ml-2 h-5 w-5" /></Button>
             )}
           </div>
         </CardContent>
