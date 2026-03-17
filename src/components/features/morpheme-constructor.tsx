@@ -54,6 +54,7 @@ const MorphemeTile = ({
 
 const getDisplayWord = (morphemes: string[]): string => {
   let word = morphemes.join('').replace(/-/g, '');
+  // Basic Basque phonological adjustments
   if (word.endsWith('aari')) word = word.replace(/aari$/, 'ari');
   else if (word.endsWith('aak')) word = word.replace(/aak$/, 'ak');
   else if (word.endsWith('aekin')) word = word.replace(/aekin$/, 'arekin');
@@ -191,7 +192,11 @@ export function MorphemeConstructor() {
         </CardHeader>
         <CardContent className="space-y-8 p-8">
           {/* RESULT BOX */}
-          <div className={cn("flex flex-wrap items-center justify-center gap-3 p-6 min-h-[120px] rounded-2xl border-4 border-dashed transition-all", feedback === 'correct' ? 'bg-green-100/50 border-green-500 shadow-inner' : 'bg-white/50 border-gray-200', feedback === 'incorrect' && 'bg-red-100/50 border-red-500 animate-in shake')}>
+          <div className={cn(
+            "flex flex-wrap items-center justify-center gap-3 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all", 
+            feedback === 'correct' ? 'bg-green-100 border-green-500 shadow-inner' : 'bg-white/50 border-gray-200', 
+            feedback === 'incorrect' && 'bg-red-100 border-red-500 animate-in shake'
+          )}>
             {constructed.map((m, i) => (
               <MorphemeTile key={`${m}-${i}`} morpheme={m} onClick={() => !feedback && setConstructed(prev => prev.filter((_, idx) => idx !== i))} disabled={feedback === 'correct'} variant={m.startsWith('-') ? "suffix" : "root"} />
             ))}
@@ -201,7 +206,7 @@ export function MorphemeConstructor() {
           {/* WORD RESULT PREVIEW */}
           <div className="h-12 flex items-center justify-center">
             {constructed.length > 0 && (
-              <div className="flex items-center gap-3 px-6 py-2 bg-basque-green/5 rounded-full border border-basque-green/10">
+              <div className="flex items-center gap-3 px-6 py-2 bg-basque-green/10 rounded-full border-2 border-basque-green/30 animate-in fade-in zoom-in-95">
                 <span className="text-2xl font-bold text-basque-green font-code">{getDisplayWord(constructed)}</span>
               </div>
             )}
