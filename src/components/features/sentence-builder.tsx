@@ -1,11 +1,11 @@
-
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, RefreshCw, Sparkles, ArrowRight, XCircle } from 'lucide-react';
+import { CheckCircle, RefreshCw, Sparkles, ArrowRight, XCircle, Volume2, Loader2 } from 'lucide-react';
+import { getSpeech } from '@/app/actions/speech';
 
 // Thesis 5.4: Expanded Syntax Scrambles (A1 & A2 levels)
 const sentenceChallenges = [
@@ -141,6 +141,8 @@ export function SentenceBuilder() {
   const [constructed, setConstructed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [palette, setPalette] = useState<string[]>([]);
+  const [isAudioPending, startAudioTransition] = useTransition();
+  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
 
   const current = sentenceChallenges[challengeIdx];
 
@@ -169,6 +171,28 @@ export function SentenceBuilder() {
   const check = () => {
     const isCorrect = JSON.stringify(constructed) === JSON.stringify(current.correct);
     setFeedback(isCorrect ? 'correct' : 'incorrect');
+  };
+
+  const handlePlayAudio = () => {
+    const sentenceText = current.correct.join(' ');
+    if (!sentenceText || isAudioPending) return;
+
+    if (audioCache[sentenceText]) {
+      new Audio(audioCache[sentenceText]).play().catch(() => {});
+      return;
+    }
+
+    startAudioTransition(async () => {
+      const formData = new FormData();
+      formData.append('text', sentenceText);
+      const response = await getSpeech(null, formData);
+
+      if (response.data?.audioDataUri) {
+        const audioDataUri = response.data.audioDataUri;
+        setAudioCache(prev => ({ ...prev, [sentenceText]: audioDataUri }));
+        new Audio(audioDataUri).play().catch(() => {});
+      }
+    });
   };
 
   return (
@@ -222,12 +246,18 @@ export function SentenceBuilder() {
               <RefreshCw className="size-4 mr-2" /> Reset
             </Button>
             {feedback === 'correct' ? (
-              <Button className="bg-basque-green hover:bg-green-700 px-8" onClick={() => setChallengeIdx((i) => (i + 1) % sentenceChallenges.length)}>
-                Next Sentence <ArrowRight className="ml-2 size-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={handlePlayAudio} disabled={isAudioPending} className="size-11">
+                  {isAudioPending ? <Loader2 className="size-5 animate-spin" /> : <Volume2 className="size-5" />}
+                  <span className="sr-only">Play audio</span>
+                </Button>
+                <Button className="bg-basque-green hover:bg-green-700 px-8 h-11" onClick={() => setChallengeIdx((i) => (i + 1) % sentenceChallenges.length)}>
+                  Next Sentence <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </div>
             ) : (
               <Button 
-                className="bg-basque-earth hover:bg-black px-8 shadow-lg" 
+                className="bg-basque-earth hover:bg-black px-8 shadow-lg h-11" 
                 onClick={check} 
                 disabled={constructed.length !== current.correct.length}
               >
