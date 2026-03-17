@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { RefreshCw, ArrowRight, Layers } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const challenges = [
   { initialMorphemes: ['txakur', '-a', '-k'], correctSequence: ['txakur', '-a', '-k'], correctWord: 'txakurrak', targetMeaning: 'the dog (subject)' },
+  { initialMorphemes: ['etxe', '-a', '-ra'], correctSequence: ['etxe', '-a', '-ra'], correctWord: 'etxera', targetMeaning: 'to the house' },
   { initialMorphemes: ['etxe', '-a'], correctSequence: ['etxe', '-a'], correctWord: 'etxea', targetMeaning: 'the house' },
   { initialMorphemes: ['gizon', '-ak'], correctSequence: ['gizon', '-ak'], correctWord: 'gizonak', targetMeaning: 'the men' },
   { initialMorphemes: ['emakume', '-a', '-ri'], correctSequence: ['emakume', '-a', '-ri'], correctWord: 'emakumeari', targetMeaning: 'to the woman' },
@@ -131,7 +132,6 @@ export function MorphemeConstructor() {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [isAudioPending, startAudioTransition] = useTransition();
   const [audioCache, setAudioCache] = useState<Record<string, string>>({});
-  const { toast } = useToast();
 
   const currentChallenge = useMemo(() => shuffledChallenges[challengeIndex], [shuffledChallenges, challengeIndex]);
 
