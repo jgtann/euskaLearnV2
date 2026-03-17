@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 
-// Extensive A1/A2 sentence dataset (100 items)
 const sentenceChallenges = [
   { id: 's-1', english: "I am Jon.", correct: ["Ni", "Jon", "naiz"], meaning: "Subject + Complement + Verb", type: "A1 Basics" },
   { id: 's-2', english: "You are a student.", correct: ["Zu", "ikaslea", "zara"], meaning: "Subject + Noun + Verb", type: "A1 Basics" },
@@ -23,11 +22,7 @@ const sentenceChallenges = [
   { id: 's-8', english: "I drink water.", correct: ["Nik", "ura", "edaten", "dut"], meaning: "Ergative + Object + Main Verb + Aux", type: "A1 Daily" },
   { id: 's-9', english: "I am not a doctor.", correct: ["Ni", "ez", "naiz", "medikua"], meaning: "Negation + Aux + Complement", type: "A1 Negation" },
   { id: 's-10', english: "I always study.", correct: ["Nik", "beti", "ikasten", "dut"], meaning: "Ergative + Adverb + Verb + Aux", type: "A2 Time" },
-  // ... (Full dataset of 100 sentences is maintained internally)
 ];
-
-// Re-populating a larger subset for demonstration if 100 is too large for a single file block
-// In production, this would be fetched from Firestore, but we maintain the logic here.
 
 export function SentenceBuilder() {
   const { user } = useUser();
@@ -165,7 +160,7 @@ export function SentenceBuilder() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="rounded-full gap-2" 
+                className="rounded-full gap-2 border-basque-green text-basque-green hover:bg-basque-green hover:text-white" 
                 onClick={handlePlayAudio}
                 disabled={isAudioPending}
               >
@@ -176,7 +171,7 @@ export function SentenceBuilder() {
           )}
 
           <div className={cn(
-            "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-2 border-dashed transition-all duration-500", 
+            "flex flex-wrap items-center justify-center gap-2 p-6 min-h-[140px] rounded-2xl border-4 border-dashed transition-all duration-500", 
             feedback === 'correct' ? "bg-green-100 border-green-500 shadow-sm" : "bg-muted/50 border-border"
           )}>
             {constructed.map((w, i) => (

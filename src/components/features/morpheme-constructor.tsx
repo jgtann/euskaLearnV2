@@ -128,7 +128,6 @@ export function MorphemeConstructor() {
     const records = userItems || [];
     const record = records.find(r => r.learningItemId === currentChallenge.id);
     
-    // Simple logic for level progression
     let currentLevel = record?.level || 0;
     const newLevel = success ? Math.min(currentLevel + 1, 5) : Math.max(currentLevel - 1, 0);
     
@@ -219,7 +218,7 @@ export function MorphemeConstructor() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="rounded-full gap-2 border-basque-green text-basque-green" 
+                  className="rounded-full gap-2 border-basque-green text-basque-green hover:bg-basque-green hover:text-white" 
                   onClick={() => handlePlayAudio(currentChallenge.correctWord)}
                   disabled={isAudioPending}
                 >

@@ -107,7 +107,6 @@ export function TranslationTool() {
 
       {state.data && (
         <div className="space-y-6 animate-in fade-in">
-          {/* Thesis 4.8: AI-Assisted Support - Adaptive Hints */}
           {!showHint && (
             <Alert className="bg-primary/5 border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => setShowHint(true)}>
               <HelpCircle className="h-4 w-4 text-primary" />
