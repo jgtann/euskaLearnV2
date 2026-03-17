@@ -145,6 +145,12 @@ export function MorphemeConstructor() {
       const res = await getSpeech(null, formData);
       if (res.data?.audioDataUri) {
         new Audio(res.data.audioDataUri).play().catch(() => {});
+      } else if (res.error) {
+        toast({
+          variant: "destructive",
+          title: "Audio Error",
+          description: res.error,
+        });
       }
     });
   };

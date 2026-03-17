@@ -69,14 +69,18 @@ const synthesizeSpeechFlow = ai.defineFlow(
         config: {
             responseModalities: ['AUDIO'],
             speechConfig: {
-                languageCode: 'eu-ES',
+                voiceConfig: {
+                    prebuiltVoiceConfig: {
+                        voiceName: 'Algenib', // Use a robust multilingual voice
+                    }
+                }
             }
         },
         prompt: text,
     });
 
     if (!media) {
-      throw new Error('no media returned');
+      throw new Error('No audio media returned from AI model.');
     }
 
     // media.url is 'data:audio/pcm;base64,<data>'

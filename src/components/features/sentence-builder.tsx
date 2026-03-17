@@ -13,8 +13,7 @@ import {
   Volume2, 
   Loader2, 
   BrainCircuit, 
-  Zap,
-  VolumeX
+  Zap
 } from 'lucide-react';
 import { getSpeech } from '@/app/actions/speech';
 import { useToast } from '@/hooks/use-toast';
@@ -111,7 +110,7 @@ export function SentenceBuilder() {
         toast({
           variant: "destructive",
           title: "Audio Error",
-          description: "Could not generate speech for this sentence."
+          description: response.error,
         });
       }
     });
