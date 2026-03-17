@@ -1,4 +1,3 @@
-
 export type LegoLevel = {
   id: number;
   title: string;
@@ -167,16 +166,6 @@ export function generateLegoLevels(noun: { basque: string, english: string }): L
       target: `${endsInA ? root : root + 'a'}k`,
       translation: `The ${eng} (doing an action)`,
       logic: "This gold piece is called the Ergative marker. It's like a special badge for the word doing the work."
-    },
-    {
-      id: 6,
-      title: "Level 6: The Super-Verb engine",
-      description: "Basque verbs are like complex engines made of tiny technical parts.",
-      example: "d + i + zu + t = Dizut",
-      bricks: [{ text: "d-", role: 'verb' }, { text: "-i-", role: 'verb' }, { text: "-zu-", role: 'verb' }, { text: "-t", role: 'verb' }],
-      target: "Dizut",
-      translation: "I give it to you",
-      logic: "d- (it) + -i- (giving) + -zu- (to you) + -t (by me). Everything snapped into one powerful engine block!"
     }
   ];
 }

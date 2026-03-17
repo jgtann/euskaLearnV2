@@ -1,4 +1,3 @@
-
 {
   "words": [
     { "basque": "etxe", "english": "house", "category": "noun" },
@@ -122,17 +121,11 @@
     { "basque": "dator", "english": "he/she/it comes", "category": "verb", "tense": "present" },
     { "basque": "dio", "english": "he/she/it says to him/her", "category": "verb", "tense": "present" },
     { "basque": "nintzen", "english": "I was", "category": "verb", "tense": "past" },
-    { "basque": "nuen", "english": "I had it", "category": "verb", "tense": "past" },
     { "basque": "zen", "english": "he/she/it was", "category": "verb", "tense": "past" },
     { "basque": "zegoen", "english": "he/she/it was (location)", "category": "verb", "tense": "past" },
     { "basque": "zihoan", "english": "he/she/it went", "category": "verb", "tense": "past" },
     { "basque": "zetorren", "english": "he/she/it came", "category": "verb", "tense": "past" },
     { "basque": "zion", "english": "he/she/it said to him/her", "category": "verb", "tense": "past" },
-    { "basque": "izango naiz", "english": "I will be", "category": "verb", "tense": "future" },
-    { "basque": "izango dut", "english": "I will have it", "category": "verb", "tense": "future" },
-    { "basque": "izango da", "english": "he/she/it will be", "category": "verb", "tense": "future" },
-    { "basque": "joango naiz", "english": "I will go", "category": "verb", "tense": "future" },
-    { "basque": "egingo dut", "english": "I will do it", "category": "verb", "tense": "future" },
 
     { "basque": "handi", "english": "big", "category": "adjective" },
     { "basque": "txiki", "english": "small", "category": "adjective" },
