@@ -14,7 +14,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-1', 
     english: "I am Jon.", 
     correct: ["Ni", "Jon", "naiz"], 
-    meaning: "In Basque, the verb goes at the end! 'Ni' is the I-brick, and 'naiz' refers to 'I am'. 'Jon' is the name-brick.", 
+    meaning: "In Basque, the verb goes at the end! 'Ni' is the I-brick, and 'naiz' refers to 'I am' (the am-brick). 'Jon' is the name-brick.", 
     type: "A1 Basics",
     world: 'names',
     highlights: { "naiz": ["na", "iz"] }
@@ -61,7 +61,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-6', 
     english: "I have the book.", 
     correct: ["Nik", "liburua", "dut"], 
-    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). This means 'I' am the agent. 'Dut' means 'I have it'.", 
+    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu-a' is the 'the-book' brick, where '-a' snaps on to mean 'the'. 'Dut' means 'I have it'.", 
     type: "A1 Transitive",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "liburua": ["liburu", "a"] }
@@ -90,7 +90,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-4', 
     english: "I am in the house.", 
     correct: ["Ni", "etxean", "naiz"], 
-    meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. 'Naiz' correctly identifies 'I am'.", 
+    meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. 'Naiz' correctly identifies 'I am' (the am-brick).", 
     type: "A1 Location",
     world: 'location',
     highlights: { "etxean": ["etxea", "n"], "naiz": ["na", "iz"] }
@@ -110,7 +110,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-39', 
     english: "I am with the friend.", 
     correct: ["Ni", "lagunarekin", "naiz"], 
-    meaning: "The '-rekin' brick means 'with'. 'Naiz' confirms the 'I am' state.", 
+    meaning: "The '-rekin' brick means 'with'. 'Naiz' confirms the 'I am' (am-brick) state.", 
     type: "A2 Complex",
     world: 'social',
     highlights: { "lagunarekin": ["lagun", "arekin"], "naiz": ["na", "iz"] }
