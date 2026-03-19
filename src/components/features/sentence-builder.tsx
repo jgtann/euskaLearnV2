@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -38,7 +37,6 @@ export function SentenceBuilder() {
   }, [user, firestore]);
   const { data: userItems } = useCollection(userItemsQuery);
 
-  // Thesis 2.1: Usage-Based Sorting (Review items with high friction first)
   useEffect(() => {
     if (userItems) {
       const records = userItems || [];
