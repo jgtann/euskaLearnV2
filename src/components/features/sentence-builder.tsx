@@ -36,7 +36,6 @@ export function SentenceBuilder() {
   }, [user, firestore]);
   const { data: userItems } = useCollection(userItemsQuery);
 
-  // Stability for hydration: Sort challenges in useEffect
   useEffect(() => {
     if (userItems) {
       const records = userItems || [];
@@ -94,7 +93,8 @@ export function SentenceBuilder() {
       level: newLevel,
       correctCount: (record?.correctCount || 0) + (success ? 1 : 0),
       incorrectCount: (record?.incorrectCount || 0) + (success ? 0 : 1),
-      type: 'syntax_workshop'
+      type: 'syntax_workshop',
+      world: current.world // CRITICAL: Save world identifier for Dashboard unlocking
     }, { merge: true });
   };
 
@@ -156,7 +156,6 @@ export function SentenceBuilder() {
           
           {feedback === 'correct' ? (
             <div className="space-y-8">
-              {/* SUCCESS HEADER: ZORIONAK! */}
               <div className="flex flex-col items-center justify-center gap-3 animate-in zoom-in-95 duration-500">
                 <div className="flex items-center gap-4 text-basque-green font-black text-5xl uppercase tracking-tighter">
                   <Sparkles className="size-10 animate-bounce text-yellow-500" />
@@ -166,7 +165,6 @@ export function SentenceBuilder() {
                 <p className="text-basque-green/80 font-bold uppercase tracking-widest text-xs">Sentence Fully Functional</p>
               </div>
               
-              {/* DROPPING BRICKS VISUAL */}
               <div className="flex flex-col items-center gap-4">
                  <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-green shadow-xl relative overflow-hidden">
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
@@ -185,7 +183,6 @@ export function SentenceBuilder() {
                  </div>
               </div>
 
-              {/* PEDAGOGICAL EXPLANATION */}
               <div className="bg-basque-green/10 p-8 rounded-2xl border-2 border-dashed border-basque-green/30 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 <div className="flex items-center gap-2 mb-4 text-basque-green font-black text-xs uppercase tracking-widest">
                    <Zap className="size-5" /> Master Builder Logic
@@ -195,7 +192,6 @@ export function SentenceBuilder() {
                 </p>
               </div>
 
-              {/* NEXT ACTION */}
               <div className="flex justify-center animate-in zoom-in-50 duration-500 delay-1000 fill-mode-both">
                 <Button 
                   size="lg"
@@ -208,7 +204,6 @@ export function SentenceBuilder() {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* Construction Zone */}
               <div className={cn(
                   "flex flex-wrap items-center justify-center gap-3 p-10 min-h-[200px] rounded-3xl border-4 border-dashed transition-all duration-500", 
                   feedback === 'incorrect' ? "border-basque-red bg-red-50/50 animate-shake" : "bg-white/50 border-muted-foreground/20 shadow-inner"
@@ -235,7 +230,6 @@ export function SentenceBuilder() {
                   )}
               </div>
 
-              {/* Bricks Palette */}
               <div className="space-y-4">
                  <p className="text-[10px] text-center font-bold uppercase text-muted-foreground/60 tracking-widest">Cargo Hold: Available Bricks</p>
                   <div className="flex flex-wrap justify-center gap-3 p-8 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/10">
@@ -263,7 +257,6 @@ export function SentenceBuilder() {
                 </div>
               )}
 
-              {/* Action Buttons */}
               <div className="flex justify-center gap-4 pt-4 border-t border-muted-foreground/10">
                 <Button 
                   variant="ghost" 

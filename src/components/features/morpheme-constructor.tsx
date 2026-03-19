@@ -127,6 +127,7 @@ export function MorphemeConstructor() {
       nextReview,
       level: newMastery,
       type: 'lego_workshop',
+      world: currentNoun.world || 'names', // CRITICAL: Save world identifier for Dashboard
       currentWorkshopLevel: levelIdx + 1
     }, { merge: true });
   };
@@ -141,7 +142,6 @@ export function MorphemeConstructor() {
       return;
     }
 
-    // Validation logic for morphological sequence
     const correctSequence = currentLevel.bricks.map(b => b.text);
     const isSequenceCorrect = built.every((brick, index) => brick === correctSequence[index]);
 
@@ -271,7 +271,6 @@ export function MorphemeConstructor() {
                 </p>
               </div>
 
-              {/* Session Completion Menu */}
               <div className="grid gap-3 pt-4 border-t border-basque-green/10">
                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Next Steps</p>
                 <div className="flex flex-wrap justify-center gap-2">
