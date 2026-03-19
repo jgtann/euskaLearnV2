@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -158,8 +158,8 @@ export function SentenceBuilder() {
         <CardContent className="space-y-10 p-10">
           
           {feedback === 'correct' ? (
-            <div className="space-y-8">
-              <div className="flex flex-col items-center justify-center gap-3 animate-in zoom-in-95 duration-500">
+            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <div className="flex items-center gap-4 text-basque-green font-black text-5xl uppercase tracking-tighter">
                   <Sparkles className="size-10 animate-bounce text-yellow-500" />
                   ZORIONAK!
@@ -172,21 +172,31 @@ export function SentenceBuilder() {
                  <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-green shadow-xl relative overflow-hidden">
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                     
-                    {current.correct.map((word, i) => (
-                      <div 
-                        key={i} 
-                        className="animate-in fade-in slide-in-from-top-12 fill-mode-both"
-                        style={{ animationDelay: `${i * 150}ms`, animationDuration: '600ms' }}
-                      >
-                        <div className="h-14 px-8 bg-white border-2 border-basque-green/30 border-b-8 border-b-basque-green/60 font-black text-2xl rounded-2xl flex items-center justify-center text-basque-green shadow-sm">
-                          {word}
+                    {current.correct.map((word, i) => {
+                      const parts = current.highlights?.[word];
+                      return (
+                        <div 
+                          key={i} 
+                          className="animate-in fade-in slide-in-from-top-12 fill-mode-both"
+                          style={{ animationDelay: `${i * 150}ms`, animationDuration: '600ms' }}
+                        >
+                          <div className="h-14 px-8 bg-white border-2 border-basque-green/30 border-b-8 border-b-basque-green/60 font-black text-2xl rounded-2xl flex items-center justify-center shadow-sm">
+                            {parts ? (
+                              <>
+                                <span className="text-basque-earth">{parts[0]}</span>
+                                <span className="text-primary">{parts[1]}</span>
+                              </>
+                            ) : (
+                              <span className="text-basque-green">{word}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                  </div>
               </div>
 
-              <div className="bg-basque-green/10 p-8 rounded-2xl border-2 border-dashed border-basque-green/30 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <div className="bg-basque-green/10 p-8 rounded-2xl border-2 border-dashed border-basque-green/30">
                 <div className="flex items-center gap-2 mb-4 text-basque-green font-black text-xs uppercase tracking-widest">
                    <Zap className="size-5" /> Master Builder Logic
                 </div>
@@ -195,7 +205,7 @@ export function SentenceBuilder() {
                 </p>
               </div>
 
-              <div className="flex justify-center animate-in zoom-in-50 duration-500 delay-1000 fill-mode-both">
+              <div className="flex justify-center">
                 <Button 
                   size="lg"
                   className="bg-basque-green hover:bg-green-700 px-16 h-20 text-2xl font-black rounded-3xl shadow-2xl hover:shadow-basque-green/20 transition-all border-b-8 border-b-green-900 active:border-b-0 active:translate-y-2" 
@@ -206,8 +216,8 @@ export function SentenceBuilder() {
               </div>
             </div>
           ) : feedback === 'incorrect' ? (
-            <div className="space-y-8">
-              <div className="flex flex-col items-center justify-center gap-3 animate-in zoom-in-95 duration-500 text-basque-red">
+            <div className="space-y-8 animate-in shake duration-500">
+              <div className="flex flex-col items-center justify-center gap-3 text-basque-red">
                 <div className="flex items-center gap-4 font-black text-4xl uppercase tracking-tighter">
                   <XCircle className="size-10" />
                   FRICTION DETECTED

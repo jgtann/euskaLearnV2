@@ -5,6 +5,7 @@ export type SentenceChallenge = {
   meaning: string;
   type: string;
   world: 'names' | 'actions' | 'location' | 'habits' | 'social';
+  highlights?: Record<string, string[]>; // Maps a full word to its [root, suffix] parts
 };
 
 export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
@@ -23,7 +24,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Etxea", "handia", "da"], 
     meaning: "Notice the '-a' on 'Etxe-a'. That's the 'the-brick' we learned in the Lego workshop. 'Da' means 'is'.", 
     type: "A1 Description",
-    world: 'names'
+    world: 'names',
+    highlights: { "Etxea": ["Etxe", "a"], "handia": ["handi", "a"] }
   },
   { 
     id: 's-3', 
@@ -31,7 +33,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Txakurrak", "txikia", "da"], 
     meaning: "Wait! Why does 'Txakur-a' have a 'k'? In some cases, words that end in 'a' already act like 'the'. Here, it's the subject brick.", 
     type: "A1 Description",
-    world: 'names'
+    world: 'names',
+    highlights: { "Txakurrak": ["Txakur", "rak"], "txikia": ["txiki", "a"] }
   },
   { 
     id: 's-9', 
@@ -39,7 +42,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Sagarra", "gorria", "da"], 
     meaning: "Both the noun (Sagarra) and the adjective (Gorria) usually get the 'the-brick' (-a) when describing something.", 
     type: "A1 Description",
-    world: 'names'
+    world: 'names',
+    highlights: { "Sagarra": ["Sagar", "ra"], "gorria": ["gorri", "a"] }
   },
   { 
     id: 's-10', 
@@ -47,7 +51,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Gu", "lagunak", "gara"], 
     meaning: "Plural alert! 'Lagun-ak' uses the multi-stud plural brick. 'Gara' is the plural version of 'naiz'.", 
     type: "A1 Plurals",
-    world: 'names'
+    world: 'names',
+    highlights: { "lagunak": ["lagun", "ak"] }
   },
 
   // World 2: Actions (Who Does What?)
@@ -57,7 +62,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "liburua", "dut"], 
     meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). This means 'I' am doing the action of having the book.", 
     type: "A1 Transitive",
-    world: 'actions'
+    world: 'actions',
+    highlights: { "Nik": ["Ni", "k"], "liburua": ["liburu", "a"] }
   },
   { 
     id: 's-8', 
@@ -65,7 +71,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "ura", "edaten", "dut"], 
     meaning: "'Nik' (The Boss) + 'Ura' (The Thing) + 'Edaten dut' (The Action Engine).", 
     type: "A1 Daily",
-    world: 'actions'
+    world: 'actions',
+    highlights: { "Nik": ["Ni", "k"], "ura": ["ur", "a"], "edaten": ["eda", "ten"] }
   },
   { 
     id: 's-16', 
@@ -73,7 +80,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "hegaztia", "ikusten", "dut"], 
     meaning: "The Boss (Nik) sees the thing (Hegaztia).", 
     type: "A1 Senses",
-    world: 'actions'
+    world: 'actions',
+    highlights: { "Nik": ["Ni", "k"], "hegaztia": ["hegazti", "a"], "ikusten": ["ikus", "ten"] }
   },
   { 
     id: 's-18', 
@@ -81,7 +89,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "ogia", "nahi", "dut"], 
     meaning: "Wanting is an action! The Boss (Nik) wants the bread (Ogia).", 
     type: "A1 Shopping",
-    world: 'actions'
+    world: 'actions',
+    highlights: { "Nik": ["Ni", "k"], "ogia": ["ogi", "a"] }
   },
   { 
     id: 's-31', 
@@ -89,7 +98,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "auto", "bat", "dut"], 
     meaning: "'Bat' (One/A) snaps after the noun 'Auto'.", 
     type: "A1 Assets",
-    world: 'actions'
+    world: 'actions',
+    highlights: { "Nik": ["Ni", "k"] }
   },
 
   // World 3: Being & Location
@@ -99,7 +109,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Ni", "etxean", "naiz"], 
     meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. It tells us the location of the action.", 
     type: "A1 Location",
-    world: 'location'
+    world: 'location',
+    highlights: { "etxean": ["etxea", "n"] }
   },
   { 
     id: 's-5', 
@@ -107,7 +118,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Katua", "mahaian", "dago"], 
     meaning: "We use 'dago' for location. 'Mahai-a-n' means Table-the-in. Snap the pieces together!", 
     type: "A1 Location",
-    world: 'location'
+    world: 'location',
+    highlights: { "Katua": ["Katu", "a"], "mahaian": ["mahai", "an"] }
   },
   { 
     id: 's-12', 
@@ -115,7 +127,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Ni", "herrira", "noa"], 
     meaning: "The '-ra' on 'herri-ra' is the 'toward-brick'. It shows motion toward a place.", 
     type: "A1 Motion",
-    world: 'location'
+    world: 'location',
+    highlights: { "herrira": ["herri", "ra"] }
   },
   { 
     id: 's-17', 
@@ -123,7 +136,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Dirua", "mahaian", "dago"], 
     meaning: "Location check! Dirua (The money) + Mahaian (On the table) + Dago (Is).", 
     type: "A1 Location",
-    world: 'location'
+    world: 'location',
+    highlights: { "Dirua": ["Diru", "a"], "mahaian": ["mahai", "an"] }
   },
   { 
     id: 's-29', 
@@ -131,7 +145,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Gizona", "etxean", "dago"], 
     meaning: "Gizona (The man) + Etxean (In the house) + Dago (Is).", 
     type: "A1 Location",
-    world: 'location'
+    world: 'location',
+    highlights: { "Gizona": ["Gizon", "a"], "etxean": ["etxea", "n"] }
   },
 
   // World 4: Habits
@@ -141,7 +156,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Haurra", "jolasten", "da"], 
     meaning: "The subject 'Haurra' is just standing there doing an action that doesn't affect anything else, so no Boss Badge needed!", 
     type: "A1 Daily",
-    world: 'habits'
+    world: 'habits',
+    highlights: { "Haurra": ["Haur", "ra"], "jolasten": ["jolas", "ten"] }
   },
   { 
     id: 's-28', 
@@ -149,7 +165,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "sagarra", "jaten", "dut"], 
     meaning: "Transitive action: The Boss (Nik) eats the object (Sagarra).", 
     type: "A1 Daily",
-    world: 'habits'
+    world: 'habits',
+    highlights: { "Nik": ["Ni", "k"], "sagarra": ["sagar", "ra"], "jaten": ["ja", "ten"] }
   },
   { 
     id: 's-46', 
@@ -157,7 +174,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "liburua", "irakurtzen", "dut"], 
     meaning: "The Boss reads the book.", 
     type: "A1 Daily",
-    world: 'habits'
+    world: 'habits',
+    highlights: { "Nik": ["Ni", "k"], "liburua": ["liburu", "a"], "irakurtzen": ["irakur", "tzen"] }
   },
   { 
     id: 's-75', 
@@ -165,7 +183,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "gosaria", "jaten", "dut"], 
     meaning: "The Boss eats the breakfast.", 
     type: "A1 Food",
-    world: 'habits'
+    world: 'habits',
+    highlights: { "Nik": ["Ni", "k"], "gosaria": ["gosari", "a"], "jaten": ["ja", "ten"] }
   },
   { 
     id: 's-90', 
@@ -173,7 +192,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nik", "jolas", "bat", "egiten", "dut"], 
     meaning: "I (Boss) do a game.", 
     type: "A1 Daily",
-    world: 'habits'
+    world: 'habits',
+    highlights: { "Nik": ["Ni", "k"], "egiten": ["egi", "ten"] }
   },
 
   // World 5: Social Quests
@@ -183,7 +203,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Nire", "aita", "lanean", "dago"], 
     meaning: "'Nire' is the possessive brick. 'Lan-ea-n' means in the work.", 
     type: "A1 Family",
-    world: 'social'
+    world: 'social',
+    highlights: { "Nire": ["Ni", "re"], "lanean": ["lanea", "n"] }
   },
   { 
     id: 's-19', 
@@ -191,7 +212,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Haiek", "Donostiakoak", "dira"], 
     meaning: "The '-ko' is the 'from-place-brick'. 'Donostiakoak' means people from Donostia.", 
     type: "A1 Origins",
-    world: 'social'
+    world: 'social',
+    highlights: { "Haiek": ["Hai", "ek"], "Donostiakoak": ["Donostia", "koak"] }
   },
   { 
     id: 's-39', 
@@ -199,7 +221,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Ni", "lagunarekin", "naiz"], 
     meaning: "The '-rekin' brick means 'with'. Lagun-a-rekin.", 
     type: "A2 Complex",
-    world: 'social'
+    world: 'social',
+    highlights: { "lagunarekin": ["lagun", "arekin"] }
   },
   { 
     id: 's-74', 
@@ -207,7 +230,8 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Oparia", "zuretzat", "da"], 
     meaning: "Opari-a + Zuretzat (For you) + Da.", 
     type: "A2 Complex",
-    world: 'social'
+    world: 'social',
+    highlights: { "Oparia": ["Opari", "a"], "zuretzat": ["zu", "retzat"] }
   },
   { 
     id: 's-100', 
@@ -215,6 +239,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     correct: ["Liburua", "haurrarentzat", "da"], 
     meaning: "Liburu-a + Haur-a-rentzat (For the child) + Da.", 
     type: "A2 Complex",
-    world: 'social'
+    world: 'social',
+    highlights: { "Liburua": ["Liburu", "a"], "haurrarentzat": ["haurra", "rentzat"] }
   }
 ];
