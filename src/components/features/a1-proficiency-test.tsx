@@ -109,6 +109,126 @@ const A1_QUESTIONS: Question[] = [
     options: ["-tzat", "-rekin", "-rentzat", "-rako"],
     correct: 1,
     explanation: "The '-rekin' brick (Comitative) means 'with'."
+  },
+  {
+    id: 11,
+    category: 'Vocabulary',
+    question: "Translate the word 'Water'.",
+    options: ["Ardoa", "Esnea", "Ura", "Ogia"],
+    correct: 2,
+    explanation: "'Ur' is water, and 'Ura' is 'the water'."
+  },
+  {
+    id: 12,
+    category: 'Morphology',
+    question: "Which suffix indicates movement 'Towards' (Allative)?",
+    options: ["-tik", "-ra", "-n", "-ko"],
+    correct: 1,
+    explanation: "The '-ra' suffix shows direction towards a place (e.g., etxera = to the house)."
+  },
+  {
+    id: 13,
+    category: 'Syntax',
+    question: "How do you ask 'Who is it?'",
+    options: ["Zer da?", "Nor da?", "Non dago?", "Nola dago?"],
+    correct: 1,
+    explanation: "'Nor' is the question-brick for 'Who'."
+  },
+  {
+    id: 14,
+    category: 'Vocabulary',
+    question: "What color is 'Gorri'?",
+    options: ["Blue", "Green", "Black", "Red"],
+    correct: 3,
+    explanation: "Gorri is the Basque word for Red."
+  },
+  {
+    id: 15,
+    category: 'Morphology',
+    question: "Which suffix means 'From' (Ablative)?",
+    options: ["-ra", "-tik", "-n", "-rentzat"],
+    correct: 1,
+    explanation: "The '-tik' suffix indicates origin or coming from a place (e.g., Bilbotik = from Bilbao)."
+  },
+  {
+    id: 16,
+    category: 'Syntax',
+    question: "How do you say 'I don't have it'?",
+    options: ["Ez dut", "Ez naiz", "Dut ez", "Naiz ez"],
+    correct: 0,
+    explanation: "The negative particle 'Ez' precedes the verb."
+  },
+  {
+    id: 17,
+    category: 'Vocabulary',
+    question: "Translate 'The apple'.",
+    options: ["Sagarrak", "Sagarra", "Sagar", "Sagar-a"],
+    correct: 1,
+    explanation: "For 'Sagar', the 'r' is vibrant and doubles before the article '-a'."
+  },
+  {
+    id: 18,
+    category: 'Morphology',
+    question: "Which suffix shows possession (Genitive)?",
+    options: ["-ri", "-z", "-ren", "-ko"],
+    correct: 2,
+    explanation: "The '-ren' suffix indicates possession (e.g., Jonen liburua = Jon's book)."
+  },
+  {
+    id: 19,
+    category: 'Syntax',
+    question: "Where is the cat? (Translate: 'Non dago katua?')",
+    options: ["Where is the cat?", "Who is the cat?", "What is the cat?", "How is the cat?"],
+    correct: 0,
+    explanation: "'Non' is the question-brick for 'Where'."
+  },
+  {
+    id: 20,
+    category: 'Vocabulary',
+    question: "What does 'Lagun' mean?",
+    options: ["Family", "Friend", "Teacher", "Student"],
+    correct: 1,
+    explanation: "Lagun means Friend."
+  },
+  {
+    id: 21,
+    category: 'Morphology',
+    question: "Which suffix is the 'To/For' brick (Dative)?",
+    options: ["-rekin", "-ri", "-ra", "-tik"],
+    correct: 1,
+    explanation: "The '-ri' suffix marks the recipient or dative (e.g., gizonari = to the man)."
+  },
+  {
+    id: 22,
+    category: 'Syntax',
+    question: "Translate: 'They are friends.'",
+    options: ["Haiek lagunak dira", "Haiek lagunak gara", "Gu lagunak gara", "Zu lagun zara"],
+    correct: 0,
+    explanation: "'Dira' is the 'are-brick' for the third person plural (they)."
+  },
+  {
+    id: 23,
+    category: 'Vocabulary',
+    question: "What does the verb 'Etorri' mean?",
+    options: ["To go", "To do", "To come", "To see"],
+    correct: 2,
+    explanation: "Etorri is 'to come', while 'joan' is 'to go'."
+  },
+  {
+    id: 24,
+    category: 'Morphology',
+    question: "How do you say 'My' in Basque?",
+    options: ["Zure", "Haren", "Gure", "Nire"],
+    correct: 3,
+    explanation: "Nire is the possessive pronoun for 'My'."
+  },
+  {
+    id: 25,
+    category: 'Syntax',
+    question: "Which is the correct assembly for 'The new house'?",
+    options: ["Etxea berria", "Berria etxea", "Etxe berria", "Berri etxea"],
+    correct: 2,
+    explanation: "The article '-a' attaches to the adjective, not the noun, in a phrase (Noun + Adjective-a)."
   }
 ];
 
@@ -178,7 +298,7 @@ export function A1ProficiencyTest() {
                 <p className="text-sm text-muted-foreground leading-relaxed">
                    {percentage >= 80 
                     ? "Excellent! You have successfully internalised the SOV baseline and core morphological 'bricks'. You are ready to move towards A2 complex social quests."
-                    : "You're making progress! We detected some friction with morphological 'snapping' rules. Focus on World 2 (Actions) to strengthen your 'Boss Badge' recognition."}
+                    : "You're making progress! We detected some friction with morphological 'snapping' rules and case markers. Focus on World 2 (Actions) and World 3 (Location) to strengthen your 'Boss Badge' and locative recognition."}
                 </p>
              </div>
           </div>
