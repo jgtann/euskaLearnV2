@@ -173,18 +173,18 @@ export function SentenceBuilder() {
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                     
                     {current.correct.map((word, i) => {
-                      const parts = current.highlights?.[word];
+                      const highlight = current.highlights?.[word];
                       return (
                         <div 
                           key={i} 
-                          className="animate-in fade-in slide-in-from-top-12 fill-mode-both"
+                          className="animate-in fade-in slide-in-from-bottom-12 fill-mode-both"
                           style={{ animationDelay: `${i * 150}ms`, animationDuration: '600ms' }}
                         >
                           <div className="h-14 px-8 bg-white border-2 border-basque-green/30 border-b-8 border-b-basque-green/60 font-black text-2xl rounded-2xl flex items-center justify-center shadow-sm">
-                            {parts ? (
+                            {highlight ? (
                               <>
-                                <span className="text-basque-earth">{parts[0]}</span>
-                                <span className="text-primary">{parts[1]}</span>
+                                <span className="text-basque-earth">{highlight[0]}</span>
+                                <span className="text-primary">{highlight[1]}</span>
                               </>
                             ) : (
                               <span className="text-basque-green">{word}</span>
