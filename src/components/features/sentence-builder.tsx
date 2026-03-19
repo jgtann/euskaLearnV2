@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
@@ -46,14 +46,11 @@ export function SentenceBuilder() {
       const sorted = [...SENTENCE_CHALLENGES].sort((a, b) => {
         const recA = recordMap.get(a.id);
         const recB = recordMap.get(b.id);
-        
         const dueA = recA ? recA.nextReview : 0;
         const dueB = recB ? recB.nextReview : 0;
-        
         if (dueA <= now && dueB > now) return -1;
         if (dueB <= now && dueA > now) return 1;
-        
-        return Math.random() - 0.5;
+        return 0;
       });
       setChallenges(sorted);
     } else {
