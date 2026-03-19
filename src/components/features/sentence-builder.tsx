@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,6 +38,7 @@ export function SentenceBuilder() {
   }, [user, firestore]);
   const { data: userItems } = useCollection(userItemsQuery);
 
+  // Thesis 2.1: Usage-Based Sorting (Review items with high friction first)
   useEffect(() => {
     if (userItems) {
       const records = userItems || [];
@@ -156,6 +158,7 @@ export function SentenceBuilder() {
           
           {feedback === 'correct' ? (
             <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+              {/* Success Visual: Bricks Dropping into place */}
               <div className="flex flex-col items-center justify-center gap-3">
                 <div className="flex items-center gap-4 text-basque-green font-black text-5xl uppercase tracking-tighter">
                   <Sparkles className="size-10 animate-bounce text-yellow-500" />
@@ -181,7 +184,7 @@ export function SentenceBuilder() {
                             {highlight ? (
                               <>
                                 <span className="text-basque-earth">{highlight[0]}</span>
-                                <span className="text-primary">{highlight[1]}</span>
+                                <span className="text-blue-600">{highlight[1]}</span>
                               </>
                             ) : (
                               <span className="text-basque-green">{word}</span>
@@ -193,6 +196,7 @@ export function SentenceBuilder() {
                  </div>
               </div>
 
+              {/* Master Builder Logic Note */}
               <div className="bg-basque-green/10 p-8 rounded-2xl border-2 border-dashed border-basque-green/30">
                 <div className="flex items-center gap-2 mb-4 text-basque-green font-black text-xs uppercase tracking-widest">
                    <Zap className="size-5" /> Master Builder Logic
@@ -214,6 +218,7 @@ export function SentenceBuilder() {
             </div>
           ) : feedback === 'incorrect' ? (
             <div className="space-y-8 animate-in shake duration-500">
+              {/* Failure Visual: Friction Detected */}
               <div className="flex flex-col items-center justify-center gap-3 text-basque-red">
                 <div className="flex items-center gap-4 font-black text-4xl uppercase tracking-tighter">
                   <XCircle className="size-10" />
@@ -262,6 +267,7 @@ export function SentenceBuilder() {
             </div>
           ) : (
             <div className="space-y-8">
+              {/* Active Construction Zone */}
               <div className={cn(
                   "flex flex-wrap items-center justify-center gap-3 p-10 min-h-[200px] rounded-3xl border-4 border-dashed transition-all duration-500", 
                   "bg-white/50 border-muted-foreground/20 shadow-inner"

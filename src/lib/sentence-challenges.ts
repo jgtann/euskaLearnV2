@@ -1,3 +1,4 @@
+
 export type SentenceChallenge = {
   id: string;
   english: string;
@@ -53,7 +54,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     meaning: "Plural alert! 'Lagun-ak' uses the multi-stud plural brick.", 
     type: "A1 Plurals",
     world: 'names',
-    highlights: { "lagunak": ["lagun", "ak"] }
+    highlights: { "lagunak": ["lagun", "ak"], "gara": ["ga", "ra"] }
   },
 
   // World 2: Actions (Who Does What?)
@@ -93,7 +94,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     meaning: "The '-n' on 'etxea-n' is the 'inside-brick'.", 
     type: "A1 Location",
     world: 'location',
-    highlights: { "etxean": ["etxea", "n"] }
+    highlights: { "etxean": ["etxea", "n"], "naiz": ["na", "iz"] }
   },
   { 
     id: 's-5', 
@@ -113,7 +114,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     meaning: "The '-rekin' brick means 'with'. Lagun-a-rekin.", 
     type: "A2 Complex",
     world: 'social',
-    highlights: { "lagunarekin": ["lagun", "arekin"] }
+    highlights: { "lagunarekin": ["lagun", "arekin"], "naiz": ["na", "iz"] }
   },
   { 
     id: 's-74', 
