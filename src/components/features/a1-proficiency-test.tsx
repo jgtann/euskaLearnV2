@@ -103,7 +103,7 @@ const A1_QUESTIONS: Question[] = [
     question: "How do you say 'The big house'?",
     options: ["Etxea handia", "Handia etxea", "Etxe handia", "Etxea handi"],
     correct: 2,
-    explanation: "In Basque, the adjective follows the noun, and the article '-a' attaches to the end of the phrase."
+    explanation: "In Basque, the adjective follows the noun, and the article '-a' attaches to the very end of the phrase. 'Etxea handia' is also correct but it functions as a sentence: 'The house is big'."
   },
   {
     id: 10,
@@ -231,7 +231,7 @@ const A1_QUESTIONS: Question[] = [
     question: "Which is the correct assembly for 'The new house'?",
     options: ["Etxea berria", "Berria etxea", "Etxe berria", "Berri etxea"],
     correct: 2,
-    explanation: "The article '-a' attaches to the adjective, not the noun, in a phrase (Noun + Adjective-a)."
+    explanation: "The article '-a' attaches to the adjective, not the noun, in a phrase (Noun + Adjective-a). If you say 'Etxea berria', it sounds like 'The house is new'."
   }
 ];
 
