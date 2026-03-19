@@ -29,7 +29,15 @@ export const FREQUENT_NOUNS = [
   { basque: "Katu", english: "Cat", world: 'names' },
   { basque: "Sagar", english: "Apple", world: 'names' },
   { basque: "Ur", english: "Water", world: 'names' },
-  { basque: "Liburu", english: "Book", world: 'names' }
+  { basque: "Liburu", english: "Book", world: 'names' },
+  { basque: "Mendi", english: "Mountain", world: 'location' },
+  { basque: "Ibai", english: "River", world: 'location' },
+  { basque: "Lore", english: "Flower", world: 'names' },
+  { basque: "Janari", english: "Food", world: 'habits' },
+  { basque: "Auto", english: "Car", world: 'actions' },
+  { basque: "Ogi", english: "Bread", world: 'actions' },
+  { basque: "Eskola", english: "School", world: 'location' },
+  { basque: "Mutil", english: "Boy", world: 'names' }
 ];
 
 export function generateLegoLevels(noun: { basque: string, english: string, world?: string }): LegoLevel[] {
@@ -39,8 +47,6 @@ export function generateLegoLevels(noun: { basque: string, english: string, worl
   const endsInA = lowerRoot.endsWith('a');
   const world = (noun.world as WorldType) || 'names';
 
-  // Basque morphological rule: Final 'r' in certain roots (sagar, txakur, eder) 
-  // doubles when followed by a vowel-initial suffix.
   const isVibrantR = lowerRoot === 'sagar' || lowerRoot === 'txakur';
   
   const detSuffix = endsInA ? "" : "a";

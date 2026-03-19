@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -14,17 +15,21 @@ import {
   RefreshCw,
   Dices,
   Clock,
-  XCircle
+  XCircle,
+  Repeat
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { FREQUENT_NOUNS, generateLegoLevels } from '@/lib/lego-data';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function MorphemeConstructor() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [currentNounIdx, setCurrentNounIdx] = useState(0);
   const [levelIdx, setLevelIdx] = useState(0);
@@ -93,6 +98,13 @@ export function MorphemeConstructor() {
   const handleNextNoun = () => {
     setCurrentNounIdx(prev => (prev + 1) % (shuffledNouns.length || FREQUENT_NOUNS.length));
     setLevelIdx(0);
+    handleReset();
+  };
+
+  const handleGoToBoss = () => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', 'sentence');
+    router.push(`?${params.toString()}`);
   };
 
   const updateSRS = (isFinalLevel: boolean) => {
@@ -187,7 +199,7 @@ export function MorphemeConstructor() {
         </div>
         <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
           <Clock className="size-3" />
-          SRS Priority: {currentNounIdx + 1} / {shuffledNouns.length || FREQUENT_NOUNS.length}
+          Queue Position: {currentNounIdx + 1} / {shuffledNouns.length || FREQUENT_NOUNS.length}
         </div>
       </div>
 
@@ -232,11 +244,11 @@ export function MorphemeConstructor() {
                 </div>
               );
             })}
-            {built.length === 0 && <p className="text-muted-foreground italic">Start with: "{currentNoun.basque}"</p>}
+            {built.length === 0 && <p className="text-muted-foreground italic text-sm">Snap the first brick: "{currentNoun.basque}"</p>}
           </div>
 
           {isCorrect && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-2 text-basque-green font-black text-4xl uppercase tracking-tighter">
                   <Sparkles className="size-6 text-yellow-500 animate-bounce" />
@@ -257,6 +269,22 @@ export function MorphemeConstructor() {
                 <p className="text-sm leading-relaxed text-basque-earth font-medium">
                   {currentLevel.logic}
                 </p>
+              </div>
+
+              {/* Session Completion Menu */}
+              <div className="grid gap-3 pt-4 border-t border-basque-green/10">
+                <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Next Steps</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleReset} className="font-bold">
+                        <Repeat className="size-4 mr-2" /> Repeat Build
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleNextNoun} className="font-bold">
+                        <Dices className="size-4 mr-2 text-primary" /> Another Noun
+                    </Button>
+                    <Button variant="default" size="sm" onClick={handleGoToBoss} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold">
+                        <Trophy className="size-4 mr-2" /> Face the Boss
+                    </Button>
+                </div>
               </div>
             </div>
           )}
@@ -289,11 +317,11 @@ export function MorphemeConstructor() {
             </div>
           )}
 
-          <div className="flex justify-center gap-3 border-t pt-8">
-            <Button variant="ghost" onClick={handleReset} disabled={isCorrect}>
-              <RefreshCw className="mr-2 size-4" /> Reset Build
-            </Button>
-            {!isCorrect ? (
+          {!isCorrect && (
+            <div className="flex justify-center gap-3 border-t pt-8">
+              <Button variant="ghost" onClick={handleReset} disabled={isCorrect}>
+                <RefreshCw className="mr-2 size-4" /> Reset Build
+              </Button>
               <Button 
                 className="bg-basque-earth hover:bg-black text-white px-8 h-14 font-black rounded-xl border-b-4 border-b-black shadow-lg transition-all active:border-b-0 active:translate-y-1" 
                 onClick={checkBuild}
@@ -301,21 +329,8 @@ export function MorphemeConstructor() {
               >
                 Snap Bricks
               </Button>
-            ) : (
-              <Button 
-                className="bg-basque-green hover:bg-green-800 text-white px-10 h-16 font-black rounded-xl border-b-4 border-b-green-900 shadow-xl transition-all active:border-b-0 active:translate-y-1 text-lg" 
-                onClick={() => {
-                  if (levelIdx < legoLevels.length - 1) {
-                    setLevelIdx(prev => prev + 1);
-                  } else {
-                    handleNextNoun();
-                  }
-                }}
-              >
-                {levelIdx === legoLevels.length - 1 ? "Next Base Brick" : "Next Module"} <ArrowRight className="ml-2 size-5" />
-              </Button>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       
