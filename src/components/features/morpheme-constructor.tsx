@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -142,6 +141,7 @@ export function MorphemeConstructor() {
       return;
     }
 
+    // Validation logic for morphological sequence
     const correctSequence = currentLevel.bricks.map(b => b.text);
     const isSequenceCorrect = built.every((brick, index) => brick === correctSequence[index]);
 
@@ -230,7 +230,7 @@ export function MorphemeConstructor() {
                 <div 
                   key={i} 
                   className={cn(
-                    "px-6 py-3 rounded-xl border-b-4 text-xl font-black transition-all animate-in zoom-in-95",
+                    "px-6 py-3 rounded-xl border-b-4 text-xl font-black transition-all animate-in zoom-in-95 cursor-pointer",
                     RoleColors[role]
                   )}
                   onClick={() => {
@@ -278,8 +278,20 @@ export function MorphemeConstructor() {
                     <Button variant="outline" size="sm" onClick={handleReset} className="font-bold">
                         <Repeat className="size-4 mr-2" /> Repeat Build
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleNextNoun} className="font-bold">
-                        <Dices className="size-4 mr-2 text-primary" /> Another Noun
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        if (levelIdx < legoLevels.length - 1) {
+                          setLevelIdx(prev => prev + 1);
+                        } else {
+                          handleNextNoun();
+                        }
+                      }} 
+                      className="font-bold"
+                    >
+                        <Dices className="size-4 mr-2 text-primary" /> 
+                        {levelIdx < legoLevels.length - 1 ? "Next Level" : "Another Noun"}
                     </Button>
                     <Button variant="default" size="sm" onClick={handleGoToBoss} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold">
                         <Trophy className="size-4 mr-2" /> Face the Boss

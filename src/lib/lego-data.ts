@@ -1,4 +1,3 @@
-
 export type WorldType = 'names' | 'actions' | 'location' | 'habits' | 'social';
 
 export type LegoLevel = {
@@ -47,12 +46,11 @@ export function generateLegoLevels(noun: { basque: string, english: string, worl
   const endsInA = lowerRoot.endsWith('a');
   const world = (noun.world as WorldType) || 'names';
 
+  // Specific check for vibrant 'r' doubling (Sagar -> Sagarrak, Txakur -> Txakurrak)
   const isVibrantR = lowerRoot === 'sagar' || lowerRoot === 'txakur';
   
-  const detSuffix = endsInA ? "" : "a";
-  const pluralSuffix = endsInA ? "k" : "ak";
-  const locSuffix = "n";
-  const ergSuffix = "k";
+  const detSuffix = isVibrantR ? "ra" : (endsInA ? "" : "a");
+  const pluralSuffix = isVibrantR ? "rak" : (endsInA ? "k" : "ak");
 
   const detTarget = isVibrantR ? `${root}ra` : (endsInA ? root : `${root}a`);
   const pluralTarget = isVibrantR ? `${root}rak` : (endsInA ? `${root}k` : `${root}ak`);
@@ -73,57 +71,61 @@ export function generateLegoLevels(noun: { basque: string, english: string, worl
       id: 2,
       world: 'names',
       title: "The 'The' Piece",
-      description: endsInA ? "Article already built-in!" : "Snap on the '-a' piece.",
+      description: endsInA ? "Article already built-in!" : "Snap on the 'the' piece.",
       example: endsInA ? `${root}` : `${root} + a`,
-      bricks: endsInA ? [{ text: root, role: 'root' }] : [{ text: root, role: 'root' }, { text: "-a", role: 'article' }],
+      bricks: endsInA 
+        ? [{ text: root, role: 'root' }] 
+        : [{ text: root, role: 'root' }, { text: isVibrantR ? "-ra" : "-a", role: 'article' }],
       target: detTarget,
       translation: `The ${eng}`,
       logic: isVibrantR 
-        ? `Note: For '${root}', we double the 'r' to '${root}ra' when adding the article.`
-        : `In Basque, 'the' is a suffix that snaps onto the end.`
+        ? `Note: For '${root}', we double the 'r' and add 'a' to make '${detTarget}'.`
+        : endsInA 
+          ? `Since '${root}' already ends in 'a', the 'the' piece is already part of the brick!`
+          : `In Basque, 'the' is a suffix that snaps onto the end.`
     },
     {
       id: 3,
       world: 'names',
       title: "Multi-Stud Block",
-      description: "Pluralization using the '-ak' brick.",
+      description: "Pluralization using the 'plural' brick.",
       example: endsInA ? `${root} + k` : `${root} + ak`,
-      bricks: endsInA ? [{ text: root, role: 'root' }, { text: "-k", role: 'plural' }] : [{ text: root, role: 'root' }, { text: "-ak", role: 'plural' }],
+      bricks: [{ text: root, role: 'root' }, { text: isVibrantR ? "-rak" : (endsInA ? "-k" : "-ak"), role: 'plural' }],
       target: pluralTarget,
       translation: `The ${eng}s`,
       logic: isVibrantR 
-        ? `Note: For '${root}', the 'r' doubles to '${root}rak' in the plural.`
-        : `The 'a' (the) and 'ak' (plural) merge into 'ak'.`
+        ? `Note: For '${root}', the 'r' doubles in the plural form: '${pluralTarget}'.`
+        : `The 'a' (the) and 'ak' (plural) suffixes merge when snapping onto the root.`
     }
   ];
 
   if (world === 'actions') {
-    const ergTarget = isVibrantR ? `${root}rak` : (endsInA ? `${root}k` : `${root}ak`);
+    const ergSuffixText = isVibrantR ? "-rak" : (endsInA ? "-k" : "-ak");
     baseLevels.push({
-      id: 5,
+      id: 4,
       world: 'actions',
       title: "The Boss Badge",
       description: "The gold '-k' piece marks the subject as the 'Boss' of an action.",
       example: `${root}a + k`,
-      bricks: [{ text: root, role: 'root' }, { text: endsInA ? "" : "-a", role: 'article' }, { text: "-k", role: 'gold' }].filter(b => b.text !== ""),
-      target: ergTarget,
+      bricks: [{ text: root, role: 'root' }, { text: ergSuffixText, role: 'gold' }],
+      target: pluralTarget, // For simplified pedagogical purposes, Ergative singular -ak looks like plural -ak
       translation: `The ${eng} (doing an action)`,
-      logic: "This is the Ergative marker. It's a special badge for the action-doer."
+      logic: "This is the Ergative marker. It's a special gold badge for the action-doer."
     });
   }
 
   if (world === 'location') {
-     const locTarget = isVibrantR ? `${root}ran` : (endsInA ? `${root}n` : `${root}an`);
+     const locTarget = isVibrantR ? `${root}ran` : (endsInA ? `${root}an` : `${root}an`);
      baseLevels.push({
       id: 4,
       world: 'location',
       title: "The 'Inside' Brick",
       description: "Snap on '-n' to show where something is.",
       example: `${root}a + n`,
-      bricks: [{ text: root, role: 'root' }, { text: endsInA ? "" : "-a", role: 'article' }, { text: "-n", role: 'suffix' }].filter(b => b.text !== ""),
+      bricks: [{ text: root, role: 'root' }, { text: isVibrantR ? "-ran" : (endsInA ? "-an" : "-an"), role: 'suffix' }],
       target: locTarget,
       translation: `In the ${eng}`,
-      logic: "The Inessive marker (-n) tells us the location."
+      logic: "The Inessive marker (-n) tells us the location. Notice the bridge 'a' remains!"
     });
   }
 
