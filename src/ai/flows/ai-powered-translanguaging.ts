@@ -1,11 +1,10 @@
+
 'use server';
 
 /**
- * @fileOverview An AI-powered translation and explanation flow to help learners understand the differences between English and Basque.
- *
- * - translateAndExplain - A function that translates and explains the differences between English and Basque.
- * - TranslateAndExplainInput - The input type for the translateAndExplain function.
- * - TranslateAndExplainOutput - The return type for the translateAndExplain function.
+ * @fileOverview A pedagogical translanguaging AI flow that uses English as a temporary bridge.
+ * 
+ * Implements the "Scaffolding Fade" logic (Phase 1-3).
  */
 
 import {ai} from '@/ai/genkit';
@@ -13,21 +12,20 @@ import {z} from 'genkit';
 
 const TranslateAndExplainInputSchema = z.object({
   englishText: z.string().describe('The English text to translate and explain.'),
+  phase: z.enum(['bridge', 'pivot', 'retraction']).default('bridge').describe('The current scaffolding phase of the learner.'),
 });
 export type TranslateAndExplainInput = z.infer<typeof TranslateAndExplainInputSchema>;
 
 const ExplanationItemSchema = z.object({
-  concept: z.string().describe('The basic idea or word part being explained.'),
-  explanation: z.string().describe('A simple, fun explanation for a child.'),
-  example: z.string().describe('An example sentence or phrase pair (English/Basque) showing how it works.'),
+  concept: z.string().describe('The linguistic construction or "brick" being explained.'),
+  explanation: z.string().describe('A simple explanation using established metaphors (Boss Badge, Inside Brick, etc.).'),
+  example: z.string().describe('Contrastive example comparing English and Basque structure.'),
 });
 
 const TranslateAndExplainOutputSchema = z.object({
-  basqueTranslation: z.string().describe('The Basque translation of the input text.'),
-  explanation: z.array(ExplanationItemSchema)
-    .describe(
-      'A structured explanation of the differences between English and Basque, using simple words a 10-year-old would understand.'
-    ),
+  basqueTranslation: z.string().describe('The Basque translation.'),
+  explanation: z.array(ExplanationItemSchema),
+  pedagogicalNote: z.string().describe('A brief note about the "Scaffolding Fade" transition for this construction.'),
 });
 export type TranslateAndExplainOutput = z.infer<typeof TranslateAndExplainOutputSchema>;
 
@@ -39,16 +37,23 @@ const translateAndExplainPrompt = ai.definePrompt({
   name: 'translateAndExplainPrompt',
   input: {schema: TranslateAndExplainInputSchema},
   output: {schema: TranslateAndExplainOutputSchema},
-  prompt: `You are a friendly language tutor specializing in Basque and English.
-
-  Translate the following English text into Basque.
-
-  Then, provide a simple, fun explanation of the key differences between the two languages in this specific translation. 
-  Explain the grammar in a way a 10-year-old would understand. 
-  Avoid technical jargon like "ergative", "absolutive", or "agglutinative". 
-  Instead, use simple words like "subject", "object", "word-parts", "markers", or "action-doer".
-  For each key difference, provide a "Concept" (the basic idea), a "Simple Explanation" (how it works), and an "Example".
-
+  prompt: `You are a supportive Basque language tutor implementing a "Translanguaging Bridge".
+  
+  CURRENT PHASE: {{{phase}}}
+  
+  1. Translate the English text: "{{{englishText}}}" into Basque.
+  2. Provide a breakdown of the "Lego Bricks" used.
+  3. Use child-friendly metaphors:
+     - Ergative (-k) = "Boss Badge"
+     - Definite Article (-a) = "The-Brick"
+     - SOV Order = "The Syntax Engine"
+     - Suffixes = "Snap-tiles"
+  
+  ADJUST EXPLANATION DEPTH BY PHASE:
+  - Phase 'bridge': High English scaffolding, detailed micro-contrastive notes.
+  - Phase 'pivot': Use Basque meta-terms (Nork, Nor, Nori) alongside English.
+  - Phase 'retraction': Minimal English, focus on functional immersion notes.
+  
   English Text: {{{englishText}}}`,
 });
 
