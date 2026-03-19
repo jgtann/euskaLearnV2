@@ -27,6 +27,7 @@ export function SentenceBuilder() {
   const [constructed, setConstructed] = useState<string[]>([]);
   const [palette, setPalette] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [challenges, setChallenges] = useState<typeof SENTENCE_CHALLENGES>([]);
   const { toast } = useToast();
 
   const userItemsQuery = useMemoFirebase(() => {
@@ -35,26 +36,32 @@ export function SentenceBuilder() {
   }, [user, firestore]);
   const { data: userItems } = useCollection(userItemsQuery);
 
-  const sortedChallenges = useMemo(() => {
-    const records = userItems || [];
-    const recordMap = new Map(records.map(r => [r.learningItemId, r]));
-    const now = Date.now();
+  // Stability for hydration: Sort challenges in useEffect
+  useEffect(() => {
+    if (userItems) {
+      const records = userItems || [];
+      const recordMap = new Map(records.map(r => [r.learningItemId, r]));
+      const now = Date.now();
 
-    return [...SENTENCE_CHALLENGES].sort((a, b) => {
-      const recA = recordMap.get(a.id);
-      const recB = recordMap.get(b.id);
-      
-      const dueA = recA ? recA.nextReview : 0;
-      const dueB = recB ? recB.nextReview : 0;
-      
-      if (dueA <= now && dueB > now) return -1;
-      if (dueB <= now && dueA > now) return 1;
-      
-      return Math.random() - 0.5;
-    });
+      const sorted = [...SENTENCE_CHALLENGES].sort((a, b) => {
+        const recA = recordMap.get(a.id);
+        const recB = recordMap.get(b.id);
+        
+        const dueA = recA ? recA.nextReview : 0;
+        const dueB = recB ? recB.nextReview : 0;
+        
+        if (dueA <= now && dueB > now) return -1;
+        if (dueB <= now && dueA > now) return 1;
+        
+        return Math.random() - 0.5;
+      });
+      setChallenges(sorted);
+    } else {
+      setChallenges(SENTENCE_CHALLENGES);
+    }
   }, [userItems]);
 
-  const current = sortedChallenges[currentIdx];
+  const current = challenges[currentIdx];
 
   useEffect(() => {
     if (current) {
@@ -107,7 +114,7 @@ export function SentenceBuilder() {
   };
 
   const handleNext = () => {
-    setCurrentIdx((prev) => (prev + 1) % sortedChallenges.length);
+    setCurrentIdx((prev) => (prev + 1) % challenges.length);
   };
 
   const handleReset = () => {
@@ -162,7 +169,6 @@ export function SentenceBuilder() {
               {/* DROPPING BRICKS VISUAL */}
               <div className="flex flex-col items-center gap-4">
                  <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-green shadow-xl relative overflow-hidden">
-                    {/* Background faint grid to look like a lego baseplate */}
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                     
                     {current.correct.map((word, i) => (
