@@ -16,7 +16,20 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpen, BarChart, Languages, LayoutDashboard, Settings, LifeBuoy, LogOut, User, NotebookText, Loader2, BrainCircuit } from 'lucide-react';
+import { 
+  BookOpen, 
+  BarChart, 
+  Languages, 
+  LayoutDashboard, 
+  Settings, 
+  LifeBuoy, 
+  LogOut, 
+  User, 
+  NotebookText, 
+  Loader2, 
+  BrainCircuit,
+  Award
+} from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '../ui/button';
 import { useAuth, useUser } from '@/firebase';
@@ -31,6 +44,7 @@ const navItems = [
   { href: '/grammar-check', label: 'Grammar Check', icon: BrainCircuit },
   { href: '/progress', label: 'Progress', icon: BarChart },
   { href: '/introduction', label: 'Self-Intro', icon: User },
+  { href: '/proficiency-test', label: 'A1 Test', icon: Award },
 ];
 
 const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar-1');
