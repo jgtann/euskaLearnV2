@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Trophy, 
   CheckCircle2, 
@@ -16,7 +17,9 @@ import {
   Award,
   BrainCircuit,
   Construction,
-  Languages
+  Languages,
+  Eye,
+  LayoutDashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -236,6 +239,7 @@ export function A1ProficiencyTest() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [isFinished, setIsFinished] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const currentQuestion = A1_QUESTIONS[currentIdx];
@@ -265,15 +269,17 @@ export function A1ProficiencyTest() {
     setCurrentIdx(0);
     setAnswers({});
     setIsFinished(false);
+    setShowReview(false);
     setSelectedOption(null);
   };
 
   if (isFinished) {
     const percentage = (score / A1_QUESTIONS.length) * 100;
+
     return (
-      <Card className="max-w-2xl mx-auto border-t-8 border-t-basque-green shadow-2xl">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
+      <Card className="max-w-2xl mx-auto border-t-8 border-t-basque-green shadow-2xl overflow-hidden">
+        <CardHeader className="text-center bg-muted/20 pb-8">
+          <div className="flex justify-center mb-4 pt-4">
             <div className="p-4 bg-basque-green/10 rounded-full">
               <Trophy className="size-16 text-basque-green animate-bounce" />
             </div>
@@ -281,54 +287,118 @@ export function A1ProficiencyTest() {
           <CardTitle className="text-4xl font-black text-basque-earth">Diagnostic Complete</CardTitle>
           <CardDescription className="text-lg">CEFR A1 Validation Results</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8 p-10">
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-6xl font-black text-basque-green">{percentage}%</span>
-            <Badge variant="secondary" className="px-6 py-1 uppercase tracking-widest text-xs font-bold">
-              {percentage >= 80 ? 'Proficiency Level: A1 Validated' : 'Proficiency Level: Building A1'}
-            </Badge>
-          </div>
+        
+        <CardContent className="space-y-8 p-0">
+          {!showReview ? (
+            <div className="p-10 space-y-8 animate-in fade-in duration-500">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-6xl font-black text-basque-green">{percentage}%</span>
+                <Badge variant="secondary" className="px-6 py-1 uppercase tracking-widest text-xs font-bold">
+                  {percentage >= 80 ? 'Proficiency Level: A1 Validated' : 'Proficiency Level: Building A1'}
+                </Badge>
+              </div>
 
-          <div className="grid gap-4">
-             <div className="p-6 rounded-2xl bg-muted/50 border space-y-2">
-                <div className="flex items-center gap-2 text-basque-earth font-bold">
-                   <BrainCircuit className="size-5 text-primary" />
-                   Mastery Analysis
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                   {percentage >= 80 
-                    ? "Excellent! You have successfully internalised the SOV baseline and core morphological 'bricks'. You are ready to move towards A2 complex social quests."
-                    : "You're making progress! We detected some friction with morphological 'snapping' rules and case markers. Focus on World 2 (Actions) and World 3 (Location) to strengthen your 'Boss Badge' and locative recognition."}
-                </p>
-             </div>
-          </div>
+              <div className="grid gap-4">
+                 <div className="p-6 rounded-2xl bg-muted/50 border space-y-2">
+                    <div className="flex items-center gap-2 text-basque-earth font-bold">
+                       <BrainCircuit className="size-5 text-primary" />
+                       Mastery Analysis
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                       {percentage >= 80 
+                        ? "Excellent! You have successfully internalised the SOV baseline and core morphological 'bricks'. You are ready to move towards A2 complex social quests."
+                        : "You're making progress! We detected some friction with morphological 'snapping' rules and case markers. Focus on World 2 (Actions) and World 3 (Location) to strengthen your 'Boss Badge' and locative recognition."}
+                    </p>
+                 </div>
+              </div>
 
-          <div className="space-y-4">
-             <h3 className="font-bold text-center uppercase tracking-widest text-[10px] text-muted-foreground">Category Performance</h3>
-             <div className="space-y-2">
-                {['Vocabulary', 'Morphology', 'Syntax'].map(cat => {
-                   const catQs = A1_QUESTIONS.filter(q => q.category === cat);
-                   const catScore = catQs.filter(q => answers[q.id] === q.correct).length;
-                   const catPercent = (catScore / catQs.length) * 100;
-                   return (
-                     <div key={cat} className="flex items-center justify-between p-3 bg-white rounded-xl border">
-                        <span className="text-sm font-bold">{cat}</span>
-                        <div className="flex items-center gap-3">
-                           <Progress value={catPercent} className="w-24 h-2" />
-                           <span className="text-xs font-black min-w-[3rem] text-right">{Math.round(catPercent)}%</span>
+              <div className="space-y-4">
+                 <h3 className="font-bold text-center uppercase tracking-widest text-[10px] text-muted-foreground">Category Performance</h3>
+                 <div className="space-y-2">
+                    {['Vocabulary', 'Morphology', 'Syntax'].map(cat => {
+                       const catQs = A1_QUESTIONS.filter(q => q.category === cat);
+                       const catScore = catQs.filter(q => answers[q.id] === q.correct).length;
+                       const catPercent = (catScore / catQs.length) * 100;
+                       return (
+                         <div key={cat} className="flex items-center justify-between p-3 bg-white rounded-xl border">
+                            <span className="text-sm font-bold">{cat}</span>
+                            <div className="flex items-center gap-3">
+                               <Progress value={catPercent} className="w-24 h-2" />
+                               <span className="text-xs font-black min-w-[3rem] text-right">{Math.round(catPercent)}%</span>
+                            </div>
+                         </div>
+                       );
+                    })}
+                 </div>
+              </div>
+            </div>
+          ) : (
+            <div className="animate-in slide-in-from-right-4 duration-500">
+              <ScrollArea className="h-[500px] w-full p-6">
+                <div className="space-y-6 pr-4">
+                  {A1_QUESTIONS.map((q, i) => {
+                    const isCorrect = answers[q.id] === q.correct;
+                    return (
+                      <div key={q.id} className={cn(
+                        "p-4 rounded-xl border-l-4 space-y-3",
+                        isCorrect ? "bg-green-50/50 border-l-green-500" : "bg-red-50/50 border-l-red-500"
+                      )}>
+                        <div className="flex justify-between items-start gap-4">
+                          <h4 className="font-bold text-sm leading-tight">
+                            {i + 1}. {q.question}
+                          </h4>
+                          {isCorrect ? (
+                            <CheckCircle2 className="size-4 text-green-600 shrink-0" />
+                          ) : (
+                            <XCircle className="size-4 text-red-600 shrink-0" />
+                          )}
                         </div>
-                     </div>
-                   );
-                })}
-             </div>
-          </div>
+                        
+                        <div className="grid gap-2 text-xs">
+                          <div className="flex gap-2">
+                            <span className="font-bold text-muted-foreground w-20">Your Answer:</span>
+                            <span className={cn(isCorrect ? "text-green-700" : "text-red-700")}>
+                              {q.options[answers[q.id]]}
+                            </span>
+                          </div>
+                          {!isCorrect && (
+                            <div className="flex gap-2">
+                              <span className="font-bold text-muted-foreground w-20">Correct:</span>
+                              <span className="text-green-700 font-bold">{q.options[q.correct]}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="p-3 bg-white/80 rounded-lg border border-border/50">
+                           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Pedagogical Logic</p>
+                           <p className="text-xs leading-relaxed text-basque-earth">{q.explanation}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
         </CardContent>
-        <CardFooter className="flex gap-4 p-8 bg-muted/20">
-          <Button variant="outline" className="flex-1 font-bold h-12" onClick={resetTest}>
+
+        <CardFooter className="flex flex-wrap gap-4 p-8 bg-muted/20 border-t">
+          <Button variant="outline" className="flex-1 font-bold h-12 min-w-[140px]" onClick={resetTest}>
             <RotateCcw className="mr-2 size-4" /> Retake Test
           </Button>
-          <Button className="flex-1 bg-basque-green hover:bg-green-800 font-bold h-12" asChild>
-             <a href="/dashboard">Back to Dashboard</a>
+          <Button 
+            variant="secondary" 
+            className="flex-1 font-bold h-12 min-w-[140px] bg-primary/10 text-primary hover:bg-primary/20" 
+            onClick={() => setShowReview(!showReview)}
+          >
+            {showReview ? (
+              <><Trophy className="mr-2 size-4" /> Show Summary</>
+            ) : (
+              <><Eye className="mr-2 size-4" /> Review Answers</>
+            )}
+          </Button>
+          <Button className="w-full sm:w-auto sm:flex-1 bg-basque-green hover:bg-green-800 font-bold h-12" asChild>
+             <a href="/dashboard"><LayoutDashboard className="mr-2 size-4" /> Dashboard</a>
           </Button>
         </CardFooter>
       </Card>
