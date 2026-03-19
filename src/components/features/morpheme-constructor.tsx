@@ -13,7 +13,8 @@ import {
   Trophy,
   RefreshCw,
   Dices,
-  Clock
+  Clock,
+  XCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -29,6 +30,7 @@ export function MorphemeConstructor() {
   const [levelIdx, setLevelIdx] = useState(0);
   const [built, setBuilt] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [shuffledNouns, setShuffledNouns] = useState<typeof FREQUENT_NOUNS>([]);
 
   const userItemsQuery = useMemoFirebase(() => {
@@ -78,12 +80,14 @@ export function MorphemeConstructor() {
 
   const handleSnap = (brick: string) => {
     if (isCorrect) return;
+    setIsError(false);
     setBuilt(prev => [...prev, brick]);
   };
 
   const handleReset = () => {
     setBuilt([]);
     setIsCorrect(false);
+    setIsError(false);
   };
 
   const handleNextNoun = () => {
@@ -117,15 +121,29 @@ export function MorphemeConstructor() {
   };
 
   const checkBuild = () => {
-    if (built.length === currentLevel.bricks.length) {
-      setIsCorrect(true);
-      const isFinal = levelIdx === legoLevels.length - 1;
-      updateSRS(isFinal);
-    } else {
+    if (built.length !== currentLevel.bricks.length) {
       toast({
         variant: "destructive",
         title: "Build Incomplete",
         description: "Snap all the bricks together to finish the module!"
+      });
+      return;
+    }
+
+    const correctSequence = currentLevel.bricks.map(b => b.text);
+    const isSequenceCorrect = built.every((brick, index) => brick === correctSequence[index]);
+
+    if (isSequenceCorrect) {
+      setIsCorrect(true);
+      setIsError(false);
+      const isFinal = levelIdx === legoLevels.length - 1;
+      updateSRS(isFinal);
+    } else {
+      setIsError(true);
+      toast({
+        variant: "destructive",
+        title: "Build Error",
+        description: "The bricks aren't snapping together in the right order. Try again!"
       });
     }
   };
@@ -173,7 +191,10 @@ export function MorphemeConstructor() {
         </div>
       </div>
 
-      <Card className="border-t-8 border-t-basque-green shadow-xl bg-basque-stone/20 overflow-hidden">
+      <Card className={cn(
+        "border-t-8 shadow-xl transition-all duration-500 overflow-hidden",
+        isCorrect ? "border-t-basque-green bg-green-50/20" : isError ? "border-t-basque-red bg-red-50/20 animate-shake" : "border-t-basque-green bg-basque-stone/20"
+      )}>
         <CardHeader className="text-center">
           <Badge variant="secondary" className="w-fit mx-auto mb-2 bg-basque-green/10 text-basque-green border-basque-green/20">
             Level {currentLevel.id}: {currentLevel.title}
@@ -189,7 +210,7 @@ export function MorphemeConstructor() {
           
           <div className={cn(
             "min-h-[140px] flex flex-wrap items-center justify-center gap-2 p-6 rounded-2xl border-4 border-dashed transition-all duration-500",
-            isCorrect ? "bg-green-100 border-green-500 shadow-inner" : "bg-white/50 border-gray-200"
+            isCorrect ? "bg-white border-basque-green shadow-xl" : isError ? "bg-white border-basque-red" : "bg-white/50 border-gray-200"
           )}>
             {built.map((b, i) => {
               const role = currentLevel.bricks.find(br => br.text === b)?.role || 'root';
@@ -200,6 +221,12 @@ export function MorphemeConstructor() {
                     "px-6 py-3 rounded-xl border-b-4 text-xl font-black transition-all animate-in zoom-in-95",
                     RoleColors[role]
                   )}
+                  onClick={() => {
+                    if (!isCorrect) {
+                      setBuilt(prev => prev.filter((_, idx) => idx !== i));
+                      setIsError(false);
+                    }
+                  }}
                 >
                   {b}
                 </div>
@@ -234,6 +261,13 @@ export function MorphemeConstructor() {
             </div>
           )}
 
+          {isError && (
+             <div className="bg-basque-red/10 p-4 rounded-xl border border-basque-red/20 flex items-center justify-center gap-3 text-basque-red animate-in fade-in">
+                <XCircle className="size-5 shrink-0" />
+                <p className="font-bold text-xs uppercase tracking-tight">Brick alignment error! Check your construction order.</p>
+             </div>
+          )}
+
           {!isCorrect && (
             <div className="space-y-4">
               <p className="text-[10px] text-center font-bold uppercase text-muted-foreground tracking-widest">Available Bricks</p>
@@ -261,7 +295,7 @@ export function MorphemeConstructor() {
             </Button>
             {!isCorrect ? (
               <Button 
-                className="bg-basque-earth hover:bg-black text-white px-8" 
+                className="bg-basque-earth hover:bg-black text-white px-8 h-14 font-black rounded-xl border-b-4 border-b-black shadow-lg transition-all active:border-b-0 active:translate-y-1" 
                 onClick={checkBuild}
                 disabled={built.length === 0}
               >
@@ -269,7 +303,7 @@ export function MorphemeConstructor() {
               </Button>
             ) : (
               <Button 
-                className="bg-basque-green hover:bg-green-800 text-white px-10" 
+                className="bg-basque-green hover:bg-green-800 text-white px-10 h-16 font-black rounded-xl border-b-4 border-b-green-900 shadow-xl transition-all active:border-b-0 active:translate-y-1 text-lg" 
                 onClick={() => {
                   if (levelIdx < legoLevels.length - 1) {
                     setLevelIdx(prev => prev + 1);
@@ -278,7 +312,7 @@ export function MorphemeConstructor() {
                   }
                 }}
               >
-                {levelIdx === legoLevels.length - 1 ? "Next Base Brick" : "Next Module"} <ArrowRight className="ml-2 size-4" />
+                {levelIdx === legoLevels.length - 1 ? "Next Base Brick" : "Next Module"} <ArrowRight className="ml-2 size-5" />
               </Button>
             )}
           </div>
