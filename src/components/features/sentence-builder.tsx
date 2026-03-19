@@ -13,7 +13,8 @@ import {
   BrainCircuit, 
   Zap,
   CheckCircle2,
-  Trophy
+  Trophy,
+  RotateCcw
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -94,7 +95,7 @@ export function SentenceBuilder() {
       correctCount: (record?.correctCount || 0) + (success ? 1 : 0),
       incorrectCount: (record?.incorrectCount || 0) + (success ? 0 : 1),
       type: 'syntax_workshop',
-      world: current.world // CRITICAL: Save world identifier for Dashboard unlocking
+      world: current.world
     }, { merge: true });
   };
 
@@ -136,7 +137,9 @@ export function SentenceBuilder() {
     <div className="space-y-6 max-w-2xl mx-auto">
       <Card className={cn(
         "border-t-8 transition-all duration-700 shadow-2xl overflow-hidden",
-        feedback === 'correct' ? "border-t-basque-green bg-green-50/20" : "border-t-primary bg-basque-stone/10"
+        feedback === 'correct' ? "border-t-basque-green bg-green-50/20" : 
+        feedback === 'incorrect' ? "border-t-basque-red bg-red-50/20" : 
+        "border-t-primary bg-basque-stone/10"
       )}>
         <CardHeader className="text-center pb-2">
           <div className="flex justify-between items-center mb-4">
@@ -202,11 +205,59 @@ export function SentenceBuilder() {
                 </Button>
               </div>
             </div>
+          ) : feedback === 'incorrect' ? (
+            <div className="space-y-8">
+              <div className="flex flex-col items-center justify-center gap-3 animate-in zoom-in-95 duration-500 text-basque-red">
+                <div className="flex items-center gap-4 font-black text-4xl uppercase tracking-tighter">
+                  <XCircle className="size-10" />
+                  FRICTION DETECTED
+                  <XCircle className="size-10" />
+                </div>
+                <p className="font-bold uppercase tracking-widest text-xs">Assembly Failed</p>
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                 <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-red shadow-xl relative overflow-hidden">
+                    {constructed.map((word, i) => (
+                      <div key={i} className="h-14 px-8 bg-white border-2 border-basque-red/30 border-b-8 border-b-basque-red/60 font-black text-2xl rounded-2xl flex items-center justify-center text-basque-red opacity-60">
+                        {word}
+                      </div>
+                    ))}
+                 </div>
+              </div>
+
+              <div className="bg-basque-red/10 p-8 rounded-2xl border-2 border-dashed border-basque-red/30">
+                <div className="flex items-center gap-2 mb-4 text-basque-red font-black text-xs uppercase tracking-widest">
+                   <BrainCircuit className="size-5" /> Diagnostic Note
+                </div>
+                <p className="text-base leading-relaxed text-basque-earth font-medium">
+                  The bricks aren't snapping correctly. In Basque, the <strong>verb</strong> typically sits at the end of the sentence (SOV order). Check your assembly and try again!
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="px-12 h-16 text-xl font-black rounded-2xl border-basque-red/20 text-basque-red hover:bg-basque-red/5" 
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="mr-2 size-6" /> Try Again
+                </Button>
+                <Button 
+                  size="lg"
+                  className="bg-muted-foreground hover:bg-black text-white px-12 h-16 text-xl font-black rounded-2xl shadow-xl transition-all" 
+                  onClick={handleNext}
+                >
+                  Skip Challenge <ArrowRight className="ml-2 size-6" />
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-8">
               <div className={cn(
                   "flex flex-wrap items-center justify-center gap-3 p-10 min-h-[200px] rounded-3xl border-4 border-dashed transition-all duration-500", 
-                  feedback === 'incorrect' ? "border-basque-red bg-red-50/50 animate-shake" : "bg-white/50 border-muted-foreground/20 shadow-inner"
+                  "bg-white/50 border-muted-foreground/20 shadow-inner"
               )}>
                   {constructed.map((word, i) => (
                     <Button 
@@ -216,7 +267,6 @@ export function SentenceBuilder() {
                         onClick={() => {
                           setConstructed(prev => prev.filter((_, idx) => idx !== i));
                           setPalette(prev => [...prev, word]);
-                          setFeedback(null);
                         }}
                     >
                         {word}
@@ -241,7 +291,6 @@ export function SentenceBuilder() {
                             onClick={() => {
                               setConstructed(prev => [...prev, word]);
                               setPalette(prev => prev.filter((_, idx) => idx !== i));
-                              setFeedback(null);
                             }}
                         >
                             {word}
@@ -249,13 +298,6 @@ export function SentenceBuilder() {
                       ))}
                   </div>
               </div>
-
-              {feedback === 'incorrect' && (
-                <div className="bg-basque-red/10 p-6 rounded-2xl border-2 border-basque-red/20 flex items-center justify-center gap-4 text-basque-red animate-in fade-in slide-in-from-top-2">
-                  <XCircle className="size-6 shrink-0" />
-                  <p className="font-bold text-sm uppercase tracking-tight">Brick alignment error! The syntax engine requires a different sequence. Remember: Verbs usually sit at the end!</p>
-                </div>
-              )}
 
               <div className="flex justify-center gap-4 pt-4 border-t border-muted-foreground/10">
                 <Button 
