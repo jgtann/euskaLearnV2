@@ -8,6 +8,7 @@ import { getEncouragement as getEncouragementFlow } from '@/ai/flows/encourageme
 import { getSentenceExamples } from '@/ai/flows/sentence-examples-flow';
 import { explainSentenceGrammar } from '@/ai/flows/explain-sentence-grammar-flow';
 import { checkBasque } from '@/ai/flows/check-basque-flow';
+import { generatePassage } from '@/ai/flows/generate-passage-flow';
 import { z } from 'zod';
 
 const translateSchema = z.object({
@@ -138,23 +139,23 @@ export async function getGrammarExplanationAction(prevState: any, formData: Form
     }
 }
 
-const checkBasqueSchema = z.object({
-  text: z.string().min(1, { message: 'Please enter a Basque phrase to check.' }),
-});
-
 export async function getGrammarCheck(prevState: any, formData: FormData) {
-  const validatedFields = checkBasqueSchema.safeParse({
-    text: formData.get('text'),
-  });
-
-  if (!validatedFields.success) {
-    return { error: 'Please enter some text.' };
-  }
+  const text = formData.get('text') as string;
+  if (!text) return { error: 'Please enter some text.' };
 
   try {
-    const result = await checkBasque({ text: validatedFields.data.text });
+    const result = await checkBasque({ text });
     return { data: result };
   } catch (error) {
     return { error: 'Failed to check grammar. Please try again later.' };
+  }
+}
+
+export async function getPassageAction(worldId: string) {
+  try {
+    const result = await generatePassage({ worldId, topic: 'Daily Life' });
+    return { data: result };
+  } catch (error) {
+    return { error: 'Failed to generate passage.' };
   }
 }

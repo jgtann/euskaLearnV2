@@ -1,11 +1,11 @@
-
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MorphemeConstructor } from "@/components/features/morpheme-constructor";
 import { SentenceBuilder } from "@/components/features/sentence-builder";
+import { InputRichPassage } from "@/components/features/input-rich-passage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Construction, Trophy, Sparkles } from "lucide-react";
+import { BookOpen, Construction, Trophy, Sparkles, Eye } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { WORLDS } from '@/lib/lego-data';
 
@@ -13,7 +13,7 @@ export default function LearnPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const worldId = searchParams.get('world') || 'names';
-  const tab = searchParams.get('tab') || 'lego';
+  const tab = searchParams.get('tab') || 'input';
   const missionType = searchParams.get('mission');
   const world = WORLDS.find(w => w.id === worldId) || WORLDS[0];
 
@@ -28,7 +28,7 @@ export default function LearnPage() {
       <div className="space-y-4">
         <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-2xl">
-                <Construction className="size-8 text-primary" />
+                <BookOpen className="size-8 text-primary" />
             </div>
             <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -41,27 +41,35 @@ export default function LearnPage() {
                         </Badge>
                     )}
                 </div>
-                <h1 className="font-heading text-4xl font-black tracking-tight">{worldId === 'names' ? 'Master Builder Workshop' : world.title}</h1>
+                <h1 className="font-heading text-4xl font-black tracking-tight">{world.title}</h1>
             </div>
         </div>
         <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
-          {world.description} Practice with the "Lego" bricks below, then face the <strong>Boss Battle</strong> to advance.
+          {world.description} Follow the spiral: <strong>Read</strong> to notice patterns, <strong>Build</strong> to master morphology, then <strong>Challenge</strong> the Boss.
         </p>
       </div>
 
       <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8 h-auto p-1 bg-muted rounded-xl">
-          <TabsTrigger value="lego" className="py-3 rounded-lg data-[state=active]:bg-background font-bold uppercase tracking-widest text-xs">
-            <Construction className="size-4 mr-2" />
-            Lego Builder
+        <TabsList className="grid w-full grid-cols-3 mb-8 h-auto p-1 bg-muted rounded-xl">
+          <TabsTrigger value="input" className="py-3 rounded-lg data-[state=active]:bg-background font-bold uppercase tracking-widest text-[10px]">
+            <Eye className="size-4 mr-2 text-blue-500" />
+            1. Input & Noticing
           </TabsTrigger>
-          <TabsTrigger value="sentence" className="py-3 rounded-lg data-[state=active]:bg-background font-bold uppercase tracking-widest text-xs">
+          <TabsTrigger value="lego" className="py-3 rounded-lg data-[state=active]:bg-background font-bold uppercase tracking-widest text-[10px]">
+            <Construction className="size-4 mr-2 text-basque-green" />
+            2. Lego Builder
+          </TabsTrigger>
+          <TabsTrigger value="sentence" className="py-3 rounded-lg data-[state=active]:bg-background font-bold uppercase tracking-widest text-[10px]">
             <Trophy className="size-4 mr-2 text-yellow-600" />
-            Boss Battle
+            3. Boss Battle
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="lego" className="animate-in fade-in slide-in-from-left-4">
+        <TabsContent value="input" className="animate-in fade-in slide-in-from-left-4">
+          <InputRichPassage worldId={worldId} />
+        </TabsContent>
+
+        <TabsContent value="lego" className="animate-in fade-in slide-in-from-bottom-4">
           <MorphemeConstructor />
         </TabsContent>
 

@@ -10,3 +10,4 @@ import '@/ai/flows/encouragement-flow.ts';
 import '@/ai/flows/sentence-examples-flow.ts';
 import '@/ai/flows/explain-sentence-grammar-flow.ts';
 import '@/ai/flows/check-basque-flow.ts';
+import '@/ai/flows/generate-passage-flow.ts';
