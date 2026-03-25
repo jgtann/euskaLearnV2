@@ -181,7 +181,7 @@ export function SentenceBuilder() {
                             {highlight ? (
                               <>
                                 <span className="text-basque-earth">{highlight[0]}</span>
-                                <span className="text-blue-600">{highlight[1]}</span>
+                                <span className="text-primary">{highlight[1]}</span>
                               </>
                             ) : (
                               <span className="text-basque-green">{word}</span>

@@ -14,7 +14,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-1', 
     english: "I am Jon.", 
     correct: ["Ni", "Jon", "naiz"], 
-    meaning: "In Basque, the verb goes at the end! 'Ni' is the I-brick, and 'naiz' refers to 'I am' (the am-brick). 'Jon' is the name-brick.", 
+    meaning: "In Basque, the verb goes at the end! 'Ni' is the I-brick, and 'naiz' refers to 'I am'. 'Jon' is the name-brick.", 
     type: "A1 Basics",
     world: 'names',
     highlights: { "naiz": ["na", "iz"] }
@@ -23,7 +23,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-2', 
     english: "The house is big.", 
     correct: ["Etxea", "handia", "da"], 
-    meaning: "Notice the '-a' on 'Etxe-a'. That's the 'the-brick' we learned in the Lego workshop. 'Da' means 'is' (he/she/it is).", 
+    meaning: "Notice the '-a' on 'Etxe-a'. That's the 'the-brick'. 'Etxe' (house) and '-a' (the) snap together to form 'Etxea'.", 
     type: "A1 Description",
     world: 'names',
     highlights: { "Etxea": ["Etxe", "a"], "handia": ["handi", "a"] }
@@ -32,7 +32,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-3', 
     english: "The dog is small.", 
     correct: ["Txakurrak", "txikia", "da"], 
-    meaning: "In Basque, 'Txakurrak' can mean 'the dog' as a subject. Notice the vibrant 'r' doubling! 'Da' is our 'is-brick'.", 
+    meaning: "Notice the vibrant 'r' doubling in 'Txakurrak' (the dog). 'Txakur' + 'rak'.", 
     type: "A1 Description",
     world: 'names',
     highlights: { "Txakurrak": ["Txakur", "rak"], "txikia": ["txiki", "a"] }
@@ -41,7 +41,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-9', 
     english: "The apple is red.", 
     correct: ["Sagarra", "gorria", "da"], 
-    meaning: "Sagar (Apple) becomes Sagar-ra (The apple). The 'r' doubles! 'Da' acts as the 'is-brick'.", 
+    meaning: "Sagar (Apple) + ra (the) becomes Sagarra. The 'r' doubles!", 
     type: "A1 Description",
     world: 'names',
     highlights: { "Sagarra": ["Sagar", "ra"], "gorria": ["gorri", "a"] }
@@ -50,7 +50,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-10', 
     english: "We are friends.", 
     correct: ["Gu", "lagunak", "gara"], 
-    meaning: "Plural alert! 'Lagun-ak' uses the multi-stud plural brick. 'Gara' refers to 'we are'.", 
+    meaning: "Plural alert! 'Lagun' (friend) + 'ak' (plural) uses the multi-stud plural brick.", 
     type: "A1 Plurals",
     world: 'names',
     highlights: { "lagunak": ["lagun", "ak"] }
@@ -61,7 +61,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-6', 
     english: "I have the book.", 
     correct: ["Nik", "liburua", "dut"], 
-    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu-a' is the 'the-book' brick, where 'liburu' (book) and '-a' (the) snap together. 'Dut' means 'I have it'.", 
+    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu' (book) and '-a' (the) snap together to form 'liburua'. 'Dut' means 'I have it'.", 
     type: "A1 Transitive",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "liburua": ["liburu", "a"] }
@@ -70,7 +70,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-8', 
     english: "I drink the water.", 
     correct: ["Nik", "ura", "edaten", "dut"], 
-    meaning: "'Nik' (The Boss) + 'Ura' (The Thing) + 'Edaten dut' (The Action Engine). 'Dut' indexes both 'I' and 'it'.", 
+    meaning: "'Nik' (The Boss) + 'Ura' (The Thing) + 'Edaten dut' (The Action Engine). 'Ur' (water) + 'a' (the) = 'ura'.", 
     type: "A1 Daily",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "ura": ["ur", "a"], "edaten": ["eda", "ten"] }
@@ -79,7 +79,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-18', 
     english: "I want the bread.", 
     correct: ["Nik", "ogia", "nahi", "dut"], 
-    meaning: "The Boss (Nik) wants (nahi) the bread (Ogia). 'Dut' completes the action.", 
+    meaning: "The Boss (Nik) wants (nahi) the bread (Ogi + a = ogia).", 
     type: "A1 Shopping",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "ogia": ["ogi", "a"] }
@@ -90,7 +90,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-4', 
     english: "I am in the house.", 
     correct: ["Ni", "etxean", "naiz"], 
-    meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. 'Naiz' refers to 'I am' (the am-brick).", 
+    meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. 'Naiz' refers to 'I am'.", 
     type: "A1 Location",
     world: 'location',
     highlights: { "etxean": ["etxea", "n"], "naiz": ["na", "iz"] }
@@ -99,7 +99,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-5', 
     english: "The cat is on the table.", 
     correct: ["Katua", "mahaian", "dago"], 
-    meaning: "Location check! Katua (The cat) + Mahaian (On the table) + Dago (Is, specifically for location).", 
+    meaning: "Location check! Katua (Katu + a) + Mahaian (Mahai + an) + Dago (Is, specifically for location).", 
     type: "A1 Location",
     world: 'location',
     highlights: { "Katua": ["Katu", "a"], "mahaian": ["mahai", "an"] }
@@ -110,7 +110,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-39', 
     english: "I am with the friend.", 
     correct: ["Ni", "lagunarekin", "naiz"], 
-    meaning: "The '-rekin' brick means 'with'. 'Naiz' confirms the 'I am' (am-brick) state.", 
+    meaning: "The '-rekin' brick means 'with'. 'Lagun' + 'arekin' = lagunarekin.", 
     type: "A2 Complex",
     world: 'social',
     highlights: { "lagunarekin": ["lagun", "arekin"], "naiz": ["na", "iz"] }
@@ -119,7 +119,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-74', 
     english: "The gift is for you.", 
     correct: ["Oparia", "zuretzat", "da"], 
-    meaning: "Zuretzat (For you) uses the '-tzat' recipient brick. 'Da' is the 'is-brick'.", 
+    meaning: "Zuretzat (For you) uses the '-tzat' recipient brick. 'Opari' (gift) + 'a' (the) = oparia.", 
     type: "A2 Complex",
     world: 'social',
     highlights: { "Oparia": ["Opari", "a"], "zuretzat": ["zure", "tzat"] }
