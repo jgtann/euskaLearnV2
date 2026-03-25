@@ -8,16 +8,17 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface WordPageProps {
-  params: {
+  params: Promise<{
     word: string;
-  };
+  }>;
 }
 
-export default function WordPage({ params }: WordPageProps) {
-  // URL decodes the parameter
-  const basqueWord = decodeURIComponent(params.word);
+export default async function WordPage({ params }: WordPageProps) {
+  // In Next.js 15, params must be awaited
+  const { word } = await params;
+  const decodedWord = decodeURIComponent(word);
   
-  const wordData = vocabulary.find(w => w.basque === basqueWord);
+  const wordData = vocabulary.find(w => w.basque.toLowerCase() === decodedWord.toLowerCase());
 
   if (!wordData) {
     notFound();

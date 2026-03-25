@@ -16,8 +16,7 @@ import {
   CheckCircle2,
   Trophy,
   RotateCcw,
-  Unlock,
-  Play
+  Unlock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -56,26 +55,10 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
   // Initialize session challenges filtered by worldId
   useEffect(() => {
     const worldChallenges = SENTENCE_CHALLENGES.filter(c => c.world === worldId);
-    
-    if (userItems && sessionChallenges.length === 0) {
-      const records = userItems || [];
-      const recordMap = new Map(records.map(r => [r.learningItemId, r]));
-      const now = Date.now();
-
-      const sorted = [...worldChallenges].sort((a, b) => {
-        const recA = recordMap.get(a.id);
-        const recB = recordMap.get(b.id);
-        const dueA = recA ? recA.nextReview : 0;
-        const dueB = recB ? recB.nextReview : 0;
-        if (dueA <= now && dueB > now) return -1;
-        if (dueB <= now && dueA > now) return 1;
-        return 0;
-      });
-      setSessionChallenges(sorted);
-    } else if (!userItems && sessionChallenges.length === 0) {
-      setSessionChallenges(worldChallenges);
-    }
-  }, [userItems, sessionChallenges.length, worldId]);
+    setSessionChallenges(worldChallenges);
+    setCurrentIdx(0);
+    setFeedback(null);
+  }, [worldId]);
 
   const current = sessionChallenges[currentIdx];
 
@@ -86,20 +69,12 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
       setConstructed([]);
       setFeedback(null);
     }
-  }, [current, currentIdx]);
+  }, [current]);
 
   const updateSRS = (success: boolean) => {
     if (!user || !firestore || !current) return;
-    const records = userItems || [];
-    const record = records.find(r => r.learningItemId === current.id);
     
-    let currentLevel = record?.level || 0;
-    const newLevel = success ? Math.min(currentLevel + 1, 5) : Math.max(currentLevel - 1, 0);
-    
-    const intervals = [0, 1, 3, 7, 14, 30];
-    const nextReview = Date.now() + (intervals[newLevel] || 0) * 24 * 60 * 60 * 1000;
-    
-    const docId = record?.id || `syntax_${current.id}`;
+    const docId = `syntax_${current.id}`;
     const docRef = doc(firestore, 'users', user.uid, 'user_learning_items', docId);
     
     setDocumentNonBlocking(docRef, {
@@ -107,21 +82,20 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
       userId: user.uid,
       learningItemId: current.id,
       lastReviewed: Date.now(),
-      nextReview,
-      level: newLevel,
-      correctCount: (record?.correctCount || 0) + (success ? 1 : 0),
-      incorrectCount: (record?.incorrectCount || 0) + (success ? 0 : 1),
+      nextReview: Date.now() + (success ? 24 * 60 * 60 * 1000 : 0),
+      level: success ? 1 : 0,
       type: 'syntax_workshop',
       world: current.world
     }, { merge: true });
   };
 
   const checkBuild = () => {
+    if (!current) return;
     if (constructed.length < current.correct.length) {
       toast({
         variant: "destructive",
         title: "Incomplete Sentence",
-        description: "You need to use all the bricks to complete the build!",
+        description: "Snap all the bricks to test the engine!",
       });
       return;
     }
@@ -143,13 +117,13 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
     if (currentIdx < sessionChallenges.length - 1) {
       setCurrentIdx(prev => prev + 1);
     } else {
-      // Loop back to start if finished
       setCurrentIdx(0);
     }
     setFeedback(null);
   };
 
   const handleReset = () => {
+    if (!current) return;
     setPalette([...current.correct].sort(() => Math.random() - 0.5));
     setConstructed([]);
     setFeedback(null);
@@ -161,18 +135,18 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
     }
   };
 
-  if (!current) {
+  if (!current && sessionChallenges.length === 0) {
     return (
       <Card className="p-12 text-center border-dashed border-2">
-        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading syntax engine...</p>
+        <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No challenges found for this world.</p>
       </Card>
     );
   }
 
+  if (!current) return null;
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      {/* Session Progress Header */}
       <div className="px-4 py-2 bg-muted/50 rounded-xl border flex items-center justify-between gap-6">
         <div className="flex items-center gap-2">
            <Trophy className={cn("size-4", isGateUnlocked ? "text-yellow-600" : "text-muted-foreground")} />
@@ -211,39 +185,28 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
             <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
               <div className="flex flex-col items-center justify-center gap-3">
                 <div className="flex items-center gap-4 text-basque-green font-black text-5xl uppercase tracking-tighter">
-                  <Sparkles className="size-10 animate-bounce text-yellow-500" />
+                  <Sparkles className="size-10 text-yellow-500" />
                   ZORIONAK!
-                  <Sparkles className="size-10 animate-bounce text-yellow-500" />
+                  <Sparkles className="size-10 text-yellow-500" />
                 </div>
-                <p className="text-basque-green/80 font-bold uppercase tracking-widest text-xs">Sentence Fully Functional</p>
               </div>
               
-              <div className="flex flex-col items-center gap-4">
-                 <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-green shadow-xl relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                    
-                    {current.correct.map((word, i) => {
-                      const highlight = current.highlights?.[word];
-                      return (
-                        <div 
-                          key={i} 
-                          className="animate-in fade-in slide-in-from-bottom-12 fill-mode-both"
-                          style={{ animationDelay: `${i * 150}ms`, animationDuration: '600ms' }}
-                        >
-                          <div className="h-14 px-8 bg-white border-2 border-basque-green/30 border-b-8 border-b-basque-green/60 font-black text-2xl rounded-2xl flex items-center justify-center shadow-sm">
-                            {highlight ? (
-                              <>
-                                <span className="text-basque-earth">{highlight[0]}</span>
-                                <span className="text-primary">{highlight[1]}</span>
-                              </>
-                            ) : (
-                              <span className="text-basque-green">{word}</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                 </div>
+              <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-green shadow-xl">
+                {current.correct.map((word, i) => {
+                  const highlight = current.highlights?.[word];
+                  return (
+                    <div key={i} className="h-14 px-8 bg-white border-2 border-basque-green/30 border-b-8 border-b-basque-green/60 font-black text-2xl rounded-2xl flex items-center justify-center">
+                      {highlight ? (
+                        <>
+                          <span className="text-basque-earth">{highlight[0]}</span>
+                          <span className="text-primary">{highlight[1]}</span>
+                        </>
+                      ) : (
+                        <span className="text-basque-green">{word}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="bg-basque-green/10 p-8 rounded-2xl border-2 border-dashed border-basque-green/30">
@@ -257,53 +220,25 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
 
               <div className="flex flex-col gap-4">
                  {isGateUnlocked && nextWorld && (
-                   <div className="p-6 bg-yellow-600 rounded-2xl text-white shadow-xl animate-in zoom-in-95 duration-500">
+                   <div className="p-6 bg-yellow-600 rounded-2xl text-white shadow-xl">
                       <div className="flex items-center gap-3 mb-4">
                          <Unlock className="size-8" />
-                         <div>
-                            <h3 className="text-xl font-black uppercase tracking-tight">Mastery Gate Cleared!</h3>
-                            <p className="text-sm opacity-90 font-bold italic">You have proven your A1 construction logic.</p>
-                         </div>
+                         <h3 className="text-xl font-black uppercase tracking-tight">Mastery Gate Cleared!</h3>
                       </div>
                       <div className="flex gap-3">
-                         <Button 
-                           onClick={handleGoToNextWorld}
-                           className="flex-1 bg-white text-yellow-700 hover:bg-basque-stone font-black h-14 text-lg rounded-xl"
-                         >
+                         <Button onClick={handleGoToNextWorld} className="flex-1 bg-white text-yellow-700 hover:bg-basque-stone font-black h-14">
                             Go to {nextWorld.title} <ArrowRight className="ml-2 size-5" />
                          </Button>
-                         <Button 
-                           onClick={handleNext}
-                           variant="outline"
-                           className="flex-1 border-white text-white hover:bg-white/10 font-bold h-14 rounded-xl"
-                         >
-                            Continue Building
+                         <Button onClick={handleNext} variant="outline" className="flex-1 border-white text-white hover:bg-white/10 font-bold h-14">
+                            Stay Here
                          </Button>
                       </div>
                    </div>
                  )}
-
                  {!isGateUnlocked && (
-                    <div className="flex justify-center">
-                        <Button 
-                        size="lg"
-                        className="bg-basque-green hover:bg-green-700 px-16 h-20 text-2xl font-black rounded-3xl shadow-2xl hover:shadow-basque-green/20 transition-all border-b-8 border-b-green-900 active:border-b-0 active:translate-y-2" 
-                        onClick={handleNext}
-                        >
+                    <Button size="lg" className="bg-basque-green hover:bg-green-700 w-full h-20 text-2xl font-black rounded-3xl shadow-xl" onClick={handleNext}>
                         Next Build <ArrowRight className="ml-3 size-8" />
-                        </Button>
-                    </div>
-                 )}
-                 
-                 {isGateUnlocked && !nextWorld && (
-                    <div className="text-center p-6 bg-basque-green rounded-2xl text-white">
-                        <Trophy className="size-12 mx-auto mb-2" />
-                        <h3 className="text-xl font-black">Curriculum Complete!</h3>
-                        <p className="text-sm opacity-90 mb-4">You have mastered all currently available Worlds.</p>
-                        <Button onClick={handleNext} variant="outline" className="border-white text-white hover:bg-white/10 font-bold">
-                            Keep Practicing
-                        </Button>
-                    </div>
+                    </Button>
                  )}
               </div>
             </div>
@@ -311,110 +246,56 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
             <div className="space-y-8 animate-in shake duration-500">
               <div className="flex flex-col items-center justify-center gap-3 text-basque-red">
                 <div className="flex items-center gap-4 font-black text-4xl uppercase tracking-tighter">
-                  <XCircle className="size-10" />
-                  FRICTION DETECTED
-                  <XCircle className="size-10" />
+                  <XCircle className="size-10" /> FRICTION DETECTED <XCircle className="size-10" />
                 </div>
-                <p className="font-bold uppercase tracking-widest text-xs">Assembly Failed</p>
               </div>
-
-              <div className="flex flex-col items-center gap-4">
-                 <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-red shadow-xl relative overflow-hidden">
-                    {constructed.map((word, i) => (
-                      <div key={i} className="h-14 px-8 bg-white border-2 border-basque-red/30 border-b-8 border-b-basque-red/60 font-black text-2xl rounded-2xl flex items-center justify-center text-basque-red opacity-60">
-                        {word}
-                      </div>
-                    ))}
-                 </div>
+              <div className="w-full flex flex-wrap items-center justify-center gap-3 p-10 bg-white rounded-3xl border-4 border-basque-red shadow-xl">
+                {constructed.map((word, i) => (
+                  <div key={i} className="h-14 px-8 bg-white border-2 border-basque-red/30 border-b-8 border-b-basque-red/60 font-black text-2xl rounded-2xl flex items-center justify-center text-basque-red opacity-60">
+                    {word}
+                  </div>
+                ))}
               </div>
-
               <div className="bg-basque-red/10 p-8 rounded-2xl border-2 border-dashed border-basque-red/30">
-                <div className="flex items-center gap-2 mb-4 text-basque-red font-black text-xs uppercase tracking-widest">
-                   <BrainCircuit className="size-5" /> Diagnostic Note
-                </div>
                 <p className="text-base leading-relaxed text-basque-earth font-medium">
-                  The bricks aren't snapping correctly. In Basque, the <strong>verb</strong> typically sits at the end of the sentence (SOV order). Check your assembly and try again!
+                  The bricks aren't snapping! Remember, Basque often uses SOV order: Subject - Object - Verb.
                 </p>
               </div>
-
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="px-12 h-16 text-xl font-black rounded-2xl border-basque-red/20 text-basque-red hover:bg-basque-red/5" 
-                  onClick={handleReset}
-                >
-                  <RotateCcw className="mr-2 size-6" /> Try Again
+              <div className="flex justify-center gap-4">
+                <Button size="lg" variant="outline" className="px-12 h-16 font-black" onClick={handleReset}>
+                  <RotateCcw className="mr-2" /> Try Again
                 </Button>
-                <Button 
-                  size="lg"
-                  className="bg-muted-foreground hover:bg-black text-white px-12 h-16 text-xl font-black rounded-2xl shadow-xl transition-all" 
-                  onClick={handleNext}
-                >
-                  Skip Challenge <ArrowRight className="ml-2 size-6" />
+                <Button size="lg" className="px-12 h-16 font-black" onClick={handleNext}>
+                  Skip <ArrowRight className="ml-2" />
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-8">
-              <div className={cn(
-                  "flex flex-wrap items-center justify-center gap-3 p-10 min-h-[200px] rounded-3xl border-4 border-dashed transition-all duration-500", 
-                  "bg-white/50 border-muted-foreground/20 shadow-inner"
-              )}>
+              <div className="flex flex-wrap items-center justify-center gap-3 p-10 min-h-[200px] rounded-3xl border-4 border-dashed bg-white/50 border-muted-foreground/20">
                   {constructed.map((word, i) => (
-                    <Button 
-                        key={i} 
-                        variant="outline" 
-                        className="h-14 px-8 bg-white font-black border-b-4 border-b-muted active:border-b-0 animate-in slide-in-from-bottom-2 text-xl rounded-2xl hover:bg-white hover:text-primary transition-all" 
-                        onClick={() => {
-                          setConstructed(prev => prev.filter((_, idx) => idx !== i));
-                          setPalette(prev => [...prev, word]);
-                        }}
-                    >
+                    <Button key={i} variant="outline" className="h-14 px-8 font-black border-b-4 text-xl rounded-2xl" onClick={() => {
+                      setConstructed(prev => prev.filter((_, idx) => idx !== i));
+                      setPalette(prev => [...prev, word]);
+                    }}>
                         {word}
                     </Button>
                   ))}
-                  {constructed.length === 0 && (
-                    <div className="flex flex-col items-center gap-3 opacity-20">
-                      <BrainCircuit className="size-12" />
-                      <p className="text-sm font-bold uppercase tracking-widest italic">Assemble the syntax engine...</p>
-                    </div>
-                  )}
+                  {constructed.length === 0 && <p className="opacity-20 italic">Snap bricks here...</p>}
               </div>
-
-              <div className="space-y-4">
-                 <p className="text-[10px] text-center font-bold uppercase text-muted-foreground/60 tracking-widest">Cargo Hold: Available Bricks</p>
-                  <div className="flex flex-wrap justify-center gap-3 p-8 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/10">
-                      {palette.map((word, i) => (
-                        <Button 
-                            key={i} 
-                            variant="secondary" 
-                            className="h-14 px-8 font-black bg-white border-b-4 border-b-muted hover:shadow-lg hover:scale-105 transition-all text-xl rounded-2xl text-basque-earth" 
-                            onClick={() => {
-                              setConstructed(prev => [...prev, word]);
-                              setPalette(prev => prev.filter((_, idx) => idx !== i));
-                            }}
-                        >
-                            {word}
-                        </Button>
-                      ))}
-                  </div>
+              <div className="flex flex-wrap justify-center gap-3 p-8 bg-muted/20 rounded-3xl border-2 border-dashed">
+                  {palette.map((word, i) => (
+                    <Button key={i} variant="secondary" className="h-14 px-8 font-black bg-white border-b-4 text-xl rounded-2xl" onClick={() => {
+                      setConstructed(prev => [...prev, word]);
+                      setPalette(prev => prev.filter((_, idx) => idx !== i));
+                    }}>
+                        {word}
+                    </Button>
+                  ))}
               </div>
-
-              <div className="flex justify-center gap-4 pt-4 border-t border-muted-foreground/10">
-                <Button 
-                  variant="ghost" 
-                  onClick={handleReset}
-                  className="font-bold text-muted-foreground hover:text-primary h-14 px-6 rounded-xl"
-                >
-                  <RefreshCw className="size-4 mr-2" /> Start Over
-                </Button>
-                <Button 
-                  size="lg"
-                  className="bg-basque-earth hover:bg-black text-white px-12 h-16 text-xl font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all disabled:opacity-30 border-b-4 border-b-black/40" 
-                  onClick={checkBuild} 
-                  disabled={constructed.length === 0}
-                >
+              <div className="flex justify-center gap-4 pt-4 border-t">
+                <Button variant="ghost" onClick={handleReset} className="font-bold">Reset</Button>
+                <Button size="lg" className="bg-basque-earth hover:bg-black text-white px-12 h-16 text-xl font-black rounded-2xl" onClick={checkBuild} disabled={constructed.length === 0}>
                   Snap Bricks & Test
                 </Button>
               </div>
@@ -422,28 +303,6 @@ export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
           )}
         </CardContent>
       </Card>
-      
-      {/* Persistent Mastery Gate Indicator when Unlocked */}
-      {isGateUnlocked && nextWorld && feedback !== 'correct' && (
-        <div className="animate-in slide-in-from-bottom-4 flex items-center justify-between p-4 bg-yellow-600/10 border-2 border-yellow-600/20 rounded-2xl">
-           <div className="flex items-center gap-3">
-              <Unlock className="text-yellow-600 size-5" />
-              <p className="text-xs font-bold text-yellow-700">The Gate to {nextWorld.title} is OPEN!</p>
-           </div>
-           <Button 
-             size="sm" 
-             onClick={handleGoToNextWorld}
-             className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold px-6"
-           >
-              Enter Next World
-           </Button>
-        </div>
-      )}
-
-      <div className="flex items-center justify-center gap-8 text-muted-foreground/30 mt-6">
-        <div className="flex items-center gap-2"><Sparkles className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Engine V2.0</span></div>
-        <div className="flex items-center gap-2"><CheckCircle2 className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Procedural Mastery Validated</span></div>
-      </div>
     </div>
   );
 }
