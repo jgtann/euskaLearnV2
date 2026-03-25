@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,12 +24,13 @@ import { SENTENCE_CHALLENGES } from '@/lib/sentence-challenges';
 export function SentenceBuilder() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
+
   const [currentIdx, setCurrentIdx] = useState(0);
   const [constructed, setConstructed] = useState<string[]>([]);
   const [palette, setPalette] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-  const [challenges, setChallenges] = useState<typeof SENTENCE_CHALLENGES>([]);
-  const { toast } = useToast();
+  const [sessionChallenges, setSessionChallenges] = useState<typeof SENTENCE_CHALLENGES>([]);
 
   const userItemsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -37,8 +38,9 @@ export function SentenceBuilder() {
   }, [user, firestore]);
   const { data: userItems } = useCollection(userItemsQuery);
 
+  // Initialize session challenges once or when queue is empty
   useEffect(() => {
-    if (userItems) {
+    if (userItems && sessionChallenges.length === 0) {
       const records = userItems || [];
       const recordMap = new Map(records.map(r => [r.learningItemId, r]));
       const now = Date.now();
@@ -52,21 +54,22 @@ export function SentenceBuilder() {
         if (dueB <= now && dueA > now) return 1;
         return 0;
       });
-      setChallenges(sorted);
-    } else {
-      setChallenges(SENTENCE_CHALLENGES);
+      setSessionChallenges(sorted);
+    } else if (!userItems && sessionChallenges.length === 0) {
+      setSessionChallenges(SENTENCE_CHALLENGES);
     }
-  }, [userItems]);
+  }, [userItems, sessionChallenges.length]);
 
-  const current = challenges[currentIdx];
+  const current = sessionChallenges[currentIdx];
 
+  // Initialize palette when challenge changes
   useEffect(() => {
     if (current) {
       setPalette([...current.correct].sort(() => Math.random() - 0.5));
       setConstructed([]);
       setFeedback(null);
     }
-  }, [current]);
+  }, [current, currentIdx]);
 
   const updateSRS = (success: boolean) => {
     if (!user || !firestore || !current) return;
@@ -112,7 +115,12 @@ export function SentenceBuilder() {
   };
 
   const handleNext = () => {
-    setCurrentIdx((prev) => (prev + 1) % challenges.length);
+    if (currentIdx < sessionChallenges.length - 1) {
+      setCurrentIdx(prev => prev + 1);
+    } else {
+      setSessionChallenges([]); // Force re-fetch session
+      setCurrentIdx(0);
+    }
   };
 
   const handleReset = () => {
