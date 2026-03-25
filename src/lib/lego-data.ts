@@ -115,17 +115,19 @@ export function generateLegoLevels(noun: { basque: string, english: string, worl
   }
 
   if (world === 'location') {
-     const locTarget = isVibrantR ? `${root}ran` : (endsInA ? `${root}an` : `${root}an`);
+     const locTarget = isVibrantR ? `${root}ran` : (endsInA ? `${root}n` : `${root}an`);
      baseLevels.push({
       id: 4,
       world: 'location',
       title: "The 'Inside' Brick",
       description: "Snap on '-n' to show where something is.",
-      example: `${root}a + n`,
-      bricks: [{ text: root, role: 'root' }, { text: isVibrantR ? "-ran" : (endsInA ? "-an" : "-an"), role: 'suffix' }],
+      example: endsInA ? `${root} + n` : `${root}a + n`,
+      bricks: [{ text: root, role: 'root' }, { text: isVibrantR ? "-ran" : (endsInA ? "-n" : "-an"), role: 'suffix' }],
       target: locTarget,
       translation: `In the ${eng}`,
-      logic: "The Inessive marker (-n) tells us the location. Notice the bridge 'a' remains!"
+      logic: endsInA 
+        ? `Note: Since '${root}' already ends in 'a', the 'inside-brick' (-n) snaps on directly without adding another 'a'!`
+        : `The Inessive marker (-n) tells us the location. Notice the bridge 'a' remains!`
     });
   }
 
