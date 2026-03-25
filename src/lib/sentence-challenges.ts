@@ -61,7 +61,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-6', 
     english: "I have the book.", 
     correct: ["Nik", "liburua", "dut"], 
-    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu-a' is the 'the-book' brick, where '-a' snaps on to mean 'the'. 'Dut' means 'I have it'.", 
+    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu-a' is the 'the-book' brick, where 'liburu' (book) and '-a' (the) snap together. 'Dut' means 'I have it'.", 
     type: "A1 Transitive",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "liburua": ["liburu", "a"] }
@@ -90,7 +90,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-4', 
     english: "I am in the house.", 
     correct: ["Ni", "etxean", "naiz"], 
-    meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. 'Naiz' correctly identifies 'I am' (the am-brick).", 
+    meaning: "The '-n' on 'etxea-n' is the 'inside-brick'. 'Naiz' refers to 'I am' (the am-brick).", 
     type: "A1 Location",
     world: 'location',
     highlights: { "etxean": ["etxea", "n"], "naiz": ["na", "iz"] }
