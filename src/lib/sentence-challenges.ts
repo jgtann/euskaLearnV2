@@ -14,7 +14,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-1', 
     english: "I am Jon.", 
     correct: ["Ni", "Jon", "naiz"], 
-    meaning: "In Basque, the verb goes at the end! 'Ni' is the I-brick. 'Naiz' refers specifically to 'I am' (the 'am-brick'). 'Jon' is the name-brick.", 
+    meaning: "In Basque, the verb goes at the end! 'Ni' is the I-brick. 'Naiz' refers specifically to 'I am'. 'Jon' is the name-brick.", 
     type: "A1 Basics",
     world: 'names',
     highlights: { "naiz": ["na", "iz"] }
@@ -23,7 +23,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-2', 
     english: "The house is big.", 
     correct: ["Etxea", "handia", "da"], 
-    meaning: "Notice the '-a' on 'Etxe-a'. That's the 'the-brick'. 'Etxe' (house) and '-a' (the) snap together to form 'Etxea' (the house).", 
+    meaning: "Notice the '-a' on 'Etxe-a'. That's the 'the-brick'. 'Etxe' (house) and '-a' (the) snap together to form 'Etxea'.", 
     type: "A1 Description",
     world: 'names',
     highlights: { "Etxea": ["Etxe", "a"], "handia": ["handi", "a"] }
@@ -61,7 +61,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-6', 
     english: "I have the book.", 
     correct: ["Nik", "liburua", "dut"], 
-    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu' (book) and '-a' (the) snap together to form 'liburua' (the book). 'Dut' means 'I have it'.", 
+    meaning: "The 'Nik' has a gold '-k' piece (The Boss Badge). 'Liburu' (book) and '-a' (the) snap together to form 'liburua'. 'Dut' means 'I have it'.", 
     type: "A1 Transitive",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "liburua": ["liburu", "a"] }
@@ -70,7 +70,7 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-8', 
     english: "I drink the water.", 
     correct: ["Nik", "ura", "edaten", "dut"], 
-    meaning: "'Nik' (The Boss) + 'Ura' (The Thing) + 'Edaten dut' (The Action Engine). 'Ur' (water) + 'a' (the) = 'ura' (the water).", 
+    meaning: "'Nik' (The Boss) + 'Ura' (The Thing) + 'Edaten dut' (The Action Engine). 'Ur' (water) + 'a' (the) = 'ura'.", 
     type: "A1 Daily",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "ura": ["ur", "a"], "edaten": ["eda", "ten"] }
@@ -83,6 +83,24 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     type: "A1 Shopping",
     world: 'actions',
     highlights: { "Nik": ["Ni", "k"], "ogia": ["ogi", "a"] }
+  },
+  { 
+    id: 's-19', 
+    english: "The woman sees the book.", 
+    correct: ["Emakumeak", "liburua", "ikusten", "du"], 
+    meaning: "The woman (Emakumea + k) is the Boss! 'Du' means 'she has/sees it'.", 
+    type: "A1 Transitive",
+    world: 'actions',
+    highlights: { "Emakumeak": ["Emakumea", "k"], "liburua": ["liburu", "a"] }
+  },
+  { 
+    id: 's-20', 
+    english: "The man eats the apple.", 
+    correct: ["Gizonak", "sagarra", "jaten", "du"], 
+    meaning: "Gizon (man) + ak (the Boss) eats (jaten) the apple (sagarra).", 
+    type: "A1 Transitive",
+    world: 'actions',
+    highlights: { "Gizonak": ["Gizona", "k"], "sagarra": ["sagar", "a"] }
   },
 
   // World 3: Being & Location
@@ -104,6 +122,75 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     world: 'location',
     highlights: { "Katua": ["Katu", "a"], "mahaian": ["mahai", "an"] }
   },
+  { 
+    id: 's-11', 
+    english: "The school is big.", 
+    correct: ["Eskola", "handia", "da"], 
+    meaning: "Eskola ends in 'a', so the article is already built in!", 
+    type: "A1 Location",
+    world: 'location',
+    highlights: { "handia": ["handi", "a"] }
+  },
+  { 
+    id: 's-12', 
+    english: "The boy is at school.", 
+    correct: ["Mutila", "eskolan", "dago"], 
+    meaning: "Eskola + n = Eskolan. Notice we don't double the 'a'!", 
+    type: "A1 Location",
+    world: 'location',
+    highlights: { "Mutila": ["Mutil", "a"], "eskolan": ["eskola", "n"] }
+  },
+  { 
+    id: 's-13', 
+    english: "I am at the mountain.", 
+    correct: ["Ni", "mendian", "nago"], 
+    meaning: "Mendi (mountain) + an (the location) = mendian. 'Nago' is the location form of 'I am'.", 
+    type: "A1 Location",
+    world: 'location',
+    highlights: { "mendian": ["mendi", "an"] }
+  },
+
+  // World 4: Habits
+  {
+    id: 's-30',
+    english: "I work every day.",
+    correct: ["Ni", "egunero", "lan", "egiten", "naiz"],
+    meaning: "'Egunero' is every day. 'Lan egiten naiz' is a common habit structure.",
+    type: "A1 Habits",
+    world: 'habits'
+  },
+  {
+    id: 's-31',
+    english: "I eat bread.",
+    correct: ["Nik", "ogia", "jaten", "dut"],
+    meaning: "A repetitive habit uses the Boss Badge (Nik) and the -ten action engine.",
+    type: "A1 Habits",
+    world: 'habits'
+  },
+  {
+    id: 's-32',
+    english: "I drink milk.",
+    correct: ["Nik", "esnea", "edaten", "dut"],
+    meaning: "Esne (milk) + a (the) = esnea.",
+    type: "A1 Habits",
+    world: 'habits'
+  },
+  {
+    id: 's-33',
+    english: "I go to school.",
+    correct: ["Ni", "eskolara", "joaten", "naiz"],
+    meaning: "Eskola + ra (towards) = eskolara.",
+    type: "A1 Habits",
+    world: 'habits'
+  },
+  {
+    id: 's-34',
+    english: "The child plays.",
+    correct: ["Haurra", "jolasten", "da"],
+    meaning: "A simple habit for a single-person action doer.",
+    type: "A1 Habits",
+    world: 'habits'
+  },
 
   // World 5: Social Quests
   { 
@@ -119,9 +206,33 @@ export const SENTENCE_CHALLENGES: SentenceChallenge[] = [
     id: 's-74', 
     english: "The gift is for you.", 
     correct: ["Oparia", "zuretzat", "da"], 
-    meaning: "Zuretzat (For you) uses the '-tzat' recipient brick. 'Opari' (gift) + 'a' (the) = oparia (the gift).", 
+    meaning: "Zuretzat (For you) uses the '-tzat' recipient brick. 'Opari' (gift) + 'a' (the) = oparia.", 
     type: "A2 Complex",
     world: 'social',
     highlights: { "Oparia": ["Opari", "a"], "zuretzat": ["zure", "tzat"] }
+  },
+  { 
+    id: 's-75', 
+    english: "I give the book to the man.", 
+    correct: ["Nik", "gizonari", "liburua", "ematen", "diot"], 
+    meaning: "Complex! Nik (Boss) + Gizonari (to the man) + Liburua (the book) + Ematen diot (I give it to him).", 
+    type: "A2 Social",
+    world: 'social'
+  },
+  { 
+    id: 's-76', 
+    english: "Who are you?", 
+    correct: ["Nor", "zara", "zu"], 
+    meaning: "Nor (Who) + Zara (are) + Zu (you). Questions often flip order!", 
+    type: "A2 Social",
+    world: 'social'
+  },
+  { 
+    id: 's-77', 
+    english: "How are you?", 
+    correct: ["Nola", "zaude", "zu"], 
+    meaning: "Nola (How) + Zaude (are you, location/state).", 
+    type: "A2 Social",
+    world: 'social'
   }
 ];

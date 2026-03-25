@@ -80,7 +80,7 @@ export default function LearnPage() {
             </div>
             <p className="text-xs text-muted-foreground">Assemble 5 complex sentences with correct morphology to unlock the next World.</p>
           </div>
-          <SentenceBuilder />
+          <SentenceBuilder worldId={worldId} />
         </TabsContent>
       </Tabs>
     </div>

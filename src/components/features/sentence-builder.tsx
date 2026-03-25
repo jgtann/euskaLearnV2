@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { 
   RefreshCw, 
@@ -14,23 +15,34 @@ import {
   Zap,
   CheckCircle2,
   Trophy,
-  RotateCcw
+  RotateCcw,
+  Unlock,
+  Play
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { SENTENCE_CHALLENGES } from '@/lib/sentence-challenges';
+import { WORLDS } from '@/lib/lego-data';
+import { useRouter } from 'next/navigation';
 
-export function SentenceBuilder() {
+interface SentenceBuilderProps {
+  worldId: string;
+}
+
+export function SentenceBuilder({ worldId }: SentenceBuilderProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [constructed, setConstructed] = useState<string[]>([]);
   const [palette, setPalette] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [sessionChallenges, setSessionChallenges] = useState<typeof SENTENCE_CHALLENGES>([]);
+  const [successCount, setSuccessCount] = useState(0);
+  const [isGateUnlocked, setIsGateUnlocked] = useState(false);
 
   const userItemsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -38,14 +50,19 @@ export function SentenceBuilder() {
   }, [user, firestore]);
   const { data: userItems } = useCollection(userItemsQuery);
 
-  // Initialize session challenges once or when queue is empty
+  const currentWorldIndex = WORLDS.findIndex(w => w.id === worldId);
+  const nextWorld = WORLDS[currentWorldIndex + 1];
+
+  // Initialize session challenges filtered by worldId
   useEffect(() => {
+    const worldChallenges = SENTENCE_CHALLENGES.filter(c => c.world === worldId);
+    
     if (userItems && sessionChallenges.length === 0) {
       const records = userItems || [];
       const recordMap = new Map(records.map(r => [r.learningItemId, r]));
       const now = Date.now();
 
-      const sorted = [...SENTENCE_CHALLENGES].sort((a, b) => {
+      const sorted = [...worldChallenges].sort((a, b) => {
         const recA = recordMap.get(a.id);
         const recB = recordMap.get(b.id);
         const dueA = recA ? recA.nextReview : 0;
@@ -56,9 +73,9 @@ export function SentenceBuilder() {
       });
       setSessionChallenges(sorted);
     } else if (!userItems && sessionChallenges.length === 0) {
-      setSessionChallenges(SENTENCE_CHALLENGES);
+      setSessionChallenges(worldChallenges);
     }
-  }, [userItems, sessionChallenges.length]);
+  }, [userItems, sessionChallenges.length, worldId]);
 
   const current = sessionChallenges[currentIdx];
 
@@ -112,21 +129,36 @@ export function SentenceBuilder() {
     const isCorrect = constructed.join(' ') === current.correct.join(' ');
     setFeedback(isCorrect ? 'correct' : 'incorrect');
     updateSRS(isCorrect);
+
+    if (isCorrect) {
+      setSuccessCount(prev => {
+        const next = prev + 1;
+        if (next >= 5) setIsGateUnlocked(true);
+        return next;
+      });
+    }
   };
 
   const handleNext = () => {
     if (currentIdx < sessionChallenges.length - 1) {
       setCurrentIdx(prev => prev + 1);
     } else {
-      setSessionChallenges([]); // Force re-fetch session
+      // Loop back to start if finished
       setCurrentIdx(0);
     }
+    setFeedback(null);
   };
 
   const handleReset = () => {
     setPalette([...current.correct].sort(() => Math.random() - 0.5));
     setConstructed([]);
     setFeedback(null);
+  };
+
+  const handleGoToNextWorld = () => {
+    if (nextWorld) {
+      router.push(`/learn?world=${nextWorld.id}&tab=input`);
+    }
   };
 
   if (!current) {
@@ -140,6 +172,18 @@ export function SentenceBuilder() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Session Progress Header */}
+      <div className="px-4 py-2 bg-muted/50 rounded-xl border flex items-center justify-between gap-6">
+        <div className="flex items-center gap-2">
+           <Trophy className={cn("size-4", isGateUnlocked ? "text-yellow-600" : "text-muted-foreground")} />
+           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Mastery Gate</span>
+        </div>
+        <div className="flex-1 max-w-[200px] flex items-center gap-2">
+           <Progress value={Math.min((successCount / 5) * 100, 100)} className="h-1.5" />
+           <span className="text-[10px] font-black">{successCount}/5</span>
+        </div>
+      </div>
+
       <Card className={cn(
         "border-t-8 transition-all duration-700 shadow-2xl overflow-hidden",
         feedback === 'correct' ? "border-t-basque-green bg-green-50/20" : 
@@ -151,10 +195,11 @@ export function SentenceBuilder() {
             <Badge variant="secondary" className="text-[10px] uppercase tracking-widest bg-primary/10 text-primary border-primary/20 px-3">
               {current.type}
             </Badge>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Trophy className="size-4 text-yellow-600" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Master Builder Quest</span>
-            </div>
+            {isGateUnlocked && (
+              <Badge className="bg-yellow-600 text-white animate-pulse uppercase tracking-widest text-[9px] px-3">
+                Next World Unlocked
+              </Badge>
+            )}
           </div>
           <CardTitle className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60 font-black mb-1">Mission Objective</CardTitle>
           <div className="text-3xl font-black text-basque-earth tracking-tight leading-tight">"{current.english}"</div>
@@ -210,14 +255,56 @@ export function SentenceBuilder() {
                 </p>
               </div>
 
-              <div className="flex justify-center">
-                <Button 
-                  size="lg"
-                  className="bg-basque-green hover:bg-green-700 px-16 h-20 text-2xl font-black rounded-3xl shadow-2xl hover:shadow-basque-green/20 transition-all border-b-8 border-b-green-900 active:border-b-0 active:translate-y-2" 
-                  onClick={handleNext}
-                >
-                  Next Build <ArrowRight className="ml-3 size-8" />
-                </Button>
+              <div className="flex flex-col gap-4">
+                 {isGateUnlocked && nextWorld && (
+                   <div className="p-6 bg-yellow-600 rounded-2xl text-white shadow-xl animate-in zoom-in-95 duration-500">
+                      <div className="flex items-center gap-3 mb-4">
+                         <Unlock className="size-8" />
+                         <div>
+                            <h3 className="text-xl font-black uppercase tracking-tight">Mastery Gate Cleared!</h3>
+                            <p className="text-sm opacity-90 font-bold italic">You have proven your A1 construction logic.</p>
+                         </div>
+                      </div>
+                      <div className="flex gap-3">
+                         <Button 
+                           onClick={handleGoToNextWorld}
+                           className="flex-1 bg-white text-yellow-700 hover:bg-basque-stone font-black h-14 text-lg rounded-xl"
+                         >
+                            Go to {nextWorld.title} <ArrowRight className="ml-2 size-5" />
+                         </Button>
+                         <Button 
+                           onClick={handleNext}
+                           variant="outline"
+                           className="flex-1 border-white text-white hover:bg-white/10 font-bold h-14 rounded-xl"
+                         >
+                            Continue Building
+                         </Button>
+                      </div>
+                   </div>
+                 )}
+
+                 {!isGateUnlocked && (
+                    <div className="flex justify-center">
+                        <Button 
+                        size="lg"
+                        className="bg-basque-green hover:bg-green-700 px-16 h-20 text-2xl font-black rounded-3xl shadow-2xl hover:shadow-basque-green/20 transition-all border-b-8 border-b-green-900 active:border-b-0 active:translate-y-2" 
+                        onClick={handleNext}
+                        >
+                        Next Build <ArrowRight className="ml-3 size-8" />
+                        </Button>
+                    </div>
+                 )}
+                 
+                 {isGateUnlocked && !nextWorld && (
+                    <div className="text-center p-6 bg-basque-green rounded-2xl text-white">
+                        <Trophy className="size-12 mx-auto mb-2" />
+                        <h3 className="text-xl font-black">Curriculum Complete!</h3>
+                        <p className="text-sm opacity-90 mb-4">You have mastered all currently available Worlds.</p>
+                        <Button onClick={handleNext} variant="outline" className="border-white text-white hover:bg-white/10 font-bold">
+                            Keep Practicing
+                        </Button>
+                    </div>
+                 )}
               </div>
             </div>
           ) : feedback === 'incorrect' ? (
@@ -336,6 +423,23 @@ export function SentenceBuilder() {
         </CardContent>
       </Card>
       
+      {/* Persistent Mastery Gate Indicator when Unlocked */}
+      {isGateUnlocked && nextWorld && feedback !== 'correct' && (
+        <div className="animate-in slide-in-from-bottom-4 flex items-center justify-between p-4 bg-yellow-600/10 border-2 border-yellow-600/20 rounded-2xl">
+           <div className="flex items-center gap-3">
+              <Unlock className="text-yellow-600 size-5" />
+              <p className="text-xs font-bold text-yellow-700">The Gate to {nextWorld.title} is OPEN!</p>
+           </div>
+           <Button 
+             size="sm" 
+             onClick={handleGoToNextWorld}
+             className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold px-6"
+           >
+              Enter Next World
+           </Button>
+        </div>
+      )}
+
       <div className="flex items-center justify-center gap-8 text-muted-foreground/30 mt-6">
         <div className="flex items-center gap-2"><Sparkles className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Syntax Engine V2.0</span></div>
         <div className="flex items-center gap-2"><CheckCircle2 className="size-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Procedural Mastery Validated</span></div>
