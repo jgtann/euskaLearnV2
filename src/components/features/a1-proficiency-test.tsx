@@ -180,7 +180,7 @@ const A1_QUESTIONS: Question[] = [
   {
     id: 19,
     category: 'Syntax',
-    question: "Where is the cat? (Translate: 'Non dago katua?')",
+    question: "Translate: 'Non dago katua?'",
     options: ["Where is the cat?", "Who is the cat?", "What is the cat?", "How is the cat?"],
     correct: 0,
     explanation: "'Non' is the question-brick for 'Where'."

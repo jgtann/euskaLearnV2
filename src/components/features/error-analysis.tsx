@@ -94,7 +94,7 @@ export function ErrorAnalysis() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed">{result.identifiedMorphemes}</p>
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">{result.identifiedMorphemes}</div>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-orange-500">
@@ -105,7 +105,7 @@ export function ErrorAnalysis() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed">{result.errorHeatmap}</p>
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">{result.errorHeatmap}</div>
             </CardContent>
           </Card>
         </div>

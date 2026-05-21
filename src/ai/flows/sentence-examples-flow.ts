@@ -37,6 +37,8 @@ const prompt = ai.definePrompt({
   prompt: `You are a Basque language teacher creating simple examples for a beginner.
 Generate exactly three short, simple, and distinct example sentences for the Basque word "{{basqueWord}}" (which means "{{englishWord}}").
 Provide the Basque sentence and its English translation for each. The sentences should be easy for a new learner to understand.
+
+IMPORTANT: Generate only natural, commonly appearing expressions. Pay close attention to grammar (e.g., use the absolutive "Gu lanera joaten gara" instead of the incorrect ergative "Guk lanera joaten gara" for intransitive verbs like 'joan').
 `,
 });
 

@@ -42,6 +42,8 @@ The data provides a list of Basque words/phrases and the user's correct/incorrec
 From this, infer common error patterns. Focus especially on identifying confusion between cases like Ergative *-k* and Dative *-ri*.
 Create an "error heatmap" summarizing these patterns.
 
+IMPORTANT: Format the output cleanly. Use clear line breaks between numbered lists and bullet points so it is easy to read.
+
 User Data:
 {{{userData}}}`,
 });

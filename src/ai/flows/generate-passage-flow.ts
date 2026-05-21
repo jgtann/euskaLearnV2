@@ -45,9 +45,10 @@ const generatePassagePrompt = ai.definePrompt({
   1. Use very simple language (A1 level).
   2. Focus on recurring high-frequency constructions relevant to the World.
   3. If World is 'names', focus on articles (-a) and plurals (-ak).
-  4. If World is 'actions', focus on the Ergative (-k) and simple verbs (ukan, egin).
+  4. If World is 'actions', focus on the Ergative (-k) and simple verbs (ukan, egin) where appropriate, but do NOT overuse it (e.g., use 'Gu lanera joaten gara' not 'Guk lanera joaten gara' for intransitive verbs).
   5. If World is 'location', focus on 'n' (inessive) and 'egon'.
-  6. Provide 3 "Noticing Hints" that point out specific suffixes or word orders.
+  6. Provide 3 "Noticing Hints" that point out specific suffixes or word orders. The hints/explanations MUST be written in English. If a sentence drops subject pronouns (like gu/guk) because the verbs (e.g. gara/dugu) imply the subject, use a Noticing Hint to explain this omission.
+  7. Generate only natural, commonly appearing Basque expressions.
   
   Format the output as a friendly story or description.`,
 });

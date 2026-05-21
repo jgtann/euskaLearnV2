@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { vocabulary, type Word } from '@/lib/vocabulary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RotateCcw, BrainCircuit, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
+import { RotateCcw, BrainCircuit, CheckCircle2, XCircle, ChevronRight, Volume2, Loader2 } from 'lucide-react';
 import { getEncouragementAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

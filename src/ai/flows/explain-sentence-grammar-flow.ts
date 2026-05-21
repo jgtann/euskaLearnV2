@@ -37,6 +37,8 @@ const prompt = ai.definePrompt({
   prompt: `You are a Basque language grammar expert. For the following sentence pair, provide a simple grammatical breakdown for a beginner. 
   Identify key morphemes (especially suffixes) and verbs, and explain their role in the sentence.
 
+  IMPORTANT: The explanations must be strictly in English. If a sentence omits subject pronouns (like gu/guk) when combining clauses or in general (e.g., "lanera joaten gara eta lan egiten dugu"), explicitly explain that the pronoun is dropped because the auxiliary verbs (like gara and dugu) already imply the exact subject.
+
   Basque: "{{basqueSentence}}"
   English: "{{englishSentence}}"
 `,

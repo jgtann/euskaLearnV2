@@ -65,13 +65,13 @@ const synthesizeSpeechFlow = ai.defineFlow(
     const { text } = input;
     
     const { media } = await ai.generate({
-        model: googleAI.model('gemini-2.5-flash-preview-tts'),
+        model: googleAI.model('gemini-2.0-flash'),
         config: {
             responseModalities: ['AUDIO'],
             speechConfig: {
                 voiceConfig: {
                     prebuiltVoiceConfig: {
-                        voiceName: 'Algenib', // Use a robust multilingual voice
+                        voiceName: 'Aoede', // Supported voice name
                     }
                 }
             }

@@ -7,9 +7,53 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, BookOpen, Eye, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { PlayAudioButton } from '@/components/features/play-audio-button';
+import { AnimatedText } from '@/components/features/animated-text';
 
 interface InputRichPassageProps {
   worldId: string;
+}
+
+function PassageAudioHeader({ text }: { text: string }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState<number | undefined>();
+  return (
+     <div className="flex items-start gap-4">
+       <div className="text-2xl font-serif leading-relaxed text-basque-earth tracking-tight">
+          <AnimatedText 
+              text={text} 
+              isPlaying={isPlaying} 
+              duration={duration}
+              activeClassName="text-primary drop-shadow font-bold scale-105"
+          />
+       </div>
+       <PlayAudioButton 
+           text={text} 
+           className="mt-1 flex-shrink-0" 
+           onPlayStateChange={(playing, dur) => { setIsPlaying(playing); if (dur) setDuration(dur); }} 
+       />
+     </div>
+  );
+}
+
+function HintAudioItem({ hint }: { hint: any }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState<number | undefined>();
+  return (
+    <div className="p-4 rounded-xl bg-white border border-border shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-1 gap-2">
+        <div className="font-bold text-primary text-sm">
+          <AnimatedText text={hint.basque} isPlaying={isPlaying} duration={duration} activeClassName="text-blue-500 scale-105" />
+        </div>
+        <PlayAudioButton 
+            text={hint.basque} 
+            className="w-6 h-6 [&_svg]:w-3 [&_svg]:h-3 flex-shrink-0" 
+            onPlayStateChange={(playing, dur) => { setIsPlaying(playing); if (dur) setDuration(dur); }}
+        />
+      </div>
+      <p className="text-[11px] text-muted-foreground leading-tight">{hint.explanation}</p>
+    </div>
+  );
 }
 
 export function InputRichPassage({ worldId }: InputRichPassageProps) {
@@ -56,9 +100,7 @@ export function InputRichPassage({ worldId }: InputRichPassageProps) {
         </CardHeader>
         <CardContent className="p-8 space-y-8">
           <div className="relative">
-             <p className="text-2xl font-serif leading-relaxed text-basque-earth tracking-tight">
-                {passage.basqueText}
-             </p>
+             <PassageAudioHeader text={passage.basqueText} />
              {showTranslation && (
                <div className="mt-6 p-4 bg-primary/5 border-l-4 border-l-primary rounded-r-xl animate-in slide-in-from-left-2">
                  <p className="text-base italic text-muted-foreground leading-relaxed">
@@ -74,10 +116,7 @@ export function InputRichPassage({ worldId }: InputRichPassageProps) {
             </h4>
             <div className="grid gap-3 sm:grid-cols-3">
               {passage.noticingHints.map((hint: any, i: number) => (
-                <div key={i} className="p-4 rounded-xl bg-white border border-border shadow-sm hover:shadow-md transition-shadow">
-                  <p className="font-bold text-primary text-sm mb-1">{hint.basque}</p>
-                  <p className="text-[11px] text-muted-foreground leading-tight">{hint.explanation}</p>
-                </div>
+                 <HintAudioItem key={i} hint={hint} />
               ))}
             </div>
           </div>

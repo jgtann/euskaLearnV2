@@ -5,8 +5,10 @@ import { getSentenceExamplesAction, getGrammarExplanationAction } from '@/app/ac
 import type { Word } from '@/lib/vocabulary';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, BookOpen } from 'lucide-react';
+import { Loader2, AlertTriangle, BookOpen, Volume2 } from 'lucide-react';
+import { synthesizeSpeech } from '@/ai/flows/text-to-speech-flow';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AnimatedText } from '@/components/features/animated-text';
 import {
   Popover,
   PopoverContent,
@@ -36,6 +38,9 @@ const grammarInitialState = {
     data: null as { breakdown: GrammarPoint[] } | null,
     error: null as string | null,
 };
+
+import { synthesizeElhuyarSpeech } from '@/app/actions/elhuyar-tts';
+import { PlayAudioButton } from '@/components/features/play-audio-button';
 
 function GrammarExplanation({ sentence }: { sentence: SentenceExample }) {
     const [state, setState] = useState(grammarInitialState);
@@ -90,6 +95,26 @@ function GrammarExplanation({ sentence }: { sentence: SentenceExample }) {
     )
 }
 
+function SentenceItem({ example }: { example: SentenceExample }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState<number | undefined>();
+  
+  return (
+    <div className="group relative flex items-center justify-between gap-4 rounded-lg border bg-muted/30 p-4">
+      <div>
+        <p className="font-semibold">
+           <AnimatedText text={example.basque} isPlaying={isPlaying} duration={duration} />
+        </p>
+        <p className="text-sm text-muted-foreground">{example.english}</p>
+      </div>
+      <div className="flex gap-2">
+        <PlayAudioButton text={example.basque} onPlayStateChange={(playing, dur) => { setIsPlaying(playing); if (dur) setDuration(dur); }} />
+        <GrammarExplanation sentence={example} />
+      </div>
+    </div>
+  );
+}
+
 export function ExampleSentences({ word }: ExampleSentencesProps) {
   const [state, setState] = useState(sentenceInitialState);
   const [isFetchingSentences, startFetchingSentences] = useTransition();
@@ -137,13 +162,7 @@ export function ExampleSentences({ word }: ExampleSentencesProps) {
   return (
     <div className="space-y-4">
       {state.data?.examples.map((example, index) => (
-        <div key={index} className="group relative flex items-center justify-between gap-4 rounded-lg border bg-muted/30 p-4">
-          <div>
-            <p className="font-semibold">{example.basque}</p>
-            <p className="text-sm text-muted-foreground">{example.english}</p>
-          </div>
-          <GrammarExplanation sentence={example} />
-        </div>
+        <SentenceItem key={index} example={example} />
       ))}
     </div>
   );
