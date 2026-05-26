@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import DeploymentCard from "@/components/features/deployment-card";
 import { BookOpen, Languages, BarChart, User } from "lucide-react";
 import Link from "next/link";
 
@@ -82,6 +83,12 @@ export default function LandingPage() {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="w-full py-20 md:py-24 lg:py-32">
+        <div className="container px-4 md:px-6">
+          <DeploymentCard />
         </div>
       </section>
 
