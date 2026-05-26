@@ -8,11 +8,12 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/firebase";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [email, setEmail] = useState("");
   const { toast } = useToast();
   const router = useRouter();
@@ -54,6 +55,26 @@ export function LoginForm() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      toast({
+        title: "Login Success",
+        description: "Welcome back!",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Google Sign-In Failed",
+        description: error.message || "Could not sign in with Google.",
+      });
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -104,12 +125,12 @@ export function LoginForm() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" name="password" type="password" placeholder="********" required />
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 animate-spin" />}
+        <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+          {isLoading && <Loader2 className="mr-2 animate-spin h-4 w-4" />}
           Login
         </Button>
       </form>
-      <div className="text-center">
+      <div className="text-center mt-2">
         <Button 
           variant="link" 
           size="sm" 
@@ -120,6 +141,32 @@ export function LoginForm() {
           {isResetLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Forgot password?"}
         </Button>
       </div>
+      
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+        </div>
+      </div>
+      
+      <Button
+        variant="outline"
+        type="button"
+        className="w-full"
+        onClick={handleGoogleSignIn}
+        disabled={isLoading || isGoogleLoading}
+      >
+        {isGoogleLoading ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+            <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+          </svg>
+        )}
+        Google
+      </Button>
     </div>
   );
 }

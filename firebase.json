@@ -1,4 +1,14 @@
 {
+  "auth": {
+    "providers": {
+      "anonymous": true,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Euskal Sustatzailea",
+        "supportEmail": "support@example.com"
+      }
+    }
+  },
   "apphosting": [
     {
       "backendId": "euskalearn-app",
